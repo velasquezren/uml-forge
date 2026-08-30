@@ -82,6 +82,14 @@ de datos.
 Cada fase que introduzca una variable nueva la anade a `.env.example` y a esta
 tabla en el mismo commit.
 
+## Andamiaje
+
+Desde la Fase 2, el andamiaje de cada aplicacion se genera con su CLI oficial
+(`@nestjs/cli new`, `pnpm create vite`, `shadcn add`, `prisma init`) y despues se
+adapta al monorepo. Solo el codigo de dominio se escribe a mano. La regla completa
+esta en [CLAUDE.md](CLAUDE.md) y en
+[ADR 0011](docs/adr/0011-andamiaje-con-cli-oficiales.md).
+
 ## Convenciones
 
 - Identificadores de codigo en ingles. Comentarios y documentacion en espanol.

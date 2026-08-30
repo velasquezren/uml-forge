@@ -17,3 +17,4 @@ nuevo que sustituya al anterior y se marca el antiguo como sustituido.
 | [0008](0008-borrado-en-cascada.md)             | Borrado en cascada de referencias                                | Aceptado |
 | [0009](0009-mapeo-yjs.md)                      | Mapeo del modelo sobre el documento Yjs                          | Aceptado |
 | [0010](0010-doble-build-esm-y-cjs.md)          | Doble compilacion ESM y CommonJS                                 | Aceptado |
+| [0011](0011-andamiaje-con-cli-oficiales.md)    | El andamiaje se crea con las CLI oficiales                       | Aceptado |
