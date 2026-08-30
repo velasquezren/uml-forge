@@ -1,0 +1,1 @@
+{ "extends": "../../nest.json", "compilerOptions": { "noEmit": true }, "include": ["src"] }
