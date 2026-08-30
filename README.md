@@ -3,8 +3,8 @@
 PWA colaborativa para disenar diagramas de clases UML 2.5 que genera, a partir
 del modelo, un backend Spring Boot completo y funcional.
 
-Proyecto academico. El estado actual del repositorio corresponde a la **Fase 0**:
-cimientos del monorepo, configuracion compartida e integracion continua.
+Proyecto academico. El estado actual del repositorio corresponde a la **Fase 1**: cimientos del
+monorepo y metamodelo UML completo en `packages/uml-core`.
 
 ## Requisitos
 
@@ -92,6 +92,23 @@ tabla en el mismo commit.
 - Toda decision de diseno no especificada se documenta en `docs/adr/`.
 - Sin emojis en codigo, commits ni documentacion.
 
+## El metamodelo: `packages/uml-core`
+
+Es la pieza central del sistema y la unica fuente de verdad de los tipos UML.
+Todo se define con esquemas Zod y los tipos TypeScript se derivan con `z.infer`.
+
+| Exporta                                      | Para que                                                                      |
+| -------------------------------------------- | ----------------------------------------------------------------------------- |
+| `UMLModelSchema`, `UMLClassSchema`, ...      | Metamodelo UML 2.5 completo                                                   |
+| `UmlOperationSchema`                         | Union discriminada con las 16 operaciones del lenguaje                        |
+| `applyOperation`, `applyOperations`          | Aplicacion pura e inmutable, atomica por lotes                                |
+| `validateModel`                              | Nombres repetidos, referencias colgantes, ciclos de herencia, multiplicidades |
+| `toYDoc`, `fromYDoc`, `applyOperationToYDoc` | Mapeo bidireccional con el CRDT                                               |
+| `umlOperationJsonSchema`                     | JSON Schema para la salida estructurada de los LLM                            |
+
+Nada lanza excepciones: todo devuelve `Result<T, UmlError>` (ver
+[ADR 0007](docs/adr/0007-result-en-lugar-de-excepciones.md)).
+
 ## Integracion continua
 
 `.github/workflows/ci.yml` define dos trabajos:
@@ -106,7 +123,7 @@ tabla en el mismo commit.
 | Fase | Contenido                                                  | Estado     |
 | ---- | ---------------------------------------------------------- | ---------- |
 | 0    | Monorepo, configuracion compartida, Docker, CI             | Completada |
-| 1    | `packages/uml-core`: esquemas, operaciones, validador, Yjs | Pendiente  |
+| 1    | `packages/uml-core`: esquemas, operaciones, validador, Yjs | Completada |
 | 2    | `apps/api`: Nest, Prisma, auth, proyectos, health          | Pendiente  |
 | 3    | `apps/web`: Vite, Tailwind v4, shadcn, rutas, PWA          | Pendiente  |
 | 4    | Editor: React Flow, nodos y aristas UML, colaboracion      | Pendiente  |

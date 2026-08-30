@@ -13,3 +13,7 @@ nuevo que sustituya al anterior y se marca el antiguo como sustituido.
 | [0004](0004-eslint-flat-config-compartida.md)  | Configuracion ESLint 9 flat compartida                           | Aceptado |
 | [0005](0005-compilacion-real-con-maven.md)     | Compilacion real con Maven del codigo generado                   | Aceptado |
 | [0006](0006-sin-dependencias-redundantes.md)   | Sin dependencias redundantes con la plataforma                   | Aceptado |
+| [0007](0007-result-en-lugar-de-excepciones.md) | Result en lugar de excepciones en el metamodelo                  | Aceptado |
+| [0008](0008-borrado-en-cascada.md)             | Borrado en cascada de referencias                                | Aceptado |
+| [0009](0009-mapeo-yjs.md)                      | Mapeo del modelo sobre el documento Yjs                          | Aceptado |
+| [0010](0010-doble-build-esm-y-cjs.md)          | Doble compilacion ESM y CommonJS                                 | Aceptado |
