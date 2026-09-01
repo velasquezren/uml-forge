@@ -123,9 +123,11 @@ export const EnumInputSchema = z.object({
   id: IdSchema,
   name: NameSchema,
   literals: z.array(LiteralSchema).default([]),
+  position: PositionSchema.default({ x: 0, y: 0 }),
 });
 
 export const EnumChangesSchema = z.object({
   name: NameSchema.optional(),
   literals: z.array(LiteralSchema).optional(),
+  position: PositionSchema.optional(),
 });

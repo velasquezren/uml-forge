@@ -71,13 +71,16 @@ export function ModelTree({
                     element: cls,
                   })
                 }
-                className={`group flex items-center justify-between px-2 py-1 rounded cursor-pointer transition-colors ${
+                className={`group flex items-center justify-between px-2 py-1 rounded cursor-pointer transition-colors gap-1 min-w-0 ${
                   isSelected ? 'bg-primary/20 text-primary font-bold' : 'hover:bg-accent/60'
                 }`}
               >
-                <div className="flex items-center space-x-1.5 truncate">
-                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                  <span className="truncate">
+                <div className="flex items-center space-x-1.5 min-w-0 flex-1 overflow-hidden">
+                  <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
+                  <span
+                    className="truncate"
+                    title={`${cls.name}${cls.isInterface ? ' «I»' : cls.isAbstract ? ' «A»' : ''}`}
+                  >
                     {cls.name}
                     {cls.isInterface ? ' «I»' : cls.isAbstract ? ' «A»' : ''}
                   </span>
@@ -85,7 +88,7 @@ export function ModelTree({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-5 w-5 opacity-0 group-hover:opacity-100 hover:text-destructive"
+                  className="h-5 w-5 opacity-0 group-hover:opacity-100 hover:text-destructive shrink-0"
                   onClick={(e) => handleDeleteClass(cls.id, e)}
                   aria-label="Eliminar clase"
                 >
@@ -107,18 +110,20 @@ export function ModelTree({
                     element: enm as unknown as UMLClass,
                   })
                 }
-                className={`group flex items-center justify-between px-2 py-1 rounded cursor-pointer transition-colors ${
+                className={`group flex items-center justify-between px-2 py-1 rounded cursor-pointer transition-colors gap-1 min-w-0 ${
                   isSelected ? 'bg-primary/20 text-primary font-bold' : 'hover:bg-accent/60'
                 }`}
               >
-                <div className="flex items-center space-x-1.5 truncate">
-                  <ChevronRight className="h-3 w-3 text-amber-500" />
-                  <span className="truncate">{enm.name} «E»</span>
+                <div className="flex items-center space-x-1.5 min-w-0 flex-1 overflow-hidden">
+                  <ChevronRight className="h-3 w-3 text-amber-500 shrink-0" />
+                  <span className="truncate" title={`${enm.name} «E»`}>
+                    {enm.name} «E»
+                  </span>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-5 w-5 opacity-0 group-hover:opacity-100 hover:text-destructive"
+                  className="h-5 w-5 opacity-0 group-hover:opacity-100 hover:text-destructive shrink-0"
                   onClick={(e) => handleDeleteEnum(enm.id, e)}
                   aria-label="Eliminar enumeracion"
                 >
@@ -141,6 +146,7 @@ export function ModelTree({
             const isSelected = selectedElement?.id === rel.id;
             const sourceName = model.classes.find((c) => c.id === rel.sourceId)?.name || 'Origen';
             const targetName = model.classes.find((c) => c.id === rel.targetId)?.name || 'Destino';
+            const relText = `${sourceName} → ${targetName} (${rel.kind})`;
 
             return (
               <div
@@ -152,20 +158,20 @@ export function ModelTree({
                     element: rel,
                   })
                 }
-                className={`group flex items-center justify-between px-2 py-1 rounded cursor-pointer transition-colors ${
+                className={`group flex items-center justify-between px-2 py-1 rounded cursor-pointer transition-colors gap-1 min-w-0 ${
                   isSelected ? 'bg-primary/20 text-primary font-bold' : 'hover:bg-accent/60'
                 }`}
               >
-                <div className="flex items-center space-x-1.5 truncate">
-                  <FileCode className="h-3 w-3 text-muted-foreground" />
-                  <span className="truncate">
-                    {sourceName} &rarr; {targetName} ({rel.kind})
+                <div className="flex items-center space-x-1.5 min-w-0 flex-1 overflow-hidden">
+                  <FileCode className="h-3 w-3 text-muted-foreground shrink-0" />
+                  <span className="truncate" title={relText}>
+                    {relText}
                   </span>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-5 w-5 opacity-0 group-hover:opacity-100 hover:text-destructive"
+                  className="h-5 w-5 opacity-0 group-hover:opacity-100 hover:text-destructive shrink-0"
                   onClick={(e) => handleDeleteRelationship(rel.id, e)}
                   aria-label="Eliminar relacion"
                 >

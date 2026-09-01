@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import type { UmlOperationInput } from '@uml-forge/uml-core';
 import { ReactFlowProvider } from '@xyflow/react';
 import { UmlClassNode } from './UmlClassNode';
 import { Palette } from './Palette';
@@ -69,7 +70,13 @@ describe('Editor Components', () => {
   describe('Palette', () => {
     it('emite operacion addClass al hacer clic en Nueva Clase', () => {
       const applyOp = vi.fn();
-      render(<Palette onApplyOperation={applyOp} />);
+      render(
+        <Palette
+          onApplyOperation={applyOp}
+          relationshipKind="association"
+          onRelationshipKindChange={vi.fn()}
+        />,
+      );
 
       const btn = screen.getByRole('button', { name: /\+ Nueva Clase/i });
       fireEvent.click(btn);
@@ -79,6 +86,26 @@ describe('Editor Components', () => {
           type: 'addClass',
         }),
       );
+    });
+
+    it('emite addEnum con posicion propia en el lienzo', () => {
+      const applyOp = vi.fn();
+      render(
+        <Palette
+          onApplyOperation={applyOp}
+          relationshipKind="association"
+          onRelationshipKindChange={vi.fn()}
+        />,
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /\+ Nueva Enumeracion/i }));
+
+      expect(applyOp).toHaveBeenCalledTimes(1);
+      const operation = applyOp.mock.calls[0]?.[0] as UmlOperationInput;
+      expect(operation.type).toBe('addEnum');
+      if (operation.type !== 'addEnum') return;
+      expect(typeof operation.enum.position?.x).toBe('number');
+      expect(typeof operation.enum.position?.y).toBe('number');
     });
   });
 

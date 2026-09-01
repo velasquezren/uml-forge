@@ -16,149 +16,7 @@ import {
 } from '../src/parser-helpers.js';
 import { importXmi } from '../src/parser.js';
 import { exportXmi } from '../src/serializer.js';
-
-const sampleModel: UMLModel = {
-  id: '10000000-0000-0000-0000-000000000001',
-  name: 'Hospital Management',
-  createdAt: '2026-08-30T20:00:00.000Z',
-  updatedAt: '2026-08-30T20:00:00.000Z',
-  enums: [
-    {
-      id: '20000000-0000-0000-0000-000000000001',
-      name: 'ShiftType',
-      literals: ['MORNING', 'AFTERNOON', 'NIGHT'],
-    },
-  ],
-  classes: [
-    {
-      id: '30000000-0000-0000-0000-000000000001',
-      name: 'Person',
-      isAbstract: true,
-      isInterface: false,
-      stereotypes: [],
-      position: { x: 100, y: 50 },
-      attributes: [
-        {
-          id: '40000000-0000-0000-0000-000000000001',
-          name: 'name',
-          type: 'String',
-          visibility: 'protected',
-          multiplicity: '1',
-          isStatic: false,
-          isDerived: false,
-          isUnique: false,
-          isNullable: false,
-          isIdentifier: false,
-          defaultValue: null,
-        },
-      ],
-      operations: [
-        {
-          id: '50000000-0000-0000-0000-000000000001',
-          name: 'getFullName',
-          returnType: 'String',
-          visibility: 'public',
-          isAbstract: true,
-          isStatic: false,
-          parameters: [
-            {
-              id: '51000000-0000-0000-0000-000000000001',
-              name: 'prefix',
-              type: 'String',
-              direction: 'in',
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: '30000000-0000-0000-0000-000000000002',
-      name: 'Doctor',
-      isAbstract: false,
-      isInterface: false,
-      stereotypes: [],
-      position: { x: 100, y: 250 },
-      attributes: [
-        {
-          id: '40000000-0000-0000-0000-000000000002',
-          name: 'licenseNumber',
-          type: 'String',
-          visibility: 'private',
-          multiplicity: '1',
-          isStatic: false,
-          isDerived: false,
-          isUnique: true,
-          isNullable: false,
-          isIdentifier: false,
-          defaultValue: 'LIC-000',
-        },
-        {
-          id: '40000000-0000-0000-0000-000000000003',
-          name: 'shift',
-          type: '20000000-0000-0000-0000-000000000001',
-          visibility: 'private',
-          multiplicity: '1',
-          isStatic: false,
-          isDerived: false,
-          isUnique: false,
-          isNullable: false,
-          isIdentifier: false,
-          defaultValue: null,
-        },
-      ],
-      operations: [],
-    },
-    {
-      id: '30000000-0000-0000-0000-000000000003',
-      name: 'Schedulable',
-      isAbstract: true,
-      isInterface: true,
-      stereotypes: ['interface'],
-      position: { x: 400, y: 50 },
-      attributes: [],
-      operations: [
-        {
-          id: '50000000-0000-0000-0000-000000000002',
-          name: 'getAvailableSlots',
-          returnType: 'Integer',
-          visibility: 'public',
-          isAbstract: true,
-          isStatic: false,
-          parameters: [],
-        },
-      ],
-    },
-  ],
-  relationships: [
-    {
-      id: '60000000-0000-0000-0000-000000000001',
-      kind: 'generalization',
-      name: '',
-      sourceId: '30000000-0000-0000-0000-000000000002',
-      targetId: '30000000-0000-0000-0000-000000000001',
-      sourceEnd: { name: '', role: '', multiplicity: '1', navigable: true },
-      targetEnd: { name: '', role: '', multiplicity: '1', navigable: true },
-    },
-    {
-      id: '60000000-0000-0000-0000-000000000002',
-      kind: 'realization',
-      name: '',
-      sourceId: '30000000-0000-0000-0000-000000000002',
-      targetId: '30000000-0000-0000-0000-000000000003',
-      sourceEnd: { name: '', role: '', multiplicity: '1', navigable: true },
-      targetEnd: { name: '', role: '', multiplicity: '1', navigable: true },
-    },
-    {
-      id: '60000000-0000-0000-0000-000000000003',
-      kind: 'aggregation',
-      name: 'person_doctor_shared',
-      sourceId: '30000000-0000-0000-0000-000000000001',
-      targetId: '30000000-0000-0000-0000-000000000002',
-      sourceEnd: { name: '', role: 'team', multiplicity: '1', navigable: true },
-      targetEnd: { name: '', role: 'members', multiplicity: '0..*', navigable: true },
-    },
-  ],
-};
+import { sampleModel } from './fixtures.js';
 
 describe('OMG XMI 2.1 Serializer and Parser', () => {
   it('exporta a XMI 2.1 e importa de vuelta preservando la estructura del modelo (Roundtrip)', () => {
@@ -193,6 +51,39 @@ describe('OMG XMI 2.1 Serializer and Parser', () => {
     expect(personClass?.operations.some((op) => op.name === 'getFullName')).toBe(true);
   });
 
+  it('conserva las coordenadas del lienzo de clases y enumeraciones en el roundtrip', () => {
+    const exportResult = exportXmi(sampleModel);
+    expect(exportResult.ok).toBe(true);
+    if (!exportResult.ok) return;
+
+    const importResult = importXmi(exportResult.value);
+    expect(importResult.ok).toBe(true);
+    if (!importResult.ok) return;
+
+    const person = importResult.value.classes.find((c) => c.name === 'Person');
+    expect(person?.position).toEqual({ x: 100, y: 50 });
+
+    const shift = importResult.value.enums.find((e) => e.name === 'ShiftType');
+    expect(shift?.position).toEqual({ x: 700, y: 250 });
+  });
+
+  it('coloca tambien las enumeraciones cuando el documento no trae coordenadas', () => {
+    const withoutPositions: UMLModel = {
+      ...sampleModel,
+      classes: sampleModel.classes.map((c) => ({ ...c, position: { x: 0, y: 0 } })),
+      enums: sampleModel.enums.map((e) => ({ ...e, position: { x: 0, y: 0 } })),
+    };
+
+    const layouted = autoLayout(withoutPositions);
+    const shift = layouted.enums.find((e) => e.name === 'ShiftType');
+    const doctor = layouted.classes.find((c) => c.name === 'Doctor');
+
+    expect(shift).toBeDefined();
+    expect(shift!.position.x).toBeGreaterThan(0);
+    // Las enumeraciones caen por debajo de la capa mas profunda de clases
+    expect(shift!.position.y).toBeGreaterThan(doctor!.position.y);
+  });
+
   it('calcula autolayout jerarquico sin superposicion cuando las posiciones son cero', () => {
     const modelWithZeros: UMLModel = {
       ...sampleModel,
@@ -201,6 +92,7 @@ describe('OMG XMI 2.1 Serializer and Parser', () => {
 
     const layouted = autoLayout(modelWithZeros);
     expect(layouted.classes).toHaveLength(3);
+    expect(layouted.enums).toHaveLength(1);
     expect(layouted.classes.every((c) => c.position.x > 0 && c.position.y > 0)).toBe(true);
 
     // Doctor (capa 1) debe tener coordenada Y superior a Person (capa 0)

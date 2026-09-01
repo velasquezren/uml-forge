@@ -1,11 +1,16 @@
 import type { UMLClass, UMLEnum, UMLModel, UMLRelationship } from '@uml-forge/uml-core';
 import type { UmlEdge, UmlNode } from '../types';
 
+/**
+ * Proyecta el modelo sobre las estructuras de React Flow. Clases y
+ * enumeraciones comparten tipo de nodo porque se dibujan con la misma caja UML
+ * de tres bandas; lo que cambia es el contenido de la banda central.
+ */
 export function modelToNodes(model: UMLModel): UmlNode[] {
   const classNodes: UmlNode[] = model.classes.map((cls: UMLClass) => ({
     id: cls.id,
     type: 'umlClass' as const,
-    position: cls.position || { x: 100, y: 100 },
+    position: cls.position,
     data: {
       classifierId: cls.id,
       name: cls.name,
@@ -18,10 +23,10 @@ export function modelToNodes(model: UMLModel): UmlNode[] {
     },
   }));
 
-  const enumNodes: UmlNode[] = model.enums.map((enm: UMLEnum, index: number) => ({
+  const enumNodes: UmlNode[] = model.enums.map((enm: UMLEnum) => ({
     id: enm.id,
     type: 'umlClass' as const,
-    position: { x: 400 + index * 40, y: 100 + index * 40 },
+    position: enm.position,
     data: {
       classifierId: enm.id,
       name: enm.name,
@@ -31,7 +36,7 @@ export function modelToNodes(model: UMLModel): UmlNode[] {
       stereotypes: [],
       attributes: [],
       operations: [],
-      literals: enm.literals.map((lit, i) => ({ id: `${enm.id}-lit-${i}`, name: lit })),
+      literals: enm.literals.map((lit, index) => ({ id: `${enm.id}-lit-${index}`, name: lit })),
     },
   }));
 

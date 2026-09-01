@@ -1,5 +1,6 @@
 import * as Y from 'yjs';
 import type { UmlOperation } from '../operations/schema.js';
+import type { Position } from '../schemas/primitives.js';
 import { classesMap, enumsMap, relationshipsMap, requireArray, requireMap } from './access.js';
 import { locateMember } from './locate.js';
 import { cascadeTypeRemoval, deleteClassWithCascade } from './mutations-cascade.js';
@@ -10,6 +11,7 @@ import {
   buildEnumMap,
   buildOperationMap,
   buildParameterMap,
+  buildPositionMap,
   buildRelationshipMap,
 } from './to-ydoc.js';
 
@@ -105,16 +107,26 @@ function updateClass(doc: Y.Doc, classId: string, changes: ClassChanges): void {
   }
 }
 
-function writePosition(doc: Y.Doc, classId: string, position: { x: number; y: number }): void {
-  const classMap = requireMap(classesMap(doc), classId);
+/**
+ * Mueve un clasificador del lienzo. El identificador puede ser el de una clase
+ * o el de una enumeracion: ambas ocupan un lugar propio en el diagrama.
+ */
+function writePosition(doc: Y.Doc, classifierId: string, position: Position): void {
+  const classMap = requireMap(classesMap(doc), classifierId);
   if (classMap.ok) {
     writePositionOn(classMap.value, position);
+    return;
+  }
+  const enumMap = requireMap(enumsMap(doc), classifierId);
+  if (enumMap.ok) {
+    writePositionOn(enumMap.value, position);
   }
 }
 
-function writePositionOn(classMap: Y.Map<unknown>, position: { x: number; y: number }): void {
-  const current = requireMap(classMap, 'position');
+function writePositionOn(classifierMap: Y.Map<unknown>, position: Position): void {
+  const current = requireMap(classifierMap, 'position');
   if (!current.ok) {
+    classifierMap.set('position', buildPositionMap(position));
     return;
   }
   current.value.set('x', position.x);
@@ -211,6 +223,9 @@ function updateEnum(doc: Y.Doc, enumId: string, changes: EnumChanges): void {
   setIfDefined(umlEnum.value, 'name', changes.name);
   if (changes.literals !== undefined) {
     umlEnum.value.set('literals', Y.Array.from([...changes.literals]));
+  }
+  if (changes.position !== undefined) {
+    writePositionOn(umlEnum.value, changes.position);
   }
 }
 

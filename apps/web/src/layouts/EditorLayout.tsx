@@ -11,6 +11,8 @@ import {
   Wifi,
   WifiOff,
   Settings,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,8 +25,12 @@ interface EditorLayoutProps {
   treeContent?: ReactNode;
   inspectorContent?: ReactNode;
   syncStatusContent?: ReactNode;
+  /** Acciones propias de la barra superior, como la interoperabilidad XMI. */
+  actionsContent?: ReactNode;
   onUndo?: () => void;
   onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
   onlineUsersCount?: number;
   children: ReactNode;
 }
@@ -36,28 +42,49 @@ export function EditorLayout({
   treeContent,
   inspectorContent,
   syncStatusContent,
+  actionsContent,
   onUndo,
   onRedo,
+  canUndo = false,
+  canRedo = false,
   onlineUsersCount = 1,
   children,
 }: EditorLayoutProps) {
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(() =>
+    typeof document !== 'undefined' ? document.documentElement.classList.contains('dark') : true,
+  );
   const isOnline = useNetworkStatus();
+
+  const toggleTheme = () => {
+    setIsDarkMode((prev) => {
+      const next = !prev;
+      if (next) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      return next;
+    });
+  };
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-background text-foreground">
       {/* Barra superior de herramientas del editor */}
       <header className="flex h-12 items-center justify-between border-b border-border bg-background px-3 shrink-0">
-        <div className="flex items-center space-x-3">
-          <Link to="/projects">
+        <div className="flex items-center space-x-3 min-w-0 flex-1">
+          <Link to="/projects" className="shrink-0">
             <Button variant="ghost" size="sm" className="h-8 gap-1 px-2">
               <ArrowLeft className="h-4 w-4" />
               <span className="hidden sm:inline">Proyectos</span>
             </Button>
           </Link>
-          <div className="h-4 w-px bg-border" />
-          <span className="font-semibold text-sm tracking-tight truncate max-w-[200px] sm:max-w-xs">
+          <div className="h-4 w-px bg-border shrink-0" />
+          <span
+            className="font-semibold text-sm tracking-tight truncate max-w-[200px] sm:max-w-md"
+            title={projectName}
+          >
             {projectName}
           </span>
         </div>
@@ -70,6 +97,7 @@ export function EditorLayout({
             title="Deshacer"
             aria-label="Deshacer"
             onClick={onUndo}
+            disabled={!canUndo}
           >
             <Undo2 className="h-4 w-4" />
           </Button>
@@ -80,12 +108,31 @@ export function EditorLayout({
             title="Rehacer"
             aria-label="Rehacer"
             onClick={onRedo}
+            disabled={!canRedo}
           >
             <Redo2 className="h-4 w-4" />
           </Button>
           <div className="h-4 w-px bg-border mx-1" />
+          {actionsContent}
+          <div className="h-4 w-px bg-border mx-1" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={toggleTheme}
+            aria-label="Cambiar tema"
+            title={isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+          >
+            {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
           <Link to="/projects/$projectId/settings" params={{ projectId }}>
-            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Ajustes">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              aria-label="Ajustes"
+              title="Ajustes del proyecto"
+            >
               <Settings className="h-4 w-4" />
             </Button>
           </Link>
@@ -123,8 +170,8 @@ export function EditorLayout({
         )}
 
         {/* Lienzo central interactivo */}
-        <main className="flex-1 relative overflow-hidden bg-dot-grid flex items-center justify-center">
-          {children}
+        <main className="flex-1 relative h-full w-full overflow-hidden bg-dot-grid">
+          <div className="absolute inset-0 w-full h-full">{children}</div>
         </main>
 
         {/* Panel derecho: Inspector de propiedades */}

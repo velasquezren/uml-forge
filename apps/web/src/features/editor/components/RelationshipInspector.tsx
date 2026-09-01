@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { RELATIONSHIP_KIND_LABELS, RELATIONSHIP_KINDS } from '../lib/edgeStyles';
 
 interface RelationshipInspectorProps {
   rel: UMLRelationship;
@@ -39,12 +40,11 @@ export function RelationshipInspector({ rel, onApplyOperation }: RelationshipIns
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="association">Asociacion</SelectItem>
-            <SelectItem value="generalization">Herencia / Generalizacion</SelectItem>
-            <SelectItem value="realization">Realizacion de Interfaz</SelectItem>
-            <SelectItem value="composition">Composicion</SelectItem>
-            <SelectItem value="aggregation">Agregacion</SelectItem>
-            <SelectItem value="dependency">Dependencia</SelectItem>
+            {RELATIONSHIP_KINDS.map((kind) => (
+              <SelectItem key={kind} value={kind}>
+                {RELATIONSHIP_KIND_LABELS[kind]}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

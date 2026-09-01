@@ -27,8 +27,8 @@ export function LoginForm() {
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: 'admin@admin.com',
+      password: 'password123',
     },
   });
 
@@ -59,6 +59,16 @@ export function LoginForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs space-y-1 text-muted-foreground">
+          <div className="font-medium text-foreground">Credenciales de prueba (Seed):</div>
+          <div>
+            Correo: <code className="font-mono text-primary font-semibold">admin@admin.com</code>
+          </div>
+          <div>
+            Contrasena: <code className="font-mono text-primary font-semibold">password123</code>
+          </div>
+        </div>
+
         <FormField
           control={form.control}
           name="email"

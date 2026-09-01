@@ -48,6 +48,8 @@ export const UmlOperationSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('updateEnum'), id: IdSchema, changes: EnumChangesSchema }),
   z.object({ type: z.literal('deleteEnum'), id: IdSchema }),
 
+  // `classId` admite tambien el identificador de una enumeracion: ambas se
+  // arrastran por el mismo lienzo.
   z.object({ type: z.literal('setPosition'), classId: IdSchema, position: PositionSchema }),
 ]);
 

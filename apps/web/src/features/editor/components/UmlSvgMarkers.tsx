@@ -15,6 +15,7 @@ export function UmlSvgMarkers() {
           <polygon
             points="0 4, 16 10, 0 16"
             className="fill-background stroke-foreground stroke-2"
+            style={{ fill: 'var(--background)', stroke: 'var(--foreground)', strokeWidth: 2 }}
           />
         </marker>
 
@@ -31,6 +32,7 @@ export function UmlSvgMarkers() {
           <polygon
             points="0 4, 16 10, 0 16"
             className="fill-background stroke-foreground stroke-2"
+            style={{ fill: 'var(--background)', stroke: 'var(--foreground)', strokeWidth: 2 }}
           />
         </marker>
 
@@ -47,6 +49,7 @@ export function UmlSvgMarkers() {
           <polygon
             points="0 12, 10 5, 20 12, 10 19"
             className="fill-foreground stroke-foreground stroke-2"
+            style={{ fill: 'var(--foreground)', stroke: 'var(--foreground)', strokeWidth: 2 }}
           />
         </marker>
 
@@ -63,6 +66,7 @@ export function UmlSvgMarkers() {
           <polygon
             points="0 12, 10 5, 20 12, 10 19"
             className="fill-background stroke-foreground stroke-2"
+            style={{ fill: 'var(--background)', stroke: 'var(--foreground)', strokeWidth: 2 }}
           />
         </marker>
 
@@ -76,7 +80,12 @@ export function UmlSvgMarkers() {
           markerHeight="10"
           orient="auto"
         >
-          <polyline points="2 4, 14 10, 2 16" fill="none" className="stroke-foreground stroke-2" />
+          <polyline
+            points="2 4, 14 10, 2 16"
+            fill="none"
+            className="stroke-foreground stroke-2"
+            style={{ stroke: 'var(--foreground)', strokeWidth: 2 }}
+          />
         </marker>
 
         {/* Dependencia: Flecha abierta en destino */}
@@ -89,7 +98,12 @@ export function UmlSvgMarkers() {
           markerHeight="10"
           orient="auto"
         >
-          <polyline points="2 4, 14 10, 2 16" fill="none" className="stroke-foreground stroke-2" />
+          <polyline
+            points="2 4, 14 10, 2 16"
+            fill="none"
+            className="stroke-foreground stroke-2"
+            style={{ stroke: 'var(--foreground)', strokeWidth: 2 }}
+          />
         </marker>
       </defs>
     </svg>

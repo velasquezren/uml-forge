@@ -20,6 +20,39 @@ describe('operaciones sobre enumeraciones', () => {
     expect(result.ok && findEnum(result.value, IDS.species)?.literals).toEqual([]);
   });
 
+  it('la enumeracion nace en el origen del lienzo si no se indica posicion', () => {
+    const result = applyOperation(emptyModel(), {
+      type: 'addEnum',
+      enum: { id: IDS.species, name: 'Species' },
+    });
+    expect(result.ok && findEnum(result.value, IDS.species)?.position).toEqual({ x: 0, y: 0 });
+  });
+
+  it('mueve una enumeracion por el lienzo con setPosition', () => {
+    const created = applyOperation(emptyModel(), {
+      type: 'addEnum',
+      enum: { id: IDS.species, name: 'Species', position: { x: 10, y: 10 } },
+    });
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    const moved = applyOperation(created.value, {
+      type: 'setPosition',
+      classId: IDS.species,
+      position: { x: 320, y: 180 },
+    });
+    expect(moved.ok && findEnum(moved.value, IDS.species)?.position).toEqual({ x: 320, y: 180 });
+  });
+
+  it('setPosition sobre un identificador inexistente falla', () => {
+    const result = applyOperation(emptyModel(), {
+      type: 'setPosition',
+      classId: testId(91),
+      position: { x: 1, y: 1 },
+    });
+    expect(!result.ok && result.error.code).toBe('class_not_found');
+  });
+
   it('rechaza literales repetidos', () => {
     const result = applyOperation(emptyModel(), {
       type: 'addEnum',

@@ -65,10 +65,11 @@ export const UMLClassSchema = z.object({
 });
 export type UMLClass = z.infer<typeof UMLClassSchema>;
 
-/** Enumeracion del modelo. */
+/** Enumeracion del modelo. Como la clase, ocupa un lugar propio en el lienzo. */
 export const UMLEnumSchema = z.object({
   id: IdSchema,
   name: NameSchema,
   literals: z.array(z.string().trim().min(1)),
+  position: PositionSchema,
 });
 export type UMLEnum = z.infer<typeof UMLEnumSchema>;

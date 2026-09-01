@@ -59,6 +59,7 @@ describe('flowMapper', () => {
         id: 'enm-1',
         name: 'EstadoCita',
         literals: ['PENDIENTE', 'CONFIRMADA', 'CANCELADA'],
+        position: { x: 520, y: 300 },
       },
     ],
     relationships: [
@@ -87,6 +88,8 @@ describe('flowMapper', () => {
     const enumNode = nodes.find((n) => n.id === 'enm-1');
     expect(enumNode).toBeDefined();
     expect(enumNode?.data.isEnum).toBe(true);
+    // La enumeracion conserva su posicion del modelo, no una calculada al vuelo
+    expect(enumNode?.position).toEqual({ x: 520, y: 300 });
   });
 
   it('transforma relaciones del metamodelo a aristas de React Flow', () => {

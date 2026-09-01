@@ -8,22 +8,16 @@ import {
   fromYDoc,
   hasModel,
   writeModel,
+  ROOT_CLASSES,
+  ROOT_ENUMS,
+  ROOT_META,
+  ROOT_RELATIONSHIPS,
   type UMLModel,
   type UmlOperationInput,
 } from '@uml-forge/uml-core';
 import { modelToEdges, modelToNodes } from '../lib/flowMapper';
+import { collabWebSocketUrl, colorForUser } from '../lib/collab';
 import type { UmlEdge, UmlNode, UserAwarenessState } from '../types';
-
-const USER_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'];
-
-function getRandomColor(id: string): string {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = id.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % USER_COLORS.length;
-  return USER_COLORS[index] ?? '#3b82f6';
-}
 
 interface UseYjsModelOptions {
   projectId: string;
@@ -32,28 +26,75 @@ interface UseYjsModelOptions {
   user: { id: string; name: string } | null;
 }
 
+/**
+ * Hook de colaboracion del lienzo. La fuente de verdad es siempre el `Y.Doc`:
+ * el estado de React se deriva de el mediante `observeDeep` y toda edicion pasa
+ * por `applyOperationToYDoc`, nunca por mutacion directa desde los componentes.
+ */
 export function useYjsModel({
   projectId,
   projectName = 'Proyecto UML',
   accessToken,
   user,
 }: UseYjsModelOptions) {
+  // Un documento por montaje. Cambiar de proyecto remonta el lienzo (lleva
+  // `key={projectId}`), asi que aqui no hace falta reaccionar al identificador.
   const ydoc = useMemo(() => new Y.Doc(), []);
   const [model, setModel] = useState<UMLModel | null>(null);
   const [status, setStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
   const [remoteUsers, setRemoteUsers] = useState<UserAwarenessState[]>([]);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
   const providerRef = useRef<HocuspocusProvider | null>(null);
+  const undoManagerRef = useRef<Y.UndoManager | null>(null);
 
   // Deriva el estado de React exclusivamente a partir de Y.Doc
   const syncFromYDoc = useCallback(() => {
     if (!hasModel(ydoc)) {
-      writeModel(ydoc, createEmptyModel(projectName, { id: projectId }));
+      return;
     }
     const result = fromYDoc(ydoc);
     if (result.ok) {
       setModel(result.value);
     }
-  }, [ydoc, projectName, projectId]);
+  }, [ydoc]);
+
+  /** Crea el modelo vacio la primera vez que se abre un proyecto sin contenido. */
+  const ensureModel = useCallback(() => {
+    if (!hasModel(ydoc)) {
+      writeModel(ydoc, createEmptyModel(projectName, { id: projectId }));
+    }
+  }, [ydoc, projectId, projectName]);
+
+  // Historial local de deshacer y rehacer sobre las cuatro raices del documento.
+  useEffect(() => {
+    const undoManager = new Y.UndoManager(
+      [
+        ydoc.getMap(ROOT_CLASSES),
+        ydoc.getMap(ROOT_ENUMS),
+        ydoc.getMap(ROOT_RELATIONSHIPS),
+        ydoc.getMap(ROOT_META),
+      ],
+      { captureTimeout: 400 },
+    );
+    undoManagerRef.current = undoManager;
+
+    const refreshHistory = () => {
+      setCanUndo(undoManager.canUndo());
+      setCanRedo(undoManager.canRedo());
+    };
+
+    undoManager.on('stack-item-added', refreshHistory);
+    undoManager.on('stack-item-popped', refreshHistory);
+    undoManager.on('stack-cleared', refreshHistory);
+
+    return () => {
+      undoManager.destroy();
+      undoManagerRef.current = null;
+      setCanUndo(false);
+      setCanRedo(false);
+    };
+  }, [ydoc]);
 
   useEffect(() => {
     // 1. Persistencia local con IndexeddbPersistence (y-indexeddb)
@@ -62,92 +103,113 @@ export function useYjsModel({
       syncFromYDoc();
     });
 
+    // Observa cualquier cambio profundo en el YDoc, venga de donde venga
+    const roots = [ROOT_CLASSES, ROOT_ENUMS, ROOT_RELATIONSHIPS, ROOT_META].map((key) =>
+      ydoc.getMap(key),
+    );
+    const observer = () => syncFromYDoc();
+    for (const root of roots) {
+      root.observeDeep(observer);
+    }
+
+    const detach = () => {
+      for (const root of roots) {
+        root.unobserveDeep(observer);
+      }
+      void idbPersistence.destroy();
+    };
+
+    // Sin sesion no hay servidor de colaboracion: el lienzo trabaja en local
     if (!accessToken) {
-      return () => {
-        void idbPersistence.destroy();
-      };
+      idbPersistence.whenSynced.then(ensureModel).catch(() => undefined);
+      setStatus('disconnected');
+      return detach;
     }
 
     // 2. Proveedor WebSocket Hocuspocus
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProtocol}//${window.location.hostname}:3000/collab`;
-
     const provider = new HocuspocusProvider({
-      url: wsUrl,
+      url: collabWebSocketUrl(),
       name: projectId,
       document: ydoc,
       token: accessToken,
       onStatus: (event) => {
         setStatus(event.status);
       },
+      onSynced: () => {
+        // Solo tras sincronizar con el servidor se sabe si el proyecto ya tenia
+        // modelo: crearlo antes duplicaria el contenido al reconectar.
+        ensureModel();
+        syncFromYDoc();
+      },
     });
 
     providerRef.current = provider;
 
-    const userColor = user ? getRandomColor(user.id) : '#3b82f6';
     provider.setAwarenessField('user', {
-      id: user?.id || 'anon',
-      name: user?.name || 'Usuario',
-      color: userColor,
+      id: user?.id ?? 'anon',
+      name: user?.name ?? 'Usuario',
+      color: colorForUser(user?.id ?? 'anon'),
     });
 
     const handleAwarenessChange = () => {
       const awareness = provider.awareness;
       if (!awareness) return;
       const states = Array.from(awareness.getStates().values()) as UserAwarenessState[];
-      const others = states.filter((s) => s.user && s.user.id !== user?.id);
-      setRemoteUsers(others);
+      setRemoteUsers(states.filter((state) => state.user && state.user.id !== user?.id));
     };
 
     provider.awareness?.on('change', handleAwarenessChange);
-
-    // Observa cualquier cambio profundo en el YDoc
-    const rootClasses = ydoc.getMap('classes');
-    const rootEnums = ydoc.getMap('enums');
-    const rootRelationships = ydoc.getMap('relationships');
-    const rootMeta = ydoc.getMap('meta');
-
-    const observer = () => syncFromYDoc();
-
-    rootClasses.observeDeep(observer);
-    rootEnums.observeDeep(observer);
-    rootRelationships.observeDeep(observer);
-    rootMeta.observeDeep(observer);
-
     syncFromYDoc();
 
     return () => {
-      rootClasses.unobserveDeep(observer);
-      rootEnums.unobserveDeep(observer);
-      rootRelationships.unobserveDeep(observer);
-      rootMeta.unobserveDeep(observer);
       provider.awareness?.off('change', handleAwarenessChange);
       provider.destroy();
-      void idbPersistence.destroy();
+      providerRef.current = null;
+      detach();
     };
-  }, [projectId, accessToken, user, ydoc, syncFromYDoc]);
+  }, [projectId, accessToken, user, ydoc, syncFromYDoc, ensureModel]);
 
   const applyOperation = useCallback(
     (op: UmlOperationInput) => {
+      ensureModel();
       const result = applyOperationToYDoc(ydoc, op);
       if (result.ok) {
         setModel(result.value);
       }
       return result;
     },
-    [ydoc],
+    [ydoc, ensureModel],
   );
 
   const updatePosition = useCallback(
-    (classId: string, position: { x: number; y: number }) => {
-      applyOperation({
-        type: 'setPosition',
-        classId,
-        position,
-      });
+    (classifierId: string, position: { x: number; y: number }) => {
+      applyOperation({ type: 'setPosition', classId: classifierId, position });
     },
     [applyOperation],
   );
+
+  /**
+   * Sustituye por completo el contenido del modelo, conservando su identidad.
+   * Lo usa la importacion XMI: se escribe sobre el CRDT para que el reemplazo
+   * viaje a los demas participantes y sobreviva a una recarga.
+   */
+  const replaceModel = useCallback(
+    (imported: UMLModel) => {
+      const current = fromYDoc(ydoc);
+      writeModel(ydoc, {
+        ...imported,
+        id: current.ok ? current.value.id : imported.id,
+        name: current.ok ? current.value.name : imported.name,
+        createdAt: current.ok ? current.value.createdAt : imported.createdAt,
+        updatedAt: new Date().toISOString(),
+      });
+      syncFromYDoc();
+    },
+    [ydoc, syncFromYDoc],
+  );
+
+  const undo = useCallback(() => undoManagerRef.current?.undo(), []);
+  const redo = useCallback(() => undoManagerRef.current?.redo(), []);
 
   const nodes: UmlNode[] = useMemo(() => (model ? modelToNodes(model) : []), [model]);
   const edges: UmlEdge[] = useMemo(() => (model ? modelToEdges(model) : []), [model]);
@@ -161,5 +223,10 @@ export function useYjsModel({
     remoteUsers,
     applyOperation,
     updatePosition,
+    replaceModel,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   };
 }

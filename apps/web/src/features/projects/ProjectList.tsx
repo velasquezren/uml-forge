@@ -98,44 +98,72 @@ export function ProjectList() {
               VIEWER: 'Lector',
             };
 
+            const roleStyles: Record<string, string> = {
+              OWNER: 'bg-primary/10 text-primary border-primary/20',
+              EDITOR: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+              VIEWER: 'bg-muted text-muted-foreground border-border',
+            };
+
             const role = project.currentUserRole || 'VIEWER';
 
             return (
               <Card
                 key={project.id}
-                className="flex flex-col justify-between hover:border-primary/50 transition-colors shadow-sm"
+                className="flex flex-col justify-between overflow-hidden hover:border-primary/50 transition-colors shadow-sm min-w-0"
               >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="text-lg font-bold truncate tracking-tight">
-                      {project.name}
-                    </CardTitle>
-                    <div className="flex items-center space-x-1 rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold text-secondary-foreground">
+                <CardHeader className="pb-3 min-w-0">
+                  <div className="flex items-start justify-between gap-2 min-w-0">
+                    <div className="min-w-0 flex-1">
+                      <CardTitle
+                        className="text-lg font-bold truncate tracking-tight"
+                        title={project.name}
+                      >
+                        {project.name}
+                      </CardTitle>
+                    </div>
+                    <div
+                      className={`flex items-center space-x-1 rounded-full px-2.5 py-0.5 text-xs font-semibold shrink-0 border ${
+                        roleStyles[role] || 'bg-secondary text-secondary-foreground border-border'
+                      }`}
+                    >
                       <Shield className="h-3 w-3" />
                       <span>{roleLabels[role] || role}</span>
                     </div>
                   </div>
-                  <CardDescription className="line-clamp-2 min-h-[40px] text-xs">
+                  <CardDescription
+                    className="line-clamp-2 min-h-[40px] text-xs break-words mt-1"
+                    title={project.description || ''}
+                  >
                     {project.description || 'Sin descripcion adicional.'}
                   </CardDescription>
                 </CardHeader>
 
-                <CardContent className="pb-3">
-                  <div className="flex items-center text-xs text-muted-foreground space-x-1.5">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span>Actualizado el {new Date(project.updatedAt).toLocaleDateString()}</span>
+                <CardContent className="pb-3 min-w-0">
+                  <div className="flex items-center text-xs text-muted-foreground space-x-1.5 min-w-0">
+                    <Clock className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">
+                      Actualizado el {new Date(project.updatedAt).toLocaleDateString()}
+                    </span>
                   </div>
                 </CardContent>
 
-                <CardFooter className="flex items-center justify-between border-t border-border/50 pt-3">
-                  <Link to="/projects/$projectId/settings" params={{ projectId: project.id }}>
+                <CardFooter className="flex items-center justify-between border-t border-border/50 pt-3 gap-2">
+                  <Link
+                    to="/projects/$projectId/settings"
+                    params={{ projectId: project.id }}
+                    className="shrink-0"
+                  >
                     <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2 text-xs">
                       <Settings className="h-3.5 w-3.5" />
                       <span>Ajustes</span>
                     </Button>
                   </Link>
 
-                  <Link to="/projects/$projectId/editor" params={{ projectId: project.id }}>
+                  <Link
+                    to="/projects/$projectId/editor"
+                    params={{ projectId: project.id }}
+                    className="shrink-0"
+                  >
                     <Button size="sm" className="h-8 px-3 text-xs">
                       Abrir Editor
                     </Button>

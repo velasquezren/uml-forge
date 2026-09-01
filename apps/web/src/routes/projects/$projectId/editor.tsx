@@ -1,14 +1,16 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { createFileRoute, Navigate, useParams } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { createId, type UMLModel, type UmlOperationInput } from '@uml-forge/uml-core';
+import { createId, type UMLRelationship, type UmlOperationInput } from '@uml-forge/uml-core';
 import { EditorLayout } from '@/layouts/EditorLayout';
-import { EditorCanvas } from '@/features/editor/EditorCanvas';
+import { EditorCanvas, type EditorCanvasHandlers } from '@/features/editor/EditorCanvas';
 import { Palette } from '@/features/editor/components/Palette';
 import { ModelTree } from '@/features/editor/components/ModelTree';
 import { PropertyInspector } from '@/features/editor/components/PropertyInspector';
 import { SyncStatusBadge } from '@/features/sync/SyncStatusBadge';
 import { useOutboxSync } from '@/features/sync/useOutboxSync';
+import { XmiActions } from '@/features/xmi/XmiActions';
+import { resolveSelection } from '@/features/editor/lib/selection';
 import type { SelectedElement } from '@/features/editor/types';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { apiClient, type ProjectDto } from '@/lib/api';
@@ -20,11 +22,9 @@ export const Route = createFileRoute('/projects/$projectId/editor')({
 
 function ProjectEditorPage() {
   const { projectId } = useParams({ from: '/projects/$projectId/editor' });
-  const [selectedElement, setSelectedElement] = useState<SelectedElement | null>(null);
-  const [modelState, setModelState] = useState<UMLModel | null>(null);
-  const [operationHandler, setOperationHandler] = useState<{
-    apply: (op: UmlOperationInput) => void;
-  } | null>(null);
+  const [selectedRef, setSelectedRef] = useState<SelectedElement | null>(null);
+  const [relationshipKind, setRelationshipKind] = useState<UMLRelationship['kind']>('association');
+  const [canvas, setCanvas] = useState<EditorCanvasHandlers | null>(null);
 
   const clientId = useMemo(() => createId(), []);
   const isOnline = useNetworkStatus();
@@ -37,9 +37,7 @@ function ProjectEditorPage() {
     projectId,
     clientId,
     onOperationApplied: (op) => {
-      if (operationHandler) {
-        operationHandler.apply(op);
-      }
+      canvas?.applyOperation(op);
     },
   });
 
@@ -48,6 +46,29 @@ function ProjectEditorPage() {
     queryFn: () => apiClient.get(`projects/${projectId}`).json<ProjectDto>(),
     enabled: isAuthenticated,
   });
+
+  const handleApplyOperation = useCallback(
+    (op: UmlOperationInput) => {
+      canvas?.applyOperation(op);
+      // Si estamos desconectados, encolamos en IndexedDB Outbox
+      if (!isOnline) {
+        void queueOperation(op);
+      }
+    },
+    [canvas, isOnline, queueOperation],
+  );
+
+  // El lienzo publica sus manejadores en cada render util; se guarda tal cual
+  // porque el objeto solo cambia cuando cambia el modelo o el historial.
+  const handleInitModelHandler = useCallback((handlers: EditorCanvasHandlers) => {
+    setCanvas(handlers);
+  }, []);
+
+  const model = canvas?.model ?? null;
+
+  // El inspector y el arbol siempre leen la version viva del elemento, nunca la
+  // copia congelada en el momento de seleccionarlo.
+  const selectedElement = useMemo(() => resolveSelection(model, selectedRef), [model, selectedRef]);
 
   if (isInitializing) {
     return (
@@ -61,34 +82,30 @@ function ProjectEditorPage() {
     return <Navigate to="/login" />;
   }
 
-  const handleApplyOperation = (op: UmlOperationInput) => {
-    if (operationHandler) {
-      operationHandler.apply(op);
-    }
-    // Si estamos desconectados, encolamos en IndexedDB Outbox
-    if (!isOnline) {
-      void queueOperation(op);
-    }
-  };
-
-  const handleInitModelHandler = (handlers: {
-    applyOperation: (op: UmlOperationInput) => unknown;
-    model: UMLModel | null;
-  }) => {
-    setModelState(handlers.model);
-    setOperationHandler({ apply: handlers.applyOperation });
-  };
-
   return (
     <EditorLayout
       projectId={projectId}
       projectName={project?.name}
-      paletteContent={<Palette onApplyOperation={handleApplyOperation} />}
+      onUndo={canvas?.undo}
+      onRedo={canvas?.redo}
+      canUndo={canvas?.canUndo ?? false}
+      canRedo={canvas?.canRedo ?? false}
+      onlineUsersCount={(canvas?.remoteUsers.length ?? 0) + 1}
+      actionsContent={
+        <XmiActions model={model} onReplaceModel={(imported) => canvas?.replaceModel(imported)} />
+      }
+      paletteContent={
+        <Palette
+          onApplyOperation={handleApplyOperation}
+          relationshipKind={relationshipKind}
+          onRelationshipKindChange={setRelationshipKind}
+        />
+      }
       treeContent={
         <ModelTree
-          model={modelState}
+          model={model}
           selectedElement={selectedElement}
-          onSelectElement={setSelectedElement}
+          onSelectElement={setSelectedRef}
           onApplyOperation={handleApplyOperation}
         />
       }
@@ -108,12 +125,14 @@ function ProjectEditorPage() {
       }
     >
       <EditorCanvas
+        key={projectId}
         projectId={projectId}
         projectName={project?.name}
         accessToken={accessToken}
         user={user}
         selectedElement={selectedElement}
-        onSelectElement={setSelectedElement}
+        relationshipKind={relationshipKind}
+        onSelectElement={setSelectedRef}
         onInitModelHandler={handleInitModelHandler}
       />
     </EditorLayout>

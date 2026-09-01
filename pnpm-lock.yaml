@@ -195,6 +195,9 @@ importers:
       '@uml-forge/uml-core':
         specifier: workspace:*
         version: link:../../packages/uml-core
+      '@uml-forge/xmi':
+        specifier: workspace:*
+        version: link:../../packages/xmi
       '@xyflow/react':
         specifier: ^12.11.5
         version: 12.11.5(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)

@@ -16,7 +16,7 @@ function UmlClassNodeComponent({ data, selected }: NodeProps<UmlNode>) {
 
   return (
     <div
-      className={`min-w-[200px] max-w-[340px] rounded-md border-2 bg-card text-card-foreground shadow-md transition-shadow font-sans ${
+      className={`min-w-[200px] max-w-[340px] rounded-md border-2 bg-card text-card-foreground shadow-md transition-shadow font-sans overflow-hidden ${
         selected ? 'border-primary ring-2 ring-primary/30 shadow-lg' : 'border-border'
       }`}
     >
@@ -71,40 +71,45 @@ function UmlClassNodeComponent({ data, selected }: NodeProps<UmlNode>) {
       />
 
       {/* Banda 1: Cabecera con estereotipos, interface/enum y Nombre */}
-      <div className="bg-muted/40 px-3 py-2 text-center border-b border-border">
+      <div className="bg-muted/40 px-3 py-2 text-center border-b border-border min-w-0">
         {isInterface && (
-          <div className="text-[11px] font-mono text-muted-foreground">&laquo;interface&raquo;</div>
+          <div className="text-[11px] font-mono text-muted-foreground truncate">
+            &laquo;interface&raquo;
+          </div>
         )}
         {isEnum && (
-          <div className="text-[11px] font-mono text-muted-foreground">
+          <div className="text-[11px] font-mono text-muted-foreground truncate">
             &laquo;enumeration&raquo;
           </div>
         )}
         {stereotypes.map((st) => (
-          <div key={st} className="text-[11px] font-mono text-muted-foreground">
+          <div key={st} className="text-[11px] font-mono text-muted-foreground truncate">
             &laquo;{st}&raquo;
           </div>
         ))}
-        <div className={`text-sm font-bold tracking-tight ${isAbstract ? 'italic' : ''}`}>
+        <div
+          className={`text-sm font-bold tracking-tight truncate px-1 ${isAbstract ? 'italic' : ''}`}
+          title={name}
+        >
           {name}
         </div>
       </div>
 
       {/* Banda 2: Atributos o Literales si es Enum */}
       {isEnum ? (
-        <div className="p-2 text-xs font-mono border-b border-border space-y-0.5 bg-card/80">
+        <div className="p-2 text-xs font-mono border-b border-border space-y-0.5 bg-card/80 max-h-48 overflow-y-auto min-w-0">
           {literals.length === 0 ? (
             <div className="text-[11px] text-muted-foreground italic">&nbsp;</div>
           ) : (
             literals.map((lit) => (
-              <div key={lit.id} className="truncate">
+              <div key={lit.id} className="truncate" title={lit.name}>
                 {lit.name}
               </div>
             ))
           )}
         </div>
       ) : (
-        <div className="p-2 text-xs font-mono border-b border-border space-y-0.5 bg-card/80">
+        <div className="p-2 text-xs font-mono border-b border-border space-y-0.5 bg-card/80 max-h-48 overflow-y-auto min-w-0">
           {attributes.length === 0 ? (
             <div className="text-[11px] text-muted-foreground italic text-center opacity-60">
               (sin atributos)
@@ -114,10 +119,11 @@ function UmlClassNodeComponent({ data, selected }: NodeProps<UmlNode>) {
               const vis = VISIBILITY_SYMBOLS[attr.visibility] || '+';
               const multStr =
                 attr.multiplicity && attr.multiplicity !== '1' ? ` [${attr.multiplicity}]` : '';
+              const fullLabel = `${vis} ${attr.name}: ${attr.type}${multStr}`;
               return (
-                <div key={attr.id} className="truncate">
+                <div key={attr.id} className="truncate min-w-0" title={fullLabel}>
                   <span className="text-primary font-bold mr-1.5">{vis}</span>
-                  <span>{attr.name}</span>
+                  <span className="font-medium">{attr.name}</span>
                   <span className="text-muted-foreground">: {attr.type}</span>
                   {multStr && (
                     <span className="text-muted-foreground font-semibold">{multStr}</span>
@@ -131,7 +137,7 @@ function UmlClassNodeComponent({ data, selected }: NodeProps<UmlNode>) {
 
       {/* Banda 3: Operaciones */}
       {!isEnum && (
-        <div className="p-2 text-xs font-mono space-y-0.5 bg-card/80">
+        <div className="p-2 text-xs font-mono space-y-0.5 bg-card/80 max-h-48 overflow-y-auto min-w-0">
           {operations.length === 0 ? (
             <div className="text-[11px] text-muted-foreground italic text-center opacity-60">
               (sin operaciones)
@@ -141,9 +147,10 @@ function UmlClassNodeComponent({ data, selected }: NodeProps<UmlNode>) {
               const vis = VISIBILITY_SYMBOLS[op.visibility] || '+';
               const paramsStr = op.parameters.map((p) => `${p.name}: ${p.type}`).join(', ');
               const retStr = op.returnType ? `: ${op.returnType}` : '';
+              const fullLabel = `${vis} ${op.name}(${paramsStr})${retStr}`;
 
               return (
-                <div key={op.id} className="truncate">
+                <div key={op.id} className="truncate min-w-0" title={fullLabel}>
                   <span className="text-primary font-bold mr-1.5">{vis}</span>
                   <span className={op.isAbstract ? 'italic' : ''}>{op.name}</span>
                   <span className="text-muted-foreground">({paramsStr})</span>

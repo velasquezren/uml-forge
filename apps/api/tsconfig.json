@@ -3,12 +3,14 @@
   "extends": "@uml-forge/tsconfig/nest.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "."
+    "rootDir": ".",
+    "allowImportingTsExtensions": true
   },
   "include": [
     "src/**/*",
     "test/**/*",
     "prisma.config.ts",
+    "prisma/**/*.ts",
     "vitest.config.mts",
     "vitest.e2e.config.mts"
   ],

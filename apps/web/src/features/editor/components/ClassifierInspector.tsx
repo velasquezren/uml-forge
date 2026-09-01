@@ -140,26 +140,29 @@ export function ClassifierInspector({ cls, onApplyOperation }: ClassifierInspect
         <Label className="text-[11px] uppercase tracking-wider text-muted-foreground block mb-2">
           Atributos ({cls.attributes?.length ?? 0})
         </Label>
-        <div className="space-y-1.5 max-h-32 overflow-y-auto mb-2 pr-1 font-mono">
-          {cls.attributes?.map((attr: UMLProperty) => (
-            <div
-              key={attr.id}
-              className="flex items-center justify-between p-1.5 rounded bg-muted/40 text-[11px]"
-            >
-              <span>
-                {attr.visibility === 'public' ? '+' : '-'} {attr.name}: {attr.type}
-              </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-4 w-4 text-muted-foreground hover:text-destructive"
-                onClick={() => handleDeleteAttribute(attr.id)}
-                aria-label="Eliminar atributo"
+        <div className="space-y-1.5 max-h-36 overflow-y-auto mb-2 pr-1 font-mono">
+          {cls.attributes?.map((attr: UMLProperty) => {
+            const label = `${attr.visibility === 'public' ? '+' : '-'} ${attr.name}: ${attr.type}`;
+            return (
+              <div
+                key={attr.id}
+                className="flex items-center justify-between p-1.5 rounded bg-muted/40 text-[11px] gap-1.5 min-w-0"
               >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            </div>
-          ))}
+                <span className="truncate min-w-0 flex-1" title={label}>
+                  {label}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 text-muted-foreground hover:text-destructive shrink-0"
+                  onClick={() => handleDeleteAttribute(attr.id)}
+                  aria-label="Eliminar atributo"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            );
+          })}
         </div>
 
         <div className="flex gap-1.5 items-center">
@@ -192,26 +195,29 @@ export function ClassifierInspector({ cls, onApplyOperation }: ClassifierInspect
         <Label className="text-[11px] uppercase tracking-wider text-muted-foreground block mb-2">
           Metodos / Operaciones ({cls.operations?.length ?? 0})
         </Label>
-        <div className="space-y-1.5 max-h-32 overflow-y-auto mb-2 pr-1 font-mono">
-          {cls.operations?.map((op: UMLOperation) => (
-            <div
-              key={op.id}
-              className="flex items-center justify-between p-1.5 rounded bg-muted/40 text-[11px]"
-            >
-              <span>
-                + {op.name}(): {op.returnType || 'void'}
-              </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-4 w-4 text-muted-foreground hover:text-destructive"
-                onClick={() => handleDeleteOperation(op.id)}
-                aria-label="Eliminar operacion"
+        <div className="space-y-1.5 max-h-36 overflow-y-auto mb-2 pr-1 font-mono">
+          {cls.operations?.map((op: UMLOperation) => {
+            const label = `+ ${op.name}(): ${op.returnType || 'void'}`;
+            return (
+              <div
+                key={op.id}
+                className="flex items-center justify-between p-1.5 rounded bg-muted/40 text-[11px] gap-1.5 min-w-0"
               >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            </div>
-          ))}
+                <span className="truncate min-w-0 flex-1" title={label}>
+                  {label}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 text-muted-foreground hover:text-destructive shrink-0"
+                  onClick={() => handleDeleteOperation(op.id)}
+                  aria-label="Eliminar operacion"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            );
+          })}
         </div>
 
         <div className="flex gap-1.5 items-center">

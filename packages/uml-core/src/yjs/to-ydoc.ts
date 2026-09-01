@@ -109,12 +109,13 @@ export function buildParameterMap(parameter: UMLParameter): Y.Map<unknown> {
   return map;
 }
 
-/** Mapa Yjs de una enumeracion. */
+/** Mapa Yjs de una enumeracion. La posicion vive dentro del propio mapa. */
 export function buildEnumMap(umlEnum: UMLEnum): Y.Map<unknown> {
   const map = new Y.Map<unknown>();
   map.set('id', umlEnum.id);
   map.set('name', umlEnum.name);
   map.set('literals', Y.Array.from([...umlEnum.literals]));
+  map.set('position', buildPositionMap(umlEnum.position));
   return map;
 }
 

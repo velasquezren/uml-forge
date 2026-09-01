@@ -10,11 +10,13 @@ export const enumsModel: UMLModel = {
       id: 'f0000006-0000-0000-0000-000000000001',
       name: 'TaskStatus',
       literals: ['TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED'],
+      position: { x: 600, y: 60 },
     },
     {
       id: 'f0000006-0000-0000-0000-000000000002',
       name: 'PriorityLevel',
       literals: ['LOW', 'MEDIUM', 'HIGH', 'URGENT'],
+      position: { x: 600, y: 260 },
     },
   ],
   classes: [

@@ -1,7 +1,7 @@
 import type { z } from 'zod';
 import type { UmlError } from '../errors.js';
 import { removeRelationshipsOf, removeTypeReferences } from '../model/cascade.js';
-import { findClass } from '../model/lookup.js';
+import { findClass, findEnum } from '../model/lookup.js';
 import { err, ok, type Result } from '../result.js';
 import type { UMLClass } from '../schemas/elements.js';
 import type { UMLModel } from '../schemas/model.js';
@@ -96,16 +96,29 @@ function deleteClass(model: UMLModel, classId: string): Result<UMLModel, UmlErro
   });
 }
 
+/**
+ * Mueve un clasificador. El identificador puede ser el de una clase o el de una
+ * enumeracion, porque ambas se dibujan y se arrastran en el mismo lienzo.
+ */
 function setPosition(
   model: UMLModel,
-  classId: string,
+  classifierId: string,
   position: Position,
 ): Result<UMLModel, UmlError> {
-  const current = findClass(model, classId);
-  if (current === undefined) {
-    return err(classNotFound(classId));
+  const current = findClass(model, classifierId);
+  if (current !== undefined) {
+    return ok(replaceClass(model, { ...current, position }));
   }
-  return ok(replaceClass(model, { ...current, position }));
+  const currentEnum = findEnum(model, classifierId);
+  if (currentEnum === undefined) {
+    return err(classNotFound(classifierId));
+  }
+  return ok({
+    ...model,
+    enums: model.enums.map((candidate) =>
+      candidate.id === classifierId ? { ...candidate, position } : candidate,
+    ),
+  });
 }
 
 /** Sustituye una clase conservando el orden del resto. */

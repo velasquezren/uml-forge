@@ -30,12 +30,6 @@ export class ProjectsService {
         name: dto.name,
         description: dto.description ?? null,
         ownerId: userId,
-        members: {
-          create: {
-            userId,
-            role: ProjectRole.OWNER,
-          },
-        },
         ydocState: {
           create: {
             state: encodedState,
@@ -64,14 +58,16 @@ export class ProjectsService {
       ownerId: project.ownerId,
       owner: project.owner,
       currentUserRole: ProjectRole.OWNER,
-      members: project.members.map((m) => ({
-        id: m.id,
-        projectId: m.projectId,
-        userId: m.userId,
-        role: m.role,
-        user: m.user,
-        createdAt: m.createdAt,
-      })),
+      members: project.members
+        .filter((m) => m.userId !== project.ownerId)
+        .map((m) => ({
+          id: m.id,
+          projectId: m.projectId,
+          userId: m.userId,
+          role: m.role,
+          user: m.user,
+          createdAt: m.createdAt,
+        })),
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,
     };
@@ -156,14 +152,16 @@ export class ProjectsService {
       ownerId: project.ownerId,
       owner: project.owner,
       currentUserRole: role,
-      members: project.members.map((m) => ({
-        id: m.id,
-        projectId: m.projectId,
-        userId: m.userId,
-        role: m.role,
-        user: m.user,
-        createdAt: m.createdAt,
-      })),
+      members: project.members
+        .filter((m) => m.userId !== project.ownerId)
+        .map((m) => ({
+          id: m.id,
+          projectId: m.projectId,
+          userId: m.userId,
+          role: m.role,
+          user: m.user,
+          createdAt: m.createdAt,
+        })),
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,
     };
@@ -207,14 +205,16 @@ export class ProjectsService {
       ownerId: updated.ownerId,
       owner: updated.owner,
       currentUserRole: role,
-      members: updated.members.map((m) => ({
-        id: m.id,
-        projectId: m.projectId,
-        userId: m.userId,
-        role: m.role,
-        user: m.user,
-        createdAt: m.createdAt,
-      })),
+      members: updated.members
+        .filter((m) => m.userId !== updated.ownerId)
+        .map((m) => ({
+          id: m.id,
+          projectId: m.projectId,
+          userId: m.userId,
+          role: m.role,
+          user: m.user,
+          createdAt: m.createdAt,
+        })),
       createdAt: updated.createdAt,
       updatedAt: updated.updatedAt,
     };

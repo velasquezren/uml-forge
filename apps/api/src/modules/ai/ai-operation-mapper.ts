@@ -98,6 +98,14 @@ export function mapAiOperationsToUmlOperations(
           id: enumId,
           name,
           literals,
+          position: {
+            x: Number(
+              (raw.position as RawAiItem | undefined)?.x ?? Math.floor(Math.random() * 400 + 50),
+            ),
+            y: Number(
+              (raw.position as RawAiItem | undefined)?.y ?? Math.floor(Math.random() * 300 + 50),
+            ),
+          },
         },
       });
     }

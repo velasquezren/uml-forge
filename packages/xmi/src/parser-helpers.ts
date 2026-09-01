@@ -1,18 +1,17 @@
-import { randomUUID } from 'node:crypto';
-import type { Visibility } from '@uml-forge/uml-core';
+import { createId, type Visibility } from '@uml-forge/uml-core';
 
 /** Mapa para traducir IDs de origen (enteros, cadenas arbitrarias) a UUIDs validos. */
 export class IdMapper {
   private readonly map = new Map<string, string>();
 
   toUuid(originalId: string | undefined | null): string {
-    if (!originalId) return randomUUID();
+    if (!originalId) return createId();
     const existing = this.map.get(originalId);
     if (existing) return existing;
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
       originalId,
     );
-    const newId = isUuid ? originalId : randomUUID();
+    const newId = isUuid ? originalId : createId();
     this.map.set(originalId, newId);
     return newId;
   }

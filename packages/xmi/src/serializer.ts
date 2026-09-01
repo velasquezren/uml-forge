@@ -162,8 +162,10 @@ export function exportXmi(
   // 4. Extension de posiciones 2D en el lienzo
   lines.push('  <xmi:Extension extender="UMLForge">');
   lines.push('    <diagramElements>');
-  for (const c of model.classes) {
-    lines.push(`      <element xmi:idref="${c.id}" x="${c.position.x}" y="${c.position.y}"/>`);
+  for (const element of [...model.classes, ...model.enums]) {
+    lines.push(
+      `      <element xmi:idref="${element.id}" x="${element.position.x}" y="${element.position.y}"/>`,
+    );
   }
   lines.push('    </diagramElements>');
   lines.push('  </xmi:Extension>');

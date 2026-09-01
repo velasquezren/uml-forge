@@ -211,6 +211,7 @@ describe('Spring Boot Codegen Generator', () => {
           id: 'f0000007-0000-0000-0000-000000000001',
           name: 'EmptyEnum',
           literals: [],
+          position: { x: 0, y: 0 },
         },
       ],
       classes: [

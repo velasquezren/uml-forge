@@ -8,87 +8,88 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root';
-import { Route as IndexRouteImport } from './routes/index';
-import { Route as LoginRouteImport } from './routes/login';
-import { Route as RegisterRouteImport } from './routes/register';
-import { Route as ProjectsIndexRouteImport } from './routes/projects/index';
-import { Route as ProjectsProjectIdEditorRouteImport } from './routes/projects/$projectId/editor';
-import { Route as ProjectsProjectIdSettingsRouteImport } from './routes/projects/$projectId/settings';
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
+import { Route as ProjectsProjectIdEditorRouteImport } from './routes/projects/$projectId/editor'
+import { Route as ProjectsProjectIdSettingsRouteImport } from './routes/projects/$projectId/settings'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
   id: '/projects/',
   path: '/projects/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ProjectsProjectIdEditorRoute = ProjectsProjectIdEditorRouteImport.update({
   id: '/projects/$projectId/editor',
   path: '/projects/$projectId/editor',
   getParentRoute: () => rootRouteImport,
-} as any);
-const ProjectsProjectIdSettingsRoute = ProjectsProjectIdSettingsRouteImport.update({
-  id: '/projects/$projectId/settings',
-  path: '/projects/$projectId/settings',
-  getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
+const ProjectsProjectIdSettingsRoute =
+  ProjectsProjectIdSettingsRouteImport.update({
+    id: '/projects/$projectId/settings',
+    path: '/projects/$projectId/settings',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute;
-  '/login': typeof LoginRoute;
-  '/register': typeof RegisterRoute;
-  '/projects/': typeof ProjectsIndexRoute;
-  '/projects/$projectId/editor': typeof ProjectsProjectIdEditorRoute;
-  '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRoute;
+  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/projects/': typeof ProjectsIndexRoute
+  '/projects/$projectId/editor': typeof ProjectsProjectIdEditorRoute
+  '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute;
-  '/login': typeof LoginRoute;
-  '/register': typeof RegisterRoute;
-  '/projects': typeof ProjectsIndexRoute;
-  '/projects/$projectId/editor': typeof ProjectsProjectIdEditorRoute;
-  '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRoute;
+  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/projects': typeof ProjectsIndexRoute
+  '/projects/$projectId/editor': typeof ProjectsProjectIdEditorRoute
+  '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  '/': typeof IndexRoute;
-  '/login': typeof LoginRoute;
-  '/register': typeof RegisterRoute;
-  '/projects/': typeof ProjectsIndexRoute;
-  '/projects/$projectId/editor': typeof ProjectsProjectIdEditorRoute;
-  '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/projects/': typeof ProjectsIndexRoute
+  '/projects/$projectId/editor': typeof ProjectsProjectIdEditorRoute
+  '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/login'
     | '/register'
     | '/projects/'
     | '/projects/$projectId/editor'
-    | '/projects/$projectId/settings';
-  fileRoutesByTo: FileRoutesByTo;
+    | '/projects/$projectId/settings'
+  fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/register'
     | '/projects'
     | '/projects/$projectId/editor'
-    | '/projects/$projectId/settings';
+    | '/projects/$projectId/settings'
   id:
     | '__root__'
     | '/'
@@ -96,62 +97,62 @@ export interface FileRouteTypes {
     | '/register'
     | '/projects/'
     | '/projects/$projectId/editor'
-    | '/projects/$projectId/settings';
-  fileRoutesById: FileRoutesById;
+    | '/projects/$projectId/settings'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  LoginRoute: typeof LoginRoute;
-  RegisterRoute: typeof RegisterRoute;
-  ProjectsIndexRoute: typeof ProjectsIndexRoute;
-  ProjectsProjectIdEditorRoute: typeof ProjectsProjectIdEditorRoute;
-  ProjectsProjectIdSettingsRoute: typeof ProjectsProjectIdSettingsRoute;
+  IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
+  ProjectsIndexRoute: typeof ProjectsIndexRoute
+  ProjectsProjectIdEditorRoute: typeof ProjectsProjectIdEditorRoute
+  ProjectsProjectIdSettingsRoute: typeof ProjectsProjectIdSettingsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
-      id: '/';
-      path: '/';
-      fullPath: '/';
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
-      id: '/login';
-      path: '/login';
-      fullPath: '/login';
-      preLoaderRoute: typeof LoginRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register': {
-      id: '/register';
-      path: '/register';
-      fullPath: '/register';
-      preLoaderRoute: typeof RegisterRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects/': {
-      id: '/projects/';
-      path: '/projects';
-      fullPath: '/projects/';
-      preLoaderRoute: typeof ProjectsIndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/projects/'
+      path: '/projects'
+      fullPath: '/projects/'
+      preLoaderRoute: typeof ProjectsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects/$projectId/editor': {
-      id: '/projects/$projectId/editor';
-      path: '/projects/$projectId/editor';
-      fullPath: '/projects/$projectId/editor';
-      preLoaderRoute: typeof ProjectsProjectIdEditorRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/projects/$projectId/editor'
+      path: '/projects/$projectId/editor'
+      fullPath: '/projects/$projectId/editor'
+      preLoaderRoute: typeof ProjectsProjectIdEditorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects/$projectId/settings': {
-      id: '/projects/$projectId/settings';
-      path: '/projects/$projectId/settings';
-      fullPath: '/projects/$projectId/settings';
-      preLoaderRoute: typeof ProjectsProjectIdSettingsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/projects/$projectId/settings'
+      path: '/projects/$projectId/settings'
+      fullPath: '/projects/$projectId/settings'
+      preLoaderRoute: typeof ProjectsProjectIdSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -162,7 +163,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectsIndexRoute: ProjectsIndexRoute,
   ProjectsProjectIdEditorRoute: ProjectsProjectIdEditorRoute,
   ProjectsProjectIdSettingsRoute: ProjectsProjectIdSettingsRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()

@@ -9,6 +9,8 @@
     "node": ">=22"
   },
   "scripts": {
+    "dev": "turbo run dev --parallel",
+    "seed": "pnpm --filter @uml-forge/api seed",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "test": "turbo run test",

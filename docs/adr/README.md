@@ -30,3 +30,4 @@ nuevo que sustituya al anterior y se marca el antiguo como sustituido.
 | [0021](0021-modo-offline-cola-outbox-y-politicas-conflicto.md)                            | Modo offline, cola Outbox en IndexedDB y politicas de conflicto  | Aceptado |
 | [0022](0022-generador-spring-boot-jpa.md)                                                 | Generador de Spring Boot 3 con Java 21, JPA y Maven              | Aceptado |
 | [0023](0023-xmi-2-1-exportador-importador-tolerante-y-autolayout.md)                      | XMI 2.1: exportacion, importacion tolerante y autolayout         | Aceptado |
+| [0024](0024-lienzo-controlado-posicion-de-enumeraciones-e-xmi-en-el-cliente.md)           | Lienzo controlado, posicion de enumeraciones e XMI en el cliente | Aceptado |
