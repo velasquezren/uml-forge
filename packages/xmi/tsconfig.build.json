@@ -1,0 +1,10 @@
+{
+  "extends": "@uml-forge/tsconfig/library.json",
+  "compilerOptions": {
+    "outDir": "dist/esm",
+    "rootDir": "src",
+    "types": ["node"],
+    "tsBuildInfoFile": "dist/esm.tsbuildinfo"
+  },
+  "include": ["src"]
+}

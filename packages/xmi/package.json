@@ -1,0 +1,42 @@
+{
+  "name": "@uml-forge/xmi",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Serializador y parser tolerante de documentos OMG XMI 2.1 / UML 2.5 con auto-layout",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && tsc -p tsconfig.build.cjs.json && node scripts/finalize-build.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist coverage .turbo *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@uml-forge/uml-core": "workspace:*",
+    "fast-xml-parser": "^5.0.8",
+    "zod": "^4.5.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "@uml-forge/eslint-config": "workspace:*",
+    "@uml-forge/tsconfig": "workspace:*",
+    "@vitest/coverage-v8": "^4.1.11",
+    "eslint": "^9.39.5",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  }
+}
