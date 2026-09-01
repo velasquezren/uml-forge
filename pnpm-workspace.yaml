@@ -1,3 +1,12 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+allowBuilds:
+  '@google/genai': true
+  '@prisma/engines': true
+  '@scarf/scarf': false
+  '@swc/core': true
+  argon2: true
+  esbuild: true
+  prisma: true
+  protobufjs: true

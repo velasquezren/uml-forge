@@ -14,6 +14,7 @@ export const ignores = [
   '**/node_modules/**',
   '**/dev-dist/**',
   '**/*.tsbuildinfo',
+  '**/routeTree.gen.ts',
 ];
 
 /** Ficheros considerados de prueba o de utilidad, donde se relajan algunas reglas. */
