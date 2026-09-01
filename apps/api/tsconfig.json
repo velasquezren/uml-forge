@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@uml-forge/tsconfig/nest.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "."
+  },
+  "include": [
+    "src/**/*",
+    "test/**/*",
+    "prisma.config.ts",
+    "vitest.config.mts",
+    "vitest.e2e.config.mts"
+  ],
+  "exclude": ["node_modules", "dist"]
+}
