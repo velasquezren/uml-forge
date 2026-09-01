@@ -69,15 +69,14 @@ explicita**. No se avanza a la siguiente fase por cuenta propia.
 | ---- | ------------------------------------------------------------ | ---------- |
 | 0    | Monorepo, configuracion compartida, Docker, CI               | Completada |
 | 1    | `packages/uml-core`: metamodelo, operaciones, validador, Yjs | Completada |
-| 2    | `apps/api`: Nest, Prisma, auth, proyectos, health            | Pendiente  |
-| 3    | `apps/web`: Vite, Tailwind v4, shadcn, rutas, PWA            | Pendiente  |
-| 4    | Editor: React Flow, nodos y aristas UML, colaboracion        | Pendiente  |
-| 5    | Modo offline, cola de salida, politicas de conflicto         | Pendiente  |
-| 6    | Generador Spring Boot y sus seis modelos de prueba           | Pendiente  |
-| 7    | XMI 2.1: exportacion, importacion tolerante, auto-layout     | Pendiente  |
-| 8    | IA de servidor: Ollama, texto e imagen a operaciones         | Pendiente  |
-| 9    | Modo asistente: WebLLM, Whisper, sintesis de voz             | Pendiente  |
-| 10   | Datos semilla, pruebas E2E y documentacion final             | Pendiente  |
+| 2    | `apps/api`: Nest, Prisma, auth, proyectos, health            | Completada |
+| 3    | `apps/web`: Vite, Tailwind v4, shadcn, rutas, PWA            | Completada |
+| 4    | Editor: React Flow, nodos y aristas UML, colaboracion        | Completada |
+| 5    | Modo offline, cola de salida, politicas de conflicto         | Completada |
+| 6    | Generador Spring Boot y sus seis modelos de prueba           | Completada |
+| 7    | XMI 2.1: exportacion, importacion tolerante, auto-layout     | Completada |
+| 8    | IA de servidor: Gemini (@google/genai) y respaldo Ollama     | Completada |
+| 9    | Datos semilla, pruebas E2E y documentacion final             | Pendiente  |
 
 ## Puntos que conviene recordar
 
@@ -88,3 +87,6 @@ explicita**. No se avanza a la siguiente fase por cuenta propia.
   a JSON: hacerlo rompe la fusion de actualizaciones.
 - Las importaciones relativas de los paquetes compartidos llevan extension `.js`,
   porque se compilan a ESM y a CommonJS a la vez (ADR 0010).
+- Prohibida la IA local en el navegador (sin `@mlc-ai/web-llm` ni `@huggingface/transformers`). Toda la IA de UML Forge corre en el servidor (ADR 0018).
+- La IA en servidor (Fase 8) usa por defecto la **Gemini Developer API** con el SDK unificado `@google/genai` (`GEMINI_MODEL`, `responseMimeType: 'application/json'` con `responseSchema`) y cuenta con `OllamaProvider` como respaldo local sin internet. Ambas implementaciones de `AiProvider` pasan los mismos tests de contrato (ADR 0019).
+- El reconocimiento de voz en el navegador usa exclusivamente la Web Speech API nativa, degradando a texto si no está soportada.

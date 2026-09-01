@@ -3,8 +3,9 @@
 PWA colaborativa para disenar diagramas de clases UML 2.5 que genera, a partir
 del modelo, un backend Spring Boot completo y funcional.
 
-Proyecto academico. El estado actual del repositorio corresponde a la **Fase 1**: cimientos del
-monorepo y metamodelo UML completo en `packages/uml-core`.
+Proyecto academico. El estado actual del repositorio corresponde a la **Fase 2**:
+API NestJS 11 con Prisma 7, PostgreSQL 16, autenticacion JWT con rotacion de refresh
+tokens, gestion de proyectos con persistencia binaria de Yjs y Swagger operativo.
 
 ## Requisitos
 
@@ -24,6 +25,7 @@ Node 22 es obligatorio, no recomendado: `@hocuspocus/server` lo exige.
 pnpm install
 cp .env.example .env
 docker compose up -d
+pnpm --filter @uml-forge/api run prisma:migrate
 ```
 
 ## Comandos
@@ -35,7 +37,7 @@ respetando el grafo de dependencias.
 | ---------------------- | -------------------------------------------------- |
 | `pnpm typecheck`       | Comprobacion de tipos de todo el monorepo          |
 | `pnpm lint`            | ESLint 9 con reglas basadas en tipos               |
-| `pnpm test`            | Bateria de pruebas                                 |
+| `pnpm test`            | Bateria de pruebas (unitarias y E2E)               |
 | `pnpm build`           | Compilacion de todos los paquetes y aplicaciones   |
 | `pnpm format`          | Prettier en modo escritura                         |
 | `pnpm format:check`    | Prettier en modo verificacion, el mismo que usa CI |
@@ -68,19 +70,25 @@ tipos del metamodelo no se duplican en ningun otro lugar.
 
 ## Variables de entorno
 
-Se declaran todas en `.env.example`. En la Fase 0 solo intervienen las de la base
-de datos.
+Se declaran todas en `.env.example`.
 
-| Variable            | Valor por defecto  | Descripcion                                          |
-| ------------------- | ------------------ | ---------------------------------------------------- |
-| `POSTGRES_USER`     | `umlforge`         | Usuario del contenedor de PostgreSQL                 |
-| `POSTGRES_PASSWORD` | `umlforge`         | Contrasena del contenedor de PostgreSQL              |
-| `POSTGRES_DB`       | `umlforge`         | Base de datos creada al arrancar el contenedor       |
-| `POSTGRES_PORT`     | `5432`             | Puerto publicado en la maquina anfitriona            |
-| `DATABASE_URL`      | ver `.env.example` | Cadena de conexion que consumira Prisma en la Fase 2 |
-
-Cada fase que introduzca una variable nueva la anade a `.env.example` y a esta
-tabla en el mismo commit.
+| Variable                 | Valor por defecto                                                      | Descripcion                                         |
+| ------------------------ | ---------------------------------------------------------------------- | --------------------------------------------------- |
+| `POSTGRES_USER`          | `umlforge`                                                             | Usuario del contenedor de PostgreSQL                |
+| `POSTGRES_PASSWORD`      | `umlforge`                                                             | Contrasena del contenedor de PostgreSQL             |
+| `POSTGRES_DB`            | `umlforge`                                                             | Base de datos creada al arrancar el contenedor      |
+| `POSTGRES_PORT`          | `5432`                                                                 | Puerto publicado en la maquina anfitriona           |
+| `DATABASE_URL`           | `postgresql://umlforge:umlforge@localhost:5432/umlforge?schema=public` | Cadena de conexion consumida por Prisma             |
+| `PORT`                   | `3000`                                                                 | Puerto HTTP de la API NestJS                        |
+| `NODE_ENV`               | `development`                                                          | Entorno de ejecucion (`development`, `production`)  |
+| `CORS_ORIGIN`            | `http://localhost:5173`                                                | Origen permitido para solicitudes web PWA           |
+| `JWT_ACCESS_SECRET`      | ver `.env.example`                                                     | Clave secreta para firma de Access Tokens (15 min)  |
+| `JWT_ACCESS_EXPIRES_IN`  | `15m`                                                                  | Tiempo de expiracion del Access Token               |
+| `JWT_REFRESH_SECRET`     | ver `.env.example`                                                     | Clave secreta para firma de Refresh Tokens (7 dias) |
+| `JWT_REFRESH_EXPIRES_IN` | `7d`                                                                   | Tiempo de expiracion del Refresh Token              |
+| `COOKIE_SECRET`          | ver `.env.example`                                                     | Clave para firma de cookies HTTP                    |
+| `THROTTLE_TTL`           | `60000`                                                                | Ventana de tiempo (ms) para limitacion de tasa      |
+| `THROTTLE_LIMIT`         | `100`                                                                  | Maximo de peticiones por ventana                    |
 
 ## Andamiaje
 
@@ -100,22 +108,30 @@ esta en [CLAUDE.md](CLAUDE.md) y en
 - Toda decision de diseno no especificada se documenta en `docs/adr/`.
 - Sin emojis en codigo, commits ni documentacion.
 
-## El metamodelo: `packages/uml-core`
+## La API: `apps/api`
 
-Es la pieza central del sistema y la unica fuente de verdad de los tipos UML.
-Todo se define con esquemas Zod y los tipos TypeScript se derivan con `z.infer`.
+Construida con NestJS 11 y Prisma 7 sobre PostgreSQL 16.
 
-| Exporta                                      | Para que                                                                      |
-| -------------------------------------------- | ----------------------------------------------------------------------------- |
-| `UMLModelSchema`, `UMLClassSchema`, ...      | Metamodelo UML 2.5 completo                                                   |
-| `UmlOperationSchema`                         | Union discriminada con las 16 operaciones del lenguaje                        |
-| `applyOperation`, `applyOperations`          | Aplicacion pura e inmutable, atomica por lotes                                |
-| `validateModel`                              | Nombres repetidos, referencias colgantes, ciclos de herencia, multiplicidades |
-| `toYDoc`, `fromYDoc`, `applyOperationToYDoc` | Mapeo bidireccional con el CRDT                                               |
-| `umlOperationJsonSchema`                     | JSON Schema para la salida estructurada de los LLM                            |
+- Autenticacion JWT: access token de 15 minutos en memoria, refresh token de 7 dias
+  con rotacion y deteccion de robo de tokens (invalidacion automatica de familias de tokens).
+- Hashes criptograficos con argon2id para contrasenas y tokens.
+- Persistencia binaria garantizada de `YDocState` (columna `Bytes`) para convergencia CRDT.
+- Documentacion OpenAPI interactiva en `/api/docs`.
+- Verificacion de estado y base de datos en `/health`.
 
-Nada lanza excepciones: todo devuelve `Result<T, UmlError>` (ver
-[ADR 0007](docs/adr/0007-result-en-lugar-de-excepciones.md)).
+## La PWA: `apps/web`
+
+Construida con React 19, Vite, Tailwind CSS v4 CSS-First y shadcn/ui.
+
+- Enrutamiento tipado con TanStack Router (`src/routes/` y `src/routeTree.gen.ts`).
+- Cuatro layouts especializados:
+  - `AuthLayout`: tarjeta centrada para `/login` y `/register`.
+  - `AppShell`: barra lateral colapsable y cabecera con presencia e indicador de red para `/projects` y `/projects/$projectId/settings`.
+  - `EditorLayout`: lienzo a pantalla completa, paleta/arbol a la izquierda, inspector a la derecha y barra de estado/presencia inferior para `/projects/$projectId/editor`.
+  - `AssistantLayout`: interfaz minimalista por voz sin lienzo de edicion manual para `/projects/$projectId/assistant`.
+- Cliente HTTP `ky` con refresco automatico de JWT y token estrictamente en memoria (ADR 0013).
+- Persistencia local exclusiva en IndexedDB y solicitud de almacenamiento persistente (`navigator.storage.persist()`) para modelos offline y pesos de IA (ADR 0015).
+- PWA instalable con `vite-plugin-pwa` (estrategia `injectManifest`), precache del shell y service worker en `src/sw.ts`.
 
 ## Integracion continua
 
@@ -132,12 +148,11 @@ Nada lanza excepciones: todo devuelve `Result<T, UmlError>` (ver
 | ---- | ---------------------------------------------------------- | ---------- |
 | 0    | Monorepo, configuracion compartida, Docker, CI             | Completada |
 | 1    | `packages/uml-core`: esquemas, operaciones, validador, Yjs | Completada |
-| 2    | `apps/api`: Nest, Prisma, auth, proyectos, health          | Pendiente  |
-| 3    | `apps/web`: Vite, Tailwind v4, shadcn, rutas, PWA          | Pendiente  |
-| 4    | Editor: React Flow, nodos y aristas UML, colaboracion      | Pendiente  |
-| 5    | Modo offline, cola de salida, politicas de conflicto       | Pendiente  |
-| 6    | Generador Spring Boot y sus seis modelos de prueba         | Pendiente  |
-| 7    | XMI 2.1: exportacion, importacion tolerante, auto-layout   | Pendiente  |
-| 8    | IA de servidor: Ollama, texto e imagen a operaciones       | Pendiente  |
-| 9    | Modo asistente: WebLLM, Whisper, sintesis de voz           | Pendiente  |
-| 10   | Datos semilla, pruebas E2E y documentacion final           | Pendiente  |
+| 2    | `apps/api`: Nest, Prisma, auth, proyectos, health          | Completada |
+| 3    | `apps/web`: Vite, Tailwind v4, shadcn, rutas, PWA          | Completada |
+| 4    | Editor: React Flow, nodos y aristas UML, colaboracion      | Completada |
+| 5    | Modo offline, cola de salida, politicas de conflicto       | Completada |
+| 6    | Generador Spring Boot y sus seis modelos de prueba         | Completada |
+| 7    | XMI 2.1: exportacion, importacion tolerante, auto-layout   | Completada |
+| 8    | IA de servidor: Gemini (@google/genai) y respaldo Ollama   | Completada |
+| 9    | Datos semilla, pruebas E2E y documentacion final           | Pendiente  |
