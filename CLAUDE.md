@@ -96,3 +96,5 @@ explicita**. No se avanza a la siguiente fase por cuenta propia.
 - Los cursores y la presencia viajan por el canal de awareness de Hocuspocus, jamas por el CRDT (ADR 0026).
 - Toda llamada a la IA desde la PWA pasa por `apps/web/src/features/ai/aiClient.ts`, y sus operaciones se aplican con `applyOperation` del lienzo (ADR 0027).
 - La salida de la IA nunca se aplica sola: se muestra como propuesta y la persona confirma (ADR 0028). El dictado usa la Web Speech API nativa con tipos de `@types/dom-speech-recognition`.
+- El XMI se exporta con los espacios de nombres de la OMG, los tipos por referencia (`uml:PrimitiveType`) y las asociaciones con sus dos `memberEnd`; se importa recorriendo paquetes anidados y aceptando extremos declarados como `ownedAttribute` de la clase (ADR 0029). Nunca escribir `type="String"` en crudo.
+- Ollama: modelo de texto y modelo de vision son variables distintas (`OLLAMA_MODEL`, `OLLAMA_VISION_MODEL`), `isAvailable` comprueba que el modelo este descargado y la respuesta se limpia de bloques `<think>` y vallas de codigo antes de interpretarla (ADR 0030).

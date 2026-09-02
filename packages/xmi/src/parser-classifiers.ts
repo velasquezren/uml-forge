@@ -5,6 +5,7 @@ import {
   type UMLProperty,
   type UMLRelationship,
 } from '@uml-forge/uml-core';
+import { typeReference } from './parser-associations.js';
 import {
   normalizeMultiplicity,
   normalizeType,
@@ -12,7 +13,7 @@ import {
   toArray,
   type IdMapper,
 } from './parser-helpers.js';
-import { asNode, attr, childValue, firstAttr, type RawXmlNode } from './raw-xml.js';
+import { attr, childValue, firstAttr, type RawXmlNode } from './raw-xml.js';
 
 /** Extremo neutro: la herencia y la realizacion no llevan multiplicidad propia. */
 const NEUTRAL_END = { name: '', role: '', multiplicity: '1', navigable: true } as const;
@@ -22,8 +23,14 @@ export function parseAttributes(element: RawXmlNode, idMapper: IdMapper): UMLPro
   const attributes: UMLProperty[] = [];
 
   for (const node of toArray(element['ownedAttribute']) as RawXmlNode[]) {
+    // Los extremos de asociacion tambien viajan como `ownedAttribute`: son
+    // parte de la relacion, no atributos de la clase.
+    if (attr(node, 'association') !== undefined) {
+      continue;
+    }
+
     const name = attr(node, 'name') ?? 'attr';
-    const rawType = attr(node, 'type') ?? attr(asNode(node['type']) ?? undefined, 'href');
+    const rawType = typeReference(node);
     const lower = childValue(node, 'lowerValue') ?? '1';
     const upper = childValue(node, 'upperValue') ?? '1';
 
@@ -34,7 +41,7 @@ export function parseAttributes(element: RawXmlNode, idMapper: IdMapper): UMLPro
       visibility: normalizeVisibility(attr(node, 'visibility')),
       multiplicity: normalizeMultiplicity(lower, upper),
       isStatic: attr(node, 'isStatic') === 'true',
-      isDerived: attr(node, 'isReadOnly') === 'true',
+      isDerived: firstAttr(node, 'isDerived', 'isReadOnly') === 'true',
       isUnique: attr(node, 'isUnique') === 'true',
       isNullable: String(lower).trim() === '0',
       isIdentifier: name.toLowerCase() === 'id',
@@ -59,7 +66,7 @@ export function parseOperations(
 
     for (const parameterNode of toArray(node['ownedParameter']) as RawXmlNode[]) {
       const direction = attr(parameterNode, 'direction') ?? 'in';
-      const type = normalizeType(attr(parameterNode, 'type'), idMapper);
+      const type = normalizeType(typeReference(parameterNode), idMapper);
 
       if (direction === 'return') {
         returnType = type;
@@ -129,48 +136,4 @@ export function parseInheritance(
   }
 
   return relationships;
-}
-
-/** Traduce un `packagedElement` de tipo asociacion a una relacion del metamodelo. */
-export function parseAssociation(
-  element: RawXmlNode,
-  associationId: string,
-  name: string,
-  idMapper: IdMapper,
-): UMLRelationship | null {
-  const ends = toArray(element['ownedEnd']) as RawXmlNode[];
-  const sourceEnd = ends[0];
-  const targetEnd = ends[1];
-  if (sourceEnd === undefined || targetEnd === undefined) {
-    return null;
-  }
-
-  const aggregations = [attr(sourceEnd, 'aggregation'), attr(targetEnd, 'aggregation')];
-  const kind = aggregations.includes('composite')
-    ? 'composition'
-    : aggregations.includes('shared')
-      ? 'aggregation'
-      : 'association';
-
-  return {
-    id: associationId,
-    kind,
-    name,
-    sourceId: idMapper.toUuid(attr(sourceEnd, 'type')),
-    targetId: idMapper.toUuid(attr(targetEnd, 'type')),
-    sourceEnd: readEnd(sourceEnd),
-    targetEnd: readEnd(targetEnd),
-  };
-}
-
-function readEnd(node: RawXmlNode): UMLRelationship['sourceEnd'] {
-  return {
-    name: '',
-    role: attr(node, 'role') ?? '',
-    multiplicity: normalizeMultiplicity(
-      childValue(node, 'lowerValue') ?? '1',
-      childValue(node, 'upperValue') ?? '1',
-    ),
-    navigable: attr(node, 'navigable') !== 'false',
-  };
 }

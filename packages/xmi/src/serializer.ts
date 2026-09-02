@@ -1,175 +1,102 @@
 import { ok, type Result, type UMLModel } from '@uml-forge/uml-core';
 import type { XmiError } from './errors.js';
+import { associationLines } from './serializer-associations.js';
+import {
+  classifierLines,
+  enumerationLines,
+  type InheritanceIndex,
+} from './serializer-classifiers.js';
+import { TypeResolver } from './serializer-types.js';
 import type { XmiExportOptions } from './types.js';
+import { escapeXml } from './xml-text.js';
 
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
+/**
+ * Espacios de nombres de la OMG para XMI 2.1. Enterprise Architect decide como
+ * leer el documento a partir de ellos: con el espacio de nombres de Eclipse
+ * UML2 rechaza el fichero o lo importa vacio.
+ */
+const XMI_NAMESPACE = 'http://schema.omg.org/spec/XMI/2.1';
+const UML_NAMESPACE = 'http://schema.omg.org/spec/UML/2.1';
 
-/** Exporta un modelo UML a una representacion XML compatible con el estandar OMG XMI 2.1. */
+/** Exporta un modelo UML a XMI 2.1 legible por Enterprise Architect. */
 export function exportXmi(
   model: UMLModel,
   options?: Partial<XmiExportOptions>,
 ): Result<string, XmiError> {
   const exporter = options?.exporter || 'UML Forge';
   const exporterVersion = options?.exporterVersion || '1.0.0';
+  const types = new TypeResolver(model);
+  const inheritance = indexInheritance(model);
 
-  const lines: string[] = [
+  const body: string[] = [];
+
+  for (const classifier of model.classes) {
+    body.push(...classifierLines(classifier, types, inheritance));
+  }
+  for (const enumeration of model.enums) {
+    body.push(...enumerationLines(enumeration));
+  }
+  for (const relationship of model.relationships) {
+    if (relationship.kind === 'generalization' || relationship.kind === 'realization') {
+      continue;
+    }
+    body.push(...associationLines(relationship));
+  }
+
+  // Los primitivos se declaran al final, cuando ya se sabe cuales se usaron.
+  body.push(...types.primitiveLines('    '));
+
+  const lines = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<xmi:XMI xmi:version="2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1" xmlns:uml="http://www.eclipse.org/uml2/3.0.0/UML">',
+    `<xmi:XMI xmi:version="2.1" xmlns:xmi="${XMI_NAMESPACE}" xmlns:uml="${UML_NAMESPACE}">`,
     `  <xmi:Documentation exporter="${escapeXml(exporter)}" exporterVersion="${escapeXml(exporterVersion)}"/>`,
     `  <uml:Model xmi:type="uml:Model" xmi:id="${model.id}" name="${escapeXml(model.name)}">`,
+    ...body,
+    '  </uml:Model>',
+    ...positionExtensionLines(model),
+    '</xmi:XMI>',
   ];
 
-  // Agrupar relaciones de herencia e implementacion por clase origen
-  const generalizationsBySource = new Map<string, string[]>();
-  const realizationsBySource = new Map<string, string[]>();
+  return ok(lines.join('\n'));
+}
 
-  for (const rel of model.relationships) {
-    if (rel.kind === 'generalization') {
-      const list = generalizationsBySource.get(rel.sourceId) ?? [];
-      list.push(rel.targetId);
-      generalizationsBySource.set(rel.sourceId, list);
-    } else if (rel.kind === 'realization') {
-      const list = realizationsBySource.get(rel.sourceId) ?? [];
-      list.push(rel.targetId);
-      realizationsBySource.set(rel.sourceId, list);
+/** Agrupa por clase de origen la herencia y la realizacion de interfaces. */
+function indexInheritance(model: UMLModel): InheritanceIndex {
+  const generalizations = new Map<string, string[]>();
+  const realizations = new Map<string, string[]>();
+
+  for (const relationship of model.relationships) {
+    const target =
+      relationship.kind === 'generalization'
+        ? generalizations
+        : relationship.kind === 'realization'
+          ? realizations
+          : null;
+    if (target === null) {
+      continue;
     }
+    const list = target.get(relationship.sourceId) ?? [];
+    list.push(relationship.targetId);
+    target.set(relationship.sourceId, list);
   }
 
-  // 1. Clases e Interfaces
-  for (const c of model.classes) {
-    const typeTag = c.isInterface ? 'uml:Interface' : 'uml:Class';
-    const abstractAttr = c.isAbstract && !c.isInterface ? ' isAbstract="true"' : '';
-    lines.push(
-      `    <packagedElement xmi:type="${typeTag}" xmi:id="${c.id}" name="${escapeXml(c.name)}"${abstractAttr}>`,
-    );
+  return { generalizations, realizations };
+}
 
-    // Atributos
-    for (const attr of c.attributes) {
-      const isStatic = attr.isStatic ? ' isStatic="true"' : '';
-      const isUnique = attr.isUnique ? ' isUnique="true"' : '';
-      const isReadOnly = attr.isDerived ? ' isReadOnly="true"' : '';
-      lines.push(
-        `      <ownedAttribute xmi:type="uml:Property" xmi:id="${attr.id}" name="${escapeXml(attr.name)}" visibility="${attr.visibility}" type="${escapeXml(attr.type)}"${isStatic}${isUnique}${isReadOnly}>`,
-      );
-      if (attr.defaultValue) {
-        lines.push(
-          `        <defaultValue xmi:type="uml:LiteralString" value="${escapeXml(attr.defaultValue)}"/>`,
-        );
-      }
-      lines.push(
-        `        <lowerValue xmi:type="uml:LiteralInteger" value="${attr.multiplicity.startsWith('0') ? '0' : '1'}"/>`,
-      );
-      lines.push(
-        `        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="${attr.multiplicity.includes('*') ? '*' : '1'}"/>`,
-      );
-      lines.push('      </ownedAttribute>');
-    }
+/**
+ * Las coordenadas del lienzo no forman parte del estandar, asi que viajan en
+ * una extension propia. Las herramientas externas la ignoran sin protestar y
+ * UML Forge recupera el diagrama tal cual estaba.
+ */
+function positionExtensionLines(model: UMLModel): string[] {
+  const lines = ['  <xmi:Extension extender="UMLForge">', '    <diagramElements>'];
 
-    // Operaciones
-    for (const op of c.operations) {
-      const isAbstract = op.isAbstract ? ' isAbstract="true"' : '';
-      const isStatic = op.isStatic ? ' isStatic="true"' : '';
-      lines.push(
-        `      <ownedOperation xmi:type="uml:Operation" xmi:id="${op.id}" name="${escapeXml(op.name)}" visibility="${op.visibility}"${isAbstract}${isStatic}>`,
-      );
-
-      if (op.returnType) {
-        lines.push(
-          `        <ownedParameter xmi:type="uml:Parameter" xmi:id="${op.id}-return" direction="return" type="${escapeXml(op.returnType)}"/>`,
-        );
-      }
-      for (const p of op.parameters) {
-        lines.push(
-          `        <ownedParameter xmi:type="uml:Parameter" xmi:id="${p.id}" name="${escapeXml(p.name)}" direction="${p.direction}" type="${escapeXml(p.type)}"/>`,
-        );
-      }
-      lines.push('      </ownedOperation>');
-    }
-
-    // Generalizaciones
-    for (const targetId of generalizationsBySource.get(c.id) ?? []) {
-      lines.push(
-        `      <generalization xmi:type="uml:Generalization" xmi:id="${c.id}-gen-${targetId}" general="${targetId}"/>`,
-      );
-    }
-
-    // Realizaciones
-    for (const targetId of realizationsBySource.get(c.id) ?? []) {
-      lines.push(
-        `      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="${c.id}-real-${targetId}" supplier="${targetId}" contract="${targetId}"/>`,
-      );
-    }
-
-    lines.push('    </packagedElement>');
-  }
-
-  // 2. Enumeraciones
-  for (const e of model.enums) {
-    lines.push(
-      `    <packagedElement xmi:type="uml:Enumeration" xmi:id="${e.id}" name="${escapeXml(e.name)}">`,
-    );
-    for (const lit of e.literals) {
-      lines.push(
-        `      <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="${e.id}-lit-${lit}" name="${escapeXml(lit)}"/>`,
-      );
-    }
-    lines.push('    </packagedElement>');
-  }
-
-  // 3. Asociaciones, Agregaciones y Composiciones
-  for (const rel of model.relationships) {
-    if (rel.kind === 'generalization' || rel.kind === 'realization') continue;
-
-    let agg = 'none';
-    if (rel.kind === 'composition') agg = 'composite';
-    if (rel.kind === 'aggregation') agg = 'shared';
-
-    lines.push(
-      `    <packagedElement xmi:type="uml:Association" xmi:id="${rel.id}" name="${escapeXml(rel.name)}">`,
-    );
-    lines.push(
-      `      <ownedEnd xmi:type="uml:Property" xmi:id="${rel.id}-src" type="${rel.sourceId}" role="${escapeXml(rel.sourceEnd.role)}" navigable="${rel.sourceEnd.navigable}">`,
-    );
-    lines.push(
-      `        <lowerValue xmi:type="uml:LiteralInteger" value="${rel.sourceEnd.multiplicity.startsWith('0') ? '0' : '1'}"/>`,
-    );
-    lines.push(
-      `        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="${rel.sourceEnd.multiplicity.includes('*') ? '*' : '1'}"/>`,
-    );
-    lines.push('      </ownedEnd>');
-    lines.push(
-      `      <ownedEnd xmi:type="uml:Property" xmi:id="${rel.id}-tgt" type="${rel.targetId}" role="${escapeXml(rel.targetEnd.role)}" aggregation="${agg}" navigable="${rel.targetEnd.navigable}">`,
-    );
-    lines.push(
-      `        <lowerValue xmi:type="uml:LiteralInteger" value="${rel.targetEnd.multiplicity.startsWith('0') ? '0' : '1'}"/>`,
-    );
-    lines.push(
-      `        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="${rel.targetEnd.multiplicity.includes('*') ? '*' : '1'}"/>`,
-    );
-    lines.push('      </ownedEnd>');
-    lines.push('    </packagedElement>');
-  }
-
-  lines.push('  </uml:Model>');
-
-  // 4. Extension de posiciones 2D en el lienzo
-  lines.push('  <xmi:Extension extender="UMLForge">');
-  lines.push('    <diagramElements>');
   for (const element of [...model.classes, ...model.enums]) {
     lines.push(
       `      <element xmi:idref="${element.id}" x="${element.position.x}" y="${element.position.y}"/>`,
     );
   }
-  lines.push('    </diagramElements>');
-  lines.push('  </xmi:Extension>');
-  lines.push('</xmi:XMI>');
 
-  return ok(lines.join('\n'));
+  lines.push('    </diagramElements>', '  </xmi:Extension>');
+  return lines;
 }

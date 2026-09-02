@@ -16,7 +16,8 @@ export const envSchema = z.object({
   GEMINI_API_KEY: z.string().optional().default(''),
   GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
   OLLAMA_BASE_URL: z.string().default('http://localhost:11434'),
-  OLLAMA_MODEL: z.string().default('deepseek-r1:8b'),
+  OLLAMA_MODEL: z.string().default('qwen2.5:3b'),
+  OLLAMA_VISION_MODEL: z.string().default('llava:7b'),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

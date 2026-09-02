@@ -80,23 +80,29 @@ tipos del metamodelo no se duplican en ningun otro lugar.
 
 Se declaran todas en `.env.example`.
 
-| Variable                 | Valor por defecto                                                      | Descripcion                                         |
-| ------------------------ | ---------------------------------------------------------------------- | --------------------------------------------------- |
-| `POSTGRES_USER`          | `umlforge`                                                             | Usuario del contenedor de PostgreSQL                |
-| `POSTGRES_PASSWORD`      | `umlforge`                                                             | Contrasena del contenedor de PostgreSQL             |
-| `POSTGRES_DB`            | `umlforge`                                                             | Base de datos creada al arrancar el contenedor      |
-| `POSTGRES_PORT`          | `5432`                                                                 | Puerto publicado en la maquina anfitriona           |
-| `DATABASE_URL`           | `postgresql://umlforge:umlforge@localhost:5432/umlforge?schema=public` | Cadena de conexion consumida por Prisma             |
-| `PORT`                   | `3000`                                                                 | Puerto HTTP de la API NestJS                        |
-| `NODE_ENV`               | `development`                                                          | Entorno de ejecucion (`development`, `production`)  |
-| `CORS_ORIGIN`            | `http://localhost:5173`                                                | Origen permitido para solicitudes web PWA           |
-| `JWT_ACCESS_SECRET`      | ver `.env.example`                                                     | Clave secreta para firma de Access Tokens (15 min)  |
-| `JWT_ACCESS_EXPIRES_IN`  | `15m`                                                                  | Tiempo de expiracion del Access Token               |
-| `JWT_REFRESH_SECRET`     | ver `.env.example`                                                     | Clave secreta para firma de Refresh Tokens (7 dias) |
-| `JWT_REFRESH_EXPIRES_IN` | `7d`                                                                   | Tiempo de expiracion del Refresh Token              |
-| `COOKIE_SECRET`          | ver `.env.example`                                                     | Clave para firma de cookies HTTP                    |
-| `THROTTLE_TTL`           | `60000`                                                                | Ventana de tiempo (ms) para limitacion de tasa      |
-| `THROTTLE_LIMIT`         | `100`                                                                  | Maximo de peticiones por ventana                    |
+| Variable                 | Valor por defecto                                                      | Descripcion                                            |
+| ------------------------ | ---------------------------------------------------------------------- | ------------------------------------------------------ |
+| `POSTGRES_USER`          | `umlforge`                                                             | Usuario del contenedor de PostgreSQL                   |
+| `POSTGRES_PASSWORD`      | `umlforge`                                                             | Contrasena del contenedor de PostgreSQL                |
+| `POSTGRES_DB`            | `umlforge`                                                             | Base de datos creada al arrancar el contenedor         |
+| `POSTGRES_PORT`          | `5432`                                                                 | Puerto publicado en la maquina anfitriona              |
+| `DATABASE_URL`           | `postgresql://umlforge:umlforge@localhost:5432/umlforge?schema=public` | Cadena de conexion consumida por Prisma                |
+| `PORT`                   | `3000`                                                                 | Puerto HTTP de la API NestJS                           |
+| `NODE_ENV`               | `development`                                                          | Entorno de ejecucion (`development`, `production`)     |
+| `CORS_ORIGIN`            | `http://localhost:5173`                                                | Origen permitido para solicitudes web PWA              |
+| `JWT_ACCESS_SECRET`      | ver `.env.example`                                                     | Clave secreta para firma de Access Tokens (15 min)     |
+| `JWT_ACCESS_EXPIRES_IN`  | `15m`                                                                  | Tiempo de expiracion del Access Token                  |
+| `JWT_REFRESH_SECRET`     | ver `.env.example`                                                     | Clave secreta para firma de Refresh Tokens (7 dias)    |
+| `JWT_REFRESH_EXPIRES_IN` | `7d`                                                                   | Tiempo de expiracion del Refresh Token                 |
+| `COOKIE_SECRET`          | ver `.env.example`                                                     | Clave para firma de cookies HTTP                       |
+| `THROTTLE_TTL`           | `60000`                                                                | Ventana de tiempo (ms) para limitacion de tasa         |
+| `THROTTLE_LIMIT`         | `100`                                                                  | Maximo de peticiones por ventana                       |
+| `AI_PROVIDER`            | `gemini`                                                               | Proveedor de IA activo: `gemini` u `ollama`            |
+| `GEMINI_API_KEY`         | vacio                                                                  | Clave de Google AI Studio; sin ella Gemini no responde |
+| `GEMINI_MODEL`           | `gemini-2.5-flash`                                                     | Modelo de la Gemini Developer API                      |
+| `OLLAMA_BASE_URL`        | `http://localhost:11434`                                               | Servidor de Ollama para la IA local                    |
+| `OLLAMA_MODEL`           | `qwen2.5:3b`                                                           | Modelo de texto local que genera las operaciones       |
+| `OLLAMA_VISION_MODEL`    | `llava:7b`                                                             | Modelo multimodal local que lee la foto del diagrama   |
 
 ## Andamiaje
 
@@ -115,6 +121,34 @@ esta en [CLAUDE.md](CLAUDE.md) y en
 - Ningun fichero supera las 300 lineas.
 - Toda decision de diseno no especificada se documenta en `docs/adr/`.
 - Sin emojis en codigo, commits ni documentacion.
+
+## IA local con Ollama
+
+La IA por defecto es la Gemini Developer API. Para trabajar sin internet, o sin
+clave, basta con Ollama:
+
+```bash
+ollama serve                 # arranca el servidor en el puerto 11434
+ollama pull qwen2.5:3b       # modelo de texto, unos 2 GB
+ollama pull llava:7b         # modelo multimodal para leer diagramas
+```
+
+Y en el `.env`:
+
+```
+AI_PROVIDER=ollama
+OLLAMA_MODEL=qwen2.5:3b
+OLLAMA_VISION_MODEL=llava:7b
+```
+
+Alternativas mas ligeras: `llama3.2:3b` para texto y `moondream` para vision.
+Cualquier modelo instalado sirve mientras siga instrucciones y devuelva JSON.
+
+`GET /api/ai/status` responde si el proveedor esta disponible, y el asistente lo
+muestra en su cabecera. Si Ollama esta arrancado pero el modelo configurado no
+se ha descargado, el estado sera "no disponible" y el registro de la API dira
+exactamente que `ollama pull` falta: comprobarlo antes evita un fallo a mitad de
+la generacion.
 
 ## La API: `apps/api`
 
@@ -159,6 +193,11 @@ Construida con React 19, Vite, Tailwind CSS v4 CSS-First y shadcn/ui.
   - `AssistantLayout`: interfaz minimalista por voz sin lienzo de edicion manual para `/projects/$projectId/assistant`.
 - Cliente HTTP `ky` con refresco automatico de JWT y token estrictamente en memoria (ADR 0013).
 - Persistencia local exclusiva en IndexedDB y solicitud de almacenamiento persistente (`navigator.storage.persist()`) para modelos offline y pesos de IA (ADR 0015).
+- **Interoperabilidad XMI 2.1** con Enterprise Architect: se exporta con los
+  espacios de nombres de la OMG, tipos por referencia y asociaciones con sus dos
+  `memberEnd`; se importa tolerando paquetes anidados, tipos por `xmi:idref`,
+  extremos de asociacion en propiedades de clase y ficheros en `windows-1252`
+  ([ADR 0029](docs/adr/0029-compatibilidad-xmi-con-enterprise-architect.md)).
 - **Asistente de IA**: panel lateral en el editor y pantalla dedicada en
   `/projects/$projectId/assistant`. Se dicta la instruccion con la Web Speech
   API nativa, se escribe, o se sube la foto de un diagrama en papel; la IA

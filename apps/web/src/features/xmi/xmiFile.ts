@@ -42,6 +42,27 @@ export function downloadModelAsXmi(model: UMLModel): { ok: true } | { ok: false;
   return { ok: true };
 }
 
+/**
+ * Decodifica respetando la declaracion del prologo XML. Enterprise Architect
+ * exporta en `windows-1252`, de modo que leer siempre como UTF-8 destroza los
+ * acentos de los nombres de clases y atributos.
+ */
+export function decodeXmlBuffer(buffer: ArrayBuffer): string {
+  const head = new TextDecoder('utf-8').decode(buffer.slice(0, 200));
+  const declared = /encoding=["']([\w-]+)["']/iu.exec(head)?.[1]?.toLowerCase();
+
+  if (declared === undefined || declared === 'utf-8' || declared === 'utf8') {
+    return new TextDecoder('utf-8').decode(buffer);
+  }
+
+  try {
+    return new TextDecoder(declared).decode(buffer);
+  } catch {
+    // Codificacion que el navegador no conoce: mejor UTF-8 que nada.
+    return new TextDecoder('utf-8').decode(buffer);
+  }
+}
+
 /** Lee un fichero XMI del disco y lo traduce a un modelo del metamodelo. */
 export async function readXmiFile(
   file: File,
@@ -53,11 +74,25 @@ export async function readXmiFile(
 
   let content: string;
   try {
-    content = await file.text();
+    content = decodeXmlBuffer(await readAsArrayBuffer(file));
   } catch {
     return { ok: false, error: 'No se pudo leer el fichero seleccionado' };
   }
 
   const result = importXmi(content, { fallbackName });
   return result.ok ? { ok: true, model: result.value } : { ok: false, error: result.error.message };
+}
+
+/** Lectura binaria con `FileReader`, soportada por todos los navegadores. */
+function readAsArrayBuffer(file: File): Promise<ArrayBuffer> {
+  return new Promise<ArrayBuffer>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('No se pudo leer el fichero'));
+    reader.onload = () => {
+      const result = reader.result;
+      // `instanceof` no sirve: el buffer puede venir de otro contexto de ejecucion.
+      resolve(result === null || typeof result === 'string' ? new ArrayBuffer(0) : result);
+    };
+    reader.readAsArrayBuffer(file);
+  });
 }

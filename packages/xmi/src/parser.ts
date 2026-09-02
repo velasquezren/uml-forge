@@ -12,11 +12,11 @@ import { XMLParser } from 'fast-xml-parser';
 import { autoLayout } from './autolayout.js';
 import { invalidXmlError, missingModelError, type XmiError } from './errors.js';
 import {
+  collectClassOwnedEnds,
+  emptyClassOwnedEnds,
   parseAssociation,
-  parseAttributes,
-  parseInheritance,
-  parseOperations,
-} from './parser-classifiers.js';
+} from './parser-associations.js';
+import { parseAttributes, parseInheritance, parseOperations } from './parser-classifiers.js';
 import { IdMapper, toArray } from './parser-helpers.js';
 import { asNode, attr, firstAttr, numericAttr, type RawXmlNode } from './raw-xml.js';
 import type { XmiImportOptions } from './types.js';
@@ -50,9 +50,18 @@ export function importXmi(
   const enums: UMLEnum[] = [];
   const relationships: UMLRelationship[] = [];
 
-  const rawElements = toArray(
-    modelNode['packagedElement'] ?? modelNode['ownedElement'],
-  ) as RawXmlNode[];
+  // Enterprise Architect anida las clases dentro de uno o varios paquetes: sin
+  // recorrerlos el modelo se importaria vacio.
+  const rawElements = flattenElements(modelNode);
+
+  // Primera pasada: los extremos de asociacion que poseen las clases, porque
+  // una asociacion puede aparecer antes que la clase que guarda su extremo.
+  const classOwnedEnds = emptyClassOwnedEnds();
+  for (const element of rawElements) {
+    if (isClassifier(firstAttr(element, 'xmi:type', 'type') ?? '')) {
+      collectClassOwnedEnds(element, attr(element, 'xmi:id'), classOwnedEnds);
+    }
+  }
 
   for (const element of rawElements) {
     const kind = firstAttr(element, 'xmi:type', 'type') ?? '';
@@ -90,7 +99,14 @@ export function importXmi(
     }
 
     if (kind === 'uml:Association' || kind === 'Association') {
-      const association = parseAssociation(element, elementId, name, idMapper);
+      const association = parseAssociation(
+        element,
+        elementId,
+        rawId,
+        name,
+        idMapper,
+        classOwnedEnds,
+      );
       if (association !== null) {
         relationships.push(association);
       }
@@ -160,6 +176,30 @@ function readDiagramPositions(root: RawXmlNode, modelNode: RawXmlNode): Map<stri
   }
 
   return positions;
+}
+
+/**
+ * Aplana la jerarquia de paquetes y devuelve todos los elementos empaquetados
+ * del documento, sin importar a que profundidad esten.
+ */
+function flattenElements(node: RawXmlNode): RawXmlNode[] {
+  const children = toArray(node['packagedElement'] ?? node['ownedElement']) as RawXmlNode[];
+  const flattened: RawXmlNode[] = [];
+
+  for (const child of children) {
+    if (isContainer(firstAttr(child, 'xmi:type', 'type') ?? '')) {
+      flattened.push(...flattenElements(child));
+      continue;
+    }
+    flattened.push(child);
+  }
+
+  return flattened;
+}
+
+/** Paquetes y modelos anidados: contienen elementos, no son elementos del modelo. */
+function isContainer(kind: string): boolean {
+  return kind === 'uml:Package' || kind === 'Package' || kind === 'uml:Model' || kind === 'Model';
 }
 
 /** Indica si el elemento empaquetado es una clase o una interfaz. */

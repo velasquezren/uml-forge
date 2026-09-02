@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { exportXmi } from '@uml-forge/xmi';
 import type { UMLModel } from '@uml-forge/uml-core';
-import { readXmiFile, xmiFileName } from './xmiFile';
+import { decodeXmlBuffer, readXmiFile, xmiFileName } from './xmiFile';
 
 const model: UMLModel = {
   id: '10000000-0000-0000-0000-000000000001',
@@ -47,11 +47,12 @@ const model: UMLModel = {
 
 /** Fichero de prueba: en jsdom `File.text()` no siempre esta disponible. */
 function fakeFile(name: string, content: string, size?: number): File {
-  return {
-    name,
-    size: size ?? content.length,
-    text: () => Promise.resolve(content),
-  } as unknown as File;
+  const file = new File([content], name, { type: 'application/xml' });
+  // El caso del fichero demasiado grande no necesita gastar 10 MB de memoria.
+  if (size !== undefined) {
+    Object.defineProperty(file, 'size', { value: size });
+  }
+  return file;
 }
 
 describe('xmiFileName', () => {
@@ -92,5 +93,26 @@ describe('readXmiFile', () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error).toContain('10 MB');
+  });
+});
+
+describe('decodeXmlBuffer', () => {
+  it('respeta la codificacion declarada por Enterprise Architect', () => {
+    // "Duenos" con enne en windows-1252: la enne es el byte 0xF1.
+    const bytes = new Uint8Array([
+      ...new TextEncoder().encode('<?xml version="1.0" encoding="windows-1252"?><a name="Due'),
+      0xf1,
+      ...new TextEncoder().encode('os"/>'),
+    ]);
+
+    const decoded = decodeXmlBuffer(bytes.buffer);
+
+    expect(decoded).toContain('Due\u00f1os');
+  });
+
+  it('lee como UTF-8 cuando no hay declaracion', () => {
+    const buffer = new TextEncoder().encode('<a name="Duenos"/>').buffer;
+
+    expect(decodeXmlBuffer(buffer)).toBe('<a name="Duenos"/>');
   });
 });

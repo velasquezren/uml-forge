@@ -35,3 +35,5 @@ nuevo que sustituya al anterior y se marca el antiguo como sustituido.
 | [0026](0026-presencia-y-cursores-remotos-por-awareness.md)                                | Presencia y cursores remotos por el canal de awareness           | Aceptado |
 | [0027](0027-costura-de-la-ia-en-el-cliente.md)                                            | Costura de la IA en el cliente antes de construir su interfaz    | Aceptado |
 | [0028](0028-asistente-de-ia-por-voz-e-imagen-en-la-pwa.md)                                | Asistente de IA por voz e imagen en la PWA                       | Aceptado |
+| [0029](0029-compatibilidad-xmi-con-enterprise-architect.md)                               | Compatibilidad real del XMI 2.1 con Enterprise Architect         | Aceptado |
+| [0030](0030-puesta-a-punto-del-respaldo-local-con-ollama.md)                              | Puesta a punto del respaldo local con Ollama                     | Aceptado |

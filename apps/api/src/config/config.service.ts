@@ -103,4 +103,9 @@ export class ApiConfigService {
   get ollamaModel(): string {
     return this.config.OLLAMA_MODEL;
   }
+
+  /** Modelo multimodal, necesario para leer la foto de un diagrama. */
+  get ollamaVisionModel(): string {
+    return this.config.OLLAMA_VISION_MODEL;
+  }
 }
