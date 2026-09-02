@@ -77,7 +77,8 @@ explicita**. No se avanza a la siguiente fase por cuenta propia.
 | 7    | XMI 2.1: exportacion, importacion tolerante, auto-layout     | Completada |
 | 8    | IA de servidor: Gemini (@google/genai) y respaldo Ollama     | Completada |
 | 9    | Datos semilla, integracion final y documentacion             | Completada |
-| 10   | Interfaz de IA en la PWA (voz e imagen) y E2E con Playwright | Pendiente  |
+| 10   | Asistente de IA en la PWA: voz, imagen y aplicacion revisada | Completada |
+| 11   | Pruebas E2E de navegador con Playwright                      | Pendiente  |
 
 ## Puntos que conviene recordar
 
@@ -94,3 +95,4 @@ explicita**. No se avanza a la siguiente fase por cuenta propia.
 - El generador de Spring Boot llega al usuario por `POST /api/projects/:id/codegen/springboot`, que devuelve el proyecto en ZIP (ADR 0025). El modelo se reconstruye en el servidor desde `YDocState`, no desde el cliente.
 - Los cursores y la presencia viajan por el canal de awareness de Hocuspocus, jamas por el CRDT (ADR 0026).
 - Toda llamada a la IA desde la PWA pasa por `apps/web/src/features/ai/aiClient.ts`, y sus operaciones se aplican con `applyOperation` del lienzo (ADR 0027).
+- La salida de la IA nunca se aplica sola: se muestra como propuesta y la persona confirma (ADR 0028). El dictado usa la Web Speech API nativa con tipos de `@types/dom-speech-recognition`.

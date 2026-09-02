@@ -12,6 +12,7 @@ import { SyncStatusBadge } from '@/features/sync/SyncStatusBadge';
 import { useOutboxSync } from '@/features/sync/useOutboxSync';
 import { XmiActions } from '@/features/xmi/XmiActions';
 import { GenerateBackendDialog } from '@/features/codegen/GenerateBackendDialog';
+import { AiAssistantSheet } from '@/features/ai/AiAssistantSheet';
 import { resolveSelection } from '@/features/editor/lib/selection';
 import type { SelectedElement } from '@/features/editor/types';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
@@ -103,6 +104,11 @@ function ProjectEditorPage() {
             projectId={projectId}
             projectName={project?.name}
             hasModel={(model?.classes.length ?? 0) > 0}
+          />
+          <AiAssistantSheet
+            projectId={projectId}
+            model={model}
+            applyOperation={canvas?.applyOperation}
           />
         </>
       }

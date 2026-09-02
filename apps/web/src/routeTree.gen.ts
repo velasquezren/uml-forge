@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
+import { Route as ProjectsProjectIdAssistantRouteImport } from './routes/projects/$projectId/assistant'
 import { Route as ProjectsProjectIdEditorRouteImport } from './routes/projects/$projectId/editor'
 import { Route as ProjectsProjectIdSettingsRouteImport } from './routes/projects/$projectId/settings'
 
@@ -36,6 +37,12 @@ const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
   path: '/projects/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectsProjectIdAssistantRoute =
+  ProjectsProjectIdAssistantRouteImport.update({
+    id: '/projects/$projectId/assistant',
+    path: '/projects/$projectId/assistant',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ProjectsProjectIdEditorRoute = ProjectsProjectIdEditorRouteImport.update({
   id: '/projects/$projectId/editor',
   path: '/projects/$projectId/editor',
@@ -53,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/projects/': typeof ProjectsIndexRoute
+  '/projects/$projectId/assistant': typeof ProjectsProjectIdAssistantRoute
   '/projects/$projectId/editor': typeof ProjectsProjectIdEditorRoute
   '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRoute
 }
@@ -61,6 +69,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/projects': typeof ProjectsIndexRoute
+  '/projects/$projectId/assistant': typeof ProjectsProjectIdAssistantRoute
   '/projects/$projectId/editor': typeof ProjectsProjectIdEditorRoute
   '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRoute
 }
@@ -70,6 +79,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/projects/': typeof ProjectsIndexRoute
+  '/projects/$projectId/assistant': typeof ProjectsProjectIdAssistantRoute
   '/projects/$projectId/editor': typeof ProjectsProjectIdEditorRoute
   '/projects/$projectId/settings': typeof ProjectsProjectIdSettingsRoute
 }
@@ -80,6 +90,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/projects/'
+    | '/projects/$projectId/assistant'
     | '/projects/$projectId/editor'
     | '/projects/$projectId/settings'
   fileRoutesByTo: FileRoutesByTo
@@ -88,6 +99,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/projects'
+    | '/projects/$projectId/assistant'
     | '/projects/$projectId/editor'
     | '/projects/$projectId/settings'
   id:
@@ -96,6 +108,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/projects/'
+    | '/projects/$projectId/assistant'
     | '/projects/$projectId/editor'
     | '/projects/$projectId/settings'
   fileRoutesById: FileRoutesById
@@ -105,6 +118,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
+  ProjectsProjectIdAssistantRoute: typeof ProjectsProjectIdAssistantRoute
   ProjectsProjectIdEditorRoute: typeof ProjectsProjectIdEditorRoute
   ProjectsProjectIdSettingsRoute: typeof ProjectsProjectIdSettingsRoute
 }
@@ -139,6 +153,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projects/$projectId/assistant': {
+      id: '/projects/$projectId/assistant'
+      path: '/projects/$projectId/assistant'
+      fullPath: '/projects/$projectId/assistant'
+      preLoaderRoute: typeof ProjectsProjectIdAssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects/$projectId/editor': {
       id: '/projects/$projectId/editor'
       path: '/projects/$projectId/editor'
@@ -161,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
+  ProjectsProjectIdAssistantRoute: ProjectsProjectIdAssistantRoute,
   ProjectsProjectIdEditorRoute: ProjectsProjectIdEditorRoute,
   ProjectsProjectIdSettingsRoute: ProjectsProjectIdSettingsRoute,
 }

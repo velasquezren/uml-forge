@@ -8,10 +8,7 @@ UML compartido, API NestJS 11 con Prisma 7 y PostgreSQL 16, PWA instalable con
 lienzo colaborativo, modo offline, generador de Spring Boot descargable en ZIP,
 interoperabilidad XMI 2.1 y modulo de IA en el servidor.
 
-Queda pendiente la interfaz de IA en el navegador (dictado por voz y foto de un
-diagrama en papel, escenarios 2 y 3 de la defensa) y la bateria E2E de navegador
-con Playwright. La costura por la que entrara esa interfaz esta descrita en el
-[ADR 0027](docs/adr/0027-costura-de-la-ia-en-el-cliente.md).
+Queda pendiente unicamente la bateria E2E de navegador con Playwright.
 
 ## Requisitos
 
@@ -162,6 +159,11 @@ Construida con React 19, Vite, Tailwind CSS v4 CSS-First y shadcn/ui.
   - `AssistantLayout`: interfaz minimalista por voz sin lienzo de edicion manual para `/projects/$projectId/assistant`.
 - Cliente HTTP `ky` con refresco automatico de JWT y token estrictamente en memoria (ADR 0013).
 - Persistencia local exclusiva en IndexedDB y solicitud de almacenamiento persistente (`navigator.storage.persist()`) para modelos offline y pesos de IA (ADR 0015).
+- **Asistente de IA**: panel lateral en el editor y pantalla dedicada en
+  `/projects/$projectId/assistant`. Se dicta la instruccion con la Web Speech
+  API nativa, se escribe, o se sube la foto de un diagrama en papel; la IA
+  responde con operaciones que solo se aplican tras confirmarlas
+  ([ADR 0028](docs/adr/0028-asistente-de-ia-por-voz-e-imagen-en-la-pwa.md)).
 - Accion **Generar backend** en la barra del editor: elige grupo, artefacto,
   paquete, base de datos y puerto, y descarga el ZIP del proyecto Spring Boot.
 - Presencia en vivo: avatares de los participantes conectados y cursores remotos
@@ -180,20 +182,21 @@ Construida con React 19, Vite, Tailwind CSS v4 CSS-First y shadcn/ui.
 
 ## Plan de fases
 
-| Fase | Contenido                                                  | Estado     |
-| ---- | ---------------------------------------------------------- | ---------- |
-| 0    | Monorepo, configuracion compartida, Docker, CI             | Completada |
-| 1    | `packages/uml-core`: esquemas, operaciones, validador, Yjs | Completada |
-| 2    | `apps/api`: Nest, Prisma, auth, proyectos, health          | Completada |
-| 3    | `apps/web`: Vite, Tailwind v4, shadcn, rutas, PWA          | Completada |
-| 4    | Editor: React Flow, nodos y aristas UML, colaboracion      | Completada |
-| 5    | Modo offline, cola de salida, politicas de conflicto       | Completada |
-| 6    | Generador Spring Boot y sus seis modelos de prueba         | Completada |
-| 7    | XMI 2.1: exportacion, importacion tolerante, auto-layout   | Completada |
-| 8    | IA de servidor: Gemini (@google/genai) y respaldo Ollama   | Completada |
-| 9    | Datos semilla, integracion final y documentacion           | Completada |
+| Fase | Contenido                                                    | Estado     |
+| ---- | ------------------------------------------------------------ | ---------- |
+| 0    | Monorepo, configuracion compartida, Docker, CI               | Completada |
+| 1    | `packages/uml-core`: esquemas, operaciones, validador, Yjs   | Completada |
+| 2    | `apps/api`: Nest, Prisma, auth, proyectos, health            | Completada |
+| 3    | `apps/web`: Vite, Tailwind v4, shadcn, rutas, PWA            | Completada |
+| 4    | Editor: React Flow, nodos y aristas UML, colaboracion        | Completada |
+| 5    | Modo offline, cola de salida, politicas de conflicto         | Completada |
+| 6    | Generador Spring Boot y sus seis modelos de prueba           | Completada |
+| 7    | XMI 2.1: exportacion, importacion tolerante, auto-layout     | Completada |
+| 8    | IA de servidor: Gemini (@google/genai) y respaldo Ollama     | Completada |
+| 9    | Datos semilla, integracion final y documentacion             | Completada |
+| 10   | Asistente de IA en la PWA: voz, imagen y aplicacion revisada | Completada |
 
-Pendiente para el cierre del proyecto: la interfaz de IA en la PWA (voz e imagen)
-y las pruebas E2E de navegador con Playwright. Las pruebas E2E de la API, que
-recorren autenticacion, proyectos, sincronizacion y generacion de backend contra
-PostgreSQL real, ya se ejecutan con `pnpm --filter @uml-forge/api test:e2e`.
+Pendiente para el cierre del proyecto: las pruebas E2E de navegador con
+Playwright. Las de la API, que recorren autenticacion, proyectos,
+sincronizacion y generacion de backend contra PostgreSQL real, ya se ejecutan
+con `pnpm --filter @uml-forge/api test:e2e`.

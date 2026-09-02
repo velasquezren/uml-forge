@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { UmlOperation } from '@uml-forge/uml-core';
+import type {
+  Result,
+  UMLModel,
+  UmlError,
+  UmlOperation,
+  UmlOperationInput,
+} from '@uml-forge/uml-core';
 
 const postMock = vi.fn<(...args: unknown[]) => unknown>();
 const getMock = vi.fn<(...args: unknown[]) => unknown>();
@@ -61,14 +67,25 @@ describe('aiClient', () => {
     });
   });
 
-  it('aplica las operaciones sugeridas sobre el lienzo', () => {
-    const applyOperation = vi.fn();
+  it('aplica las operaciones sugeridas y cuenta las que rechaza el metamodelo', () => {
     const operations = [
       { type: 'addClass', class: { id: 'c1', name: 'Pet' } },
-      { type: 'deleteClass', id: 'c1' },
+      { type: 'deleteClass', id: 'desconocida' },
     ] as unknown as UmlOperation[];
 
-    expect(applyAiOperations(operations, applyOperation)).toBe(2);
+    const applyOperation = vi
+      .fn<(op: UmlOperationInput) => Result<UMLModel, UmlError>>()
+      .mockReturnValueOnce({ ok: true, value: {} as UMLModel })
+      .mockReturnValueOnce({
+        ok: false,
+        error: { code: 'class_not_found', message: 'La clase no existe' } satisfies UmlError,
+      });
+
+    expect(applyAiOperations(operations, applyOperation)).toEqual({
+      applied: 1,
+      failed: 1,
+      firstError: 'La clase no existe',
+    });
     expect(applyOperation).toHaveBeenCalledTimes(2);
   });
 });

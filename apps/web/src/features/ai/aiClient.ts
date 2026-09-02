@@ -1,5 +1,11 @@
 import { HTTPError } from 'ky';
-import type { UMLModel, UmlOperation, UmlOperationInput } from '@uml-forge/uml-core';
+import type {
+  Result,
+  UMLModel,
+  UmlError,
+  UmlOperation,
+  UmlOperationInput,
+} from '@uml-forge/uml-core';
 import { apiClient } from '@/lib/api';
 
 /** Estado del proveedor de IA configurado en el servidor. */
@@ -65,11 +71,16 @@ export function generateFromImage(
   imageBase64: string,
   mimeType = 'image/png',
   prompt?: string,
+  currentModel?: UMLModel,
 ): Promise<AiResult> {
-  return requestSuggestion(
-    'ai/image',
-    prompt ? { imageBase64, mimeType, prompt } : { imageBase64, mimeType },
-  );
+  const body: Record<string, unknown> = { imageBase64, mimeType };
+  if (prompt) {
+    body.prompt = prompt;
+  }
+  if (currentModel) {
+    body.currentModel = currentModel;
+  }
+  return requestSuggestion('ai/image', body);
 }
 
 /** Audita un modelo existente y propone refinamientos. */
@@ -77,17 +88,34 @@ export function refineModel(model: UMLModel, context?: string): Promise<AiResult
   return requestSuggestion('ai/refine', context ? { model, context } : { model });
 }
 
+/** Resumen de lo que se pudo aplicar de una sugerencia. */
+export interface AiApplyReport {
+  applied: number;
+  failed: number;
+  firstError?: string;
+}
+
 /**
  * Aplica las operaciones sugeridas sobre el lienzo. Es el unico punto de union
- * entre la IA y el modelo: la asistente de voz y la carga de imagenes de la
- * fase siguiente reutilizan esta funcion en lugar de escribir en el CRDT.
+ * entre la IA y el modelo: el dictado por voz y la lectura de imagenes usan
+ * esta funcion en lugar de escribir en el CRDT. Una operacion que el
+ * metamodelo rechaza no interrumpe al resto: se cuenta y se informa.
  */
 export function applyAiOperations(
   operations: readonly UmlOperation[],
-  applyOperation: (op: UmlOperationInput) => void,
-): number {
+  applyOperation: (op: UmlOperationInput) => Result<UMLModel, UmlError>,
+): AiApplyReport {
+  const report: AiApplyReport = { applied: 0, failed: 0 };
+
   for (const operation of operations) {
-    applyOperation(operation);
+    const result = applyOperation(operation);
+    if (result.ok) {
+      report.applied += 1;
+    } else {
+      report.failed += 1;
+      report.firstError ??= result.error.message;
+    }
   }
-  return operations.length;
+
+  return report;
 }
