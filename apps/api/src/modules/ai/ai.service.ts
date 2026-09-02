@@ -30,13 +30,32 @@ export class AiService {
 
   async getStatus(): Promise<AiStatusDto> {
     const primary = this.getActiveProvider();
-    const isPrimaryAvailable = await primary.isAvailable();
+    if (await primary.isAvailable()) {
+      const model =
+        primary.providerName === 'gemini' ? this.config.geminiModel : this.config.ollamaModel;
+      return {
+        provider: primary.providerName,
+        available: true,
+        model,
+      };
+    }
+
+    const secondary = this.getSecondaryProvider();
+    if (await secondary.isAvailable()) {
+      const model =
+        secondary.providerName === 'gemini' ? this.config.geminiModel : this.config.ollamaModel;
+      return {
+        provider: secondary.providerName,
+        available: true,
+        model,
+      };
+    }
+
     const model =
       this.config.aiProvider === 'gemini' ? this.config.geminiModel : this.config.ollamaModel;
-
     return {
       provider: primary.providerName,
-      available: isPrimaryAvailable,
+      available: false,
       model,
     };
   }

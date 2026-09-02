@@ -83,6 +83,14 @@ describe('AiService', () => {
     expect(status.model).toBe('gemini-2.5-flash');
   });
 
+  it('debe mostrar el proveedor de respaldo si el primario no esta disponible', async () => {
+    geminiProvider.isAvailable.mockResolvedValueOnce(false);
+    const status = await service.getStatus();
+    expect(status.provider).toBe('ollama');
+    expect(status.available).toBe(true);
+    expect(status.model).toBe('deepseek-r1:8b');
+  });
+
   it('debe generar operaciones a partir de texto usando el proveedor primario', async () => {
     const result = await service.generateFromPrompt({ prompt: 'Crea un modelo de usuarios' });
     expect(result.explanation).toBe('Modelo generado con Gemini');

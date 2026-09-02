@@ -1,7 +1,7 @@
 # Pila completa de UML Forge: base de datos, API y PWA.
 #
-#   docker compose --profile full up --build   arranca todo y siembra los datos
-#   docker compose up -d                       solo PostgreSQL, para trabajar con pnpm dev
+#   docker compose up --build                  arranca toda la aplicacion (PostgreSQL + API + Web)
+#   docker compose up -d postgres              solo PostgreSQL, para desarrollo con pnpm dev
 #
 # La PWA queda en http://localhost:8080 y la API en http://localhost:3000.
 services:
@@ -31,7 +31,6 @@ services:
     image: uml-forge-api
     container_name: uml-forge-api
     restart: unless-stopped
-    profiles: ['full']
     depends_on:
       postgres:
         condition: service_healthy
@@ -46,7 +45,7 @@ services:
       COOKIE_SECRET: ${COOKIE_SECRET:-umlforge_dev_cookie_secret_key_32bytes_min_super_secure!}
       # Datos de demostracion en el primer arranque; ponlo a false para conservar lo tuyo.
       SEED_ON_START: ${SEED_ON_START:-true}
-      AI_PROVIDER: ${AI_PROVIDER:-gemini}
+      AI_PROVIDER: ${AI_PROVIDER:-ollama}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
       # Ollama corre en la maquina anfitriona, no en la red del contenedor.
@@ -77,7 +76,6 @@ services:
     image: uml-forge-web
     container_name: uml-forge-web
     restart: unless-stopped
-    profiles: ['full']
     depends_on:
       api:
         condition: service_healthy

@@ -24,18 +24,24 @@ Node 22 es obligatorio, no recomendado: `@hocuspocus/server` lo exige.
 
 ## Puesta en marcha
 
-### Todo en Docker
+### Todo en Docker (Recomendado para evaluacion / companeros)
 
 Una sola orden levanta base de datos, API y PWA, aplica las migraciones y
 siembra los datos de demostracion:
 
 ```bash
 cp .env.example .env
-docker compose --profile full up --build
+docker compose up --build
 ```
 
 - PWA: <http://localhost:8080>
 - API y Swagger: <http://localhost:3000/api/docs>
+
+#### Credenciales de acceso demostracion:
+
+- **Admin**: `admin@admin.com` / `password123`
+- **Demo**: `demo@umlforge.dev` / `password123`
+- **Usuario**: `user@user.com` / `password123`
 
 Nginx sirve la PWA compilada y hace de pasarela hacia `/api`, `/health` y el
 canal de colaboracion `/collab`, de modo que el navegador ve un unico origen.
@@ -58,19 +64,19 @@ pnpm dev                      # API en :3000 y PWA en :5173
 Todos se ejecutan desde la raiz y Turborepo los propaga a los workspaces
 respetando el grafo de dependencias.
 
-| Comando                                    | Efecto                                             |
-| ------------------------------------------ | -------------------------------------------------- |
-| `pnpm typecheck`                           | Comprobacion de tipos de todo el monorepo          |
-| `pnpm lint`                                | ESLint 9 con reglas basadas en tipos               |
-| `pnpm test`                                | Bateria de pruebas (unitarias y E2E de la API)     |
-| `pnpm seed`                                | Usuarios y proyectos de demostracion               |
-| `pnpm e2e`                                 | Pruebas E2E de navegador con Playwright            |
-| `pnpm build`                               | Compilacion de todos los paquetes y aplicaciones   |
-| `pnpm format`                              | Prettier en modo escritura                         |
-| `pnpm format:check`                        | Prettier en modo verificacion, el mismo que usa CI |
-| `docker compose up -d`                     | PostgreSQL 16 en segundo plano                     |
-| `docker compose --profile full up --build` | Toda la pila en contenedores                       |
-| `docker compose down`                      | Detiene la base de datos conservando el volumen    |
+| Comando                         | Efecto                                                |
+| ------------------------------- | ----------------------------------------------------- |
+| `pnpm typecheck`                | Comprobacion de tipos de todo el monorepo             |
+| `pnpm lint`                     | ESLint 9 con reglas basadas en tipos                  |
+| `pnpm test`                     | Bateria de pruebas (unitarias y E2E de la API)        |
+| `pnpm seed`                     | Usuarios y proyectos de demostracion                  |
+| `pnpm e2e`                      | Pruebas E2E de navegador con Playwright               |
+| `pnpm build`                    | Compilacion de todos los paquetes y aplicaciones      |
+| `pnpm format`                   | Prettier en modo escritura                            |
+| `pnpm format:check`             | Prettier en modo verificacion, el mismo que usa CI    |
+| `docker compose up --build`     | Toda la pila en contenedores (PostgreSQL + API + Web) |
+| `docker compose up -d postgres` | Solo PostgreSQL 16 en segundo plano para `pnpm dev`   |
+| `docker compose down`           | Detiene todos los contenedores conservando el volumen |
 
 > Las pruebas E2E de la API vacian la base de datos de desarrollo antes de cada
 > caso. Despues de un `pnpm test` hay que repoblarla con `pnpm seed` o no se
@@ -166,31 +172,25 @@ esta en [CLAUDE.md](CLAUDE.md) y en
 
 ## IA local con Ollama
 
-La IA por defecto es la Gemini Developer API. Para trabajar sin internet, o sin
-clave, basta con Ollama:
+La aplicacion incluye soporte nativo y listo para usar con Ollama (configurado por defecto en `.env.example` y `docker-compose.yml`):
 
-```bash
-ollama serve                 # arranca el servidor en el puerto 11434
-ollama pull qwen2.5:3b       # modelo de texto, unos 2 GB
-ollama pull llava:7b         # modelo multimodal para leer diagramas
-```
+1. **Instalar Ollama**: descargar desde <https://ollama.com/>.
+2. **Descargar los modelos**:
+   ```bash
+   ollama pull qwen2.5:3b       # modelo de texto para generacion de clases y relaciones (~2 GB)
+   ollama pull llava:7b         # modelo multimodal para leer fotos/diagramas (~4.5 GB)
+   ```
+3. **Ejecutar Ollama**:
+   - **Windows / macOS (Docker Desktop)**: simplemente abre la aplicacion de Ollama.
+   - **Linux**: para que el contenedor Docker pueda comunicarse con Ollama en el anfitrion:
+     ```bash
+     OLLAMA_HOST=0.0.0.0:11434 ollama serve
+     ```
+     _(o si usas systemd: anade `Environment="OLLAMA_HOST=0.0.0.0"` con `systemctl edit ollama.service` y reinicia el servicio)_.
 
-Y en el `.env`:
+Alternativas mas ligeras para maquinas con pocos recursos: `llama3.2:3b` para texto y `moondream` para vision (modificando `OLLAMA_MODEL` y `OLLAMA_VISION_MODEL` en `.env`).
 
-```
-AI_PROVIDER=ollama
-OLLAMA_MODEL=qwen2.5:3b
-OLLAMA_VISION_MODEL=llava:7b
-```
-
-Alternativas mas ligeras: `llama3.2:3b` para texto y `moondream` para vision.
-Cualquier modelo instalado sirve mientras siga instrucciones y devuelva JSON.
-
-`GET /api/ai/status` responde si el proveedor esta disponible, y el asistente lo
-muestra en su cabecera. Si Ollama esta arrancado pero el modelo configurado no
-se ha descargado, el estado sera "no disponible" y el registro de la API dira
-exactamente que `ollama pull` falta: comprobarlo antes evita un fallo a mitad de
-la generacion.
+`GET /api/ai/status` responde si el proveedor esta disponible, y el asistente lo muestra en su cabecera (punto verde cuando esta listo). Si el modelo configurado no se ha descargado, indicara el estado y la API avisara en logs que modelo falta.
 
 ## La API: `apps/api`
 
