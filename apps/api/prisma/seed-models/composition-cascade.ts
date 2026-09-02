@@ -2,14 +2,14 @@ import type { UMLModel } from '@uml-forge/uml-core';
 
 /** Composicion con borrado en cascada de las partes. */
 export const compositionCascadeModel: UMLModel = {
-  id: 'a0000005-0000-0000-0000-000000000001',
+  id: 'a0000005-0000-4000-8000-000000000001',
   name: 'Plataforma E-Commerce y Pedidos',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   enums: [],
   classes: [
     {
-      id: 'b0000005-0000-0000-0000-000000000001',
+      id: 'b0000005-0000-4000-8000-000000000001',
       name: 'Order',
       isAbstract: false,
       isInterface: false,
@@ -17,7 +17,7 @@ export const compositionCascadeModel: UMLModel = {
       position: { x: 100, y: 100 },
       attributes: [
         {
-          id: 'c0000005-0000-0000-0000-000000000001',
+          id: 'c0000005-0000-4000-8000-000000000001',
           name: 'orderNumber',
           type: 'String',
           visibility: 'private',
@@ -30,7 +30,7 @@ export const compositionCascadeModel: UMLModel = {
           defaultValue: null,
         },
         {
-          id: 'c0000005-0000-0000-0000-000000000002',
+          id: 'c0000005-0000-4000-8000-000000000002',
           name: 'orderDate',
           type: 'Date',
           visibility: 'private',
@@ -43,7 +43,7 @@ export const compositionCascadeModel: UMLModel = {
           defaultValue: null,
         },
         {
-          id: 'c0000005-0000-0000-0000-000000000003',
+          id: 'c0000005-0000-4000-8000-000000000003',
           name: 'totalAmount',
           type: 'Double',
           visibility: 'private',
@@ -59,7 +59,7 @@ export const compositionCascadeModel: UMLModel = {
       operations: [],
     },
     {
-      id: 'b0000005-0000-0000-0000-000000000002',
+      id: 'b0000005-0000-4000-8000-000000000002',
       name: 'OrderItem',
       isAbstract: false,
       isInterface: false,
@@ -67,7 +67,7 @@ export const compositionCascadeModel: UMLModel = {
       position: { x: 450, y: 100 },
       attributes: [
         {
-          id: 'c0000005-0000-0000-0000-000000000004',
+          id: 'c0000005-0000-4000-8000-000000000004',
           name: 'productName',
           type: 'String',
           visibility: 'private',
@@ -80,7 +80,7 @@ export const compositionCascadeModel: UMLModel = {
           defaultValue: null,
         },
         {
-          id: 'c0000005-0000-0000-0000-000000000005',
+          id: 'c0000005-0000-4000-8000-000000000005',
           name: 'quantity',
           type: 'Integer',
           visibility: 'private',
@@ -93,7 +93,7 @@ export const compositionCascadeModel: UMLModel = {
           defaultValue: null,
         },
         {
-          id: 'c0000005-0000-0000-0000-000000000006',
+          id: 'c0000005-0000-4000-8000-000000000006',
           name: 'unitPrice',
           type: 'Double',
           visibility: 'private',
@@ -111,11 +111,11 @@ export const compositionCascadeModel: UMLModel = {
   ],
   relationships: [
     {
-      id: 'd0000005-0000-0000-0000-000000000001',
+      id: 'd0000005-0000-4000-8000-000000000001',
       kind: 'composition',
       name: 'order_items_comp',
-      sourceId: 'b0000005-0000-0000-0000-000000000001',
-      targetId: 'b0000005-0000-0000-0000-000000000002',
+      sourceId: 'b0000005-0000-4000-8000-000000000001',
+      targetId: 'b0000005-0000-4000-8000-000000000002',
       sourceEnd: {
         name: '',
         role: 'order',

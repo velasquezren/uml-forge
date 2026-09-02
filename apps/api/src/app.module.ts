@@ -15,6 +15,7 @@ import { AiModule } from './modules/ai/ai.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
+import { CodegenModule } from './modules/codegen/codegen.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter'
     CollabModule,
     SyncModule,
     AiModule,
+    CodegenModule,
   ],
   providers: [
     {

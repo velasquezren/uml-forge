@@ -43,6 +43,10 @@ export function useYjsModel({
   const [model, setModel] = useState<UMLModel | null>(null);
   const [status, setStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
   const [remoteUsers, setRemoteUsers] = useState<UserAwarenessState[]>([]);
+  const [remoteCursors, setRemoteCursors] = useState<UserAwarenessState[]>([]);
+  // Firma de los participantes: evita rehacer la presencia en cada movimiento
+  // del raton ajeno, que llega hasta dieciseis veces por segundo y usuario.
+  const remoteSignatureRef = useRef('');
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const providerRef = useRef<HocuspocusProvider | null>(null);
@@ -155,7 +159,17 @@ export function useYjsModel({
       const awareness = provider.awareness;
       if (!awareness) return;
       const states = Array.from(awareness.getStates().values()) as UserAwarenessState[];
-      setRemoteUsers(states.filter((state) => state.user && state.user.id !== user?.id));
+      const others = states.filter((state) => state.user && state.user.id !== user?.id);
+
+      setRemoteCursors(others);
+
+      const signature = others
+        .map((state) => `${state.user.id}:${state.user.name}:${state.user.color}`)
+        .join('|');
+      if (signature !== remoteSignatureRef.current) {
+        remoteSignatureRef.current = signature;
+        setRemoteUsers(others.map((state) => ({ user: state.user })));
+      }
     };
 
     provider.awareness?.on('change', handleAwarenessChange);
@@ -208,6 +222,15 @@ export function useYjsModel({
     [ydoc, syncFromYDoc],
   );
 
+  /**
+   * Publica la posicion del puntero en coordenadas del lienzo. Viaja por el
+   * canal de awareness, no por el CRDT: es informacion volatil de sesion que no
+   * debe quedar en el historial ni persistirse con el modelo.
+   */
+  const publishCursor = useCallback((position: { x: number; y: number } | null) => {
+    providerRef.current?.setAwarenessField('cursor', position ?? undefined);
+  }, []);
+
   const undo = useCallback(() => undoManagerRef.current?.undo(), []);
   const redo = useCallback(() => undoManagerRef.current?.redo(), []);
 
@@ -221,8 +244,10 @@ export function useYjsModel({
     edges,
     status,
     remoteUsers,
+    remoteCursors,
     applyOperation,
     updatePosition,
+    publishCursor,
     replaceModel,
     undo,
     redo,

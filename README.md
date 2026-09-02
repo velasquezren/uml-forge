@@ -3,9 +3,15 @@
 PWA colaborativa para disenar diagramas de clases UML 2.5 que genera, a partir
 del modelo, un backend Spring Boot completo y funcional.
 
-Proyecto academico. El estado actual del repositorio corresponde a la **Fase 2**:
-API NestJS 11 con Prisma 7, PostgreSQL 16, autenticacion JWT con rotacion de refresh
-tokens, gestion de proyectos con persistencia binaria de Yjs y Swagger operativo.
+Proyecto academico. El repositorio cubre de la **Fase 0 a la Fase 9**: metamodelo
+UML compartido, API NestJS 11 con Prisma 7 y PostgreSQL 16, PWA instalable con
+lienzo colaborativo, modo offline, generador de Spring Boot descargable en ZIP,
+interoperabilidad XMI 2.1 y modulo de IA en el servidor.
+
+Queda pendiente la interfaz de IA en el navegador (dictado por voz y foto de un
+diagrama en papel, escenarios 2 y 3 de la defensa) y la bateria E2E de navegador
+con Playwright. La costura por la que entrara esa interfaz esta descrita en el
+[ADR 0027](docs/adr/0027-costura-de-la-ia-en-el-cliente.md).
 
 ## Requisitos
 
@@ -26,6 +32,7 @@ pnpm install
 cp .env.example .env
 docker compose up -d
 pnpm --filter @uml-forge/api run prisma:migrate
+pnpm seed          # usuario y proyectos de demostracion
 ```
 
 ## Comandos
@@ -38,11 +45,16 @@ respetando el grafo de dependencias.
 | `pnpm typecheck`       | Comprobacion de tipos de todo el monorepo          |
 | `pnpm lint`            | ESLint 9 con reglas basadas en tipos               |
 | `pnpm test`            | Bateria de pruebas (unitarias y E2E)               |
+| `pnpm seed`            | Usuarios y proyectos de demostracion               |
 | `pnpm build`           | Compilacion de todos los paquetes y aplicaciones   |
 | `pnpm format`          | Prettier en modo escritura                         |
 | `pnpm format:check`    | Prettier en modo verificacion, el mismo que usa CI |
 | `docker compose up -d` | PostgreSQL 16 en segundo plano                     |
 | `docker compose down`  | Detiene la base de datos conservando el volumen    |
+
+> Las pruebas E2E de la API vacian la base de datos de desarrollo antes de cada
+> caso. Despues de un `pnpm test` hay que repoblarla con `pnpm seed` o no se
+> podra iniciar sesion con los usuarios de demostracion.
 
 ## Estructura
 
@@ -59,7 +71,6 @@ uml-forge/
     eslint-config/        Configuracion ESLint compartida  (Fase 0)
   docs/
     adr/                  Decisiones de arquitectura
-    puds/                 Artefactos de la metodologia
   docker-compose.yml
   turbo.json
   pnpm-workspace.yaml
@@ -116,8 +127,28 @@ Construida con NestJS 11 y Prisma 7 sobre PostgreSQL 16.
   con rotacion y deteccion de robo de tokens (invalidacion automatica de familias de tokens).
 - Hashes criptograficos con argon2id para contrasenas y tokens.
 - Persistencia binaria garantizada de `YDocState` (columna `Bytes`) para convergencia CRDT.
+- Generacion del backend Spring Boot bajo demanda en
+  `POST /api/projects/:id/codegen/springboot`: reconstruye el modelo desde el
+  documento Yjs consolidado, ejecuta `@uml-forge/codegen-springboot` y responde
+  con el proyecto Maven comprimido en ZIP
+  ([ADR 0025](docs/adr/0025-generacion-de-backend-bajo-demanda.md)).
+- Modulo de IA en `/api/ai` con Gemini por defecto y Ollama como respaldo local.
 - Documentacion OpenAPI interactiva en `/api/docs`.
 - Verificacion de estado y base de datos en `/health`.
+
+## Acceso rapido para probar
+
+`pnpm seed` crea tres usuarios, todos con la contrasena `password123`:
+
+| Correo              | Rol en los proyectos semilla |
+| ------------------- | ---------------------------- |
+| `admin@admin.com`   | Propietario                  |
+| `demo@umlforge.dev` | Editor                       |
+| `user@user.com`     | Lector                       |
+
+La pantalla de inicio de sesion trae un boton por usuario para entrar de un
+clic. Abrir dos navegadores con usuarios distintos sobre el mismo proyecto es la
+forma de ver los cursores y la presencia en vivo.
 
 ## La PWA: `apps/web`
 
@@ -131,6 +162,11 @@ Construida con React 19, Vite, Tailwind CSS v4 CSS-First y shadcn/ui.
   - `AssistantLayout`: interfaz minimalista por voz sin lienzo de edicion manual para `/projects/$projectId/assistant`.
 - Cliente HTTP `ky` con refresco automatico de JWT y token estrictamente en memoria (ADR 0013).
 - Persistencia local exclusiva en IndexedDB y solicitud de almacenamiento persistente (`navigator.storage.persist()`) para modelos offline y pesos de IA (ADR 0015).
+- Accion **Generar backend** en la barra del editor: elige grupo, artefacto,
+  paquete, base de datos y puerto, y descarga el ZIP del proyecto Spring Boot.
+- Presencia en vivo: avatares de los participantes conectados y cursores remotos
+  dibujados en coordenadas del diagrama
+  ([ADR 0026](docs/adr/0026-presencia-y-cursores-remotos-por-awareness.md)).
 - PWA instalable con `vite-plugin-pwa` (estrategia `injectManifest`), precache del shell y service worker en `src/sw.ts`.
 
 ## Integracion continua
@@ -155,4 +191,9 @@ Construida con React 19, Vite, Tailwind CSS v4 CSS-First y shadcn/ui.
 | 6    | Generador Spring Boot y sus seis modelos de prueba         | Completada |
 | 7    | XMI 2.1: exportacion, importacion tolerante, auto-layout   | Completada |
 | 8    | IA de servidor: Gemini (@google/genai) y respaldo Ollama   | Completada |
-| 9    | Datos semilla, pruebas E2E y documentacion final           | Pendiente  |
+| 9    | Datos semilla, integracion final y documentacion           | Completada |
+
+Pendiente para el cierre del proyecto: la interfaz de IA en la PWA (voz e imagen)
+y las pruebas E2E de navegador con Playwright. Las pruebas E2E de la API, que
+recorren autenticacion, proyectos, sincronizacion y generacion de backend contra
+PostgreSQL real, ya se ejecutan con `pnpm --filter @uml-forge/api test:e2e`.

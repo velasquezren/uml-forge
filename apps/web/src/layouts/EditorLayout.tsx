@@ -27,6 +27,8 @@ interface EditorLayoutProps {
   syncStatusContent?: ReactNode;
   /** Acciones propias de la barra superior, como la interoperabilidad XMI. */
   actionsContent?: ReactNode;
+  /** Presencia de los participantes; si falta se muestra solo el contador. */
+  presenceContent?: ReactNode;
   onUndo?: () => void;
   onRedo?: () => void;
   canUndo?: boolean;
@@ -43,6 +45,7 @@ export function EditorLayout({
   inspectorContent,
   syncStatusContent,
   actionsContent,
+  presenceContent,
   onUndo,
   onRedo,
   canUndo = false,
@@ -209,10 +212,12 @@ export function EditorLayout({
         </div>
 
         <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-1.5">
-            <Users className="h-3.5 w-3.5 text-primary" />
-            <span>{onlineUsersCount} en linea</span>
-          </div>
+          {presenceContent ?? (
+            <div className="flex items-center space-x-1.5">
+              <Users className="h-3.5 w-3.5 text-primary" />
+              <span>{onlineUsersCount} en linea</span>
+            </div>
+          )}
 
           <div className="h-3 w-px bg-border" />
 

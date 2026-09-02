@@ -18,6 +18,16 @@ import { requestPersistentStorage } from '@/lib/storage';
 import { useAuthStore } from '@/stores/auth.store';
 import { loginSchema, type LoginFormData } from './auth.schema';
 
+/** Contrasena comun de los usuarios que crea `pnpm seed`. */
+const SEED_PASSWORD = 'password123';
+
+/** Usuarios de prueba con su rol en los proyectos semilla. */
+const SEED_USERS = [
+  { label: 'Admin', email: 'admin@admin.com', role: 'Propietario' },
+  { label: 'Demo', email: 'demo@umlforge.dev', role: 'Editor' },
+  { label: 'Test', email: 'user@user.com', role: 'Lector' },
+] as const;
+
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const setAuth = useAuthStore((s) => s.setAuth);
@@ -56,16 +66,40 @@ export function LoginForm() {
     }
   };
 
+  /** Entra directamente con uno de los usuarios semilla. */
+  const loginAs = (email: string) => {
+    form.setValue('email', email);
+    form.setValue('password', SEED_PASSWORD);
+    void form.handleSubmit(onSubmit)();
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs space-y-1 text-muted-foreground">
-          <div className="font-medium text-foreground">Credenciales de prueba (Seed):</div>
-          <div>
-            Correo: <code className="font-mono text-primary font-semibold">admin@admin.com</code>
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs space-y-2 text-muted-foreground">
+          <div className="font-medium text-foreground">
+            Acceso rapido con los datos de <code className="font-mono text-primary">pnpm seed</code>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {SEED_USERS.map((seedUser) => (
+              <Button
+                key={seedUser.email}
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 flex-col gap-0 text-[11px] leading-tight"
+                disabled={isLoading}
+                onClick={() => loginAs(seedUser.email)}
+              >
+                <span className="font-semibold">{seedUser.label}</span>
+                <span className="text-[9px] text-muted-foreground">{seedUser.role}</span>
+              </Button>
+            ))}
           </div>
           <div>
-            Contrasena: <code className="font-mono text-primary font-semibold">password123</code>
+            Todos con la contrasena{' '}
+            <code className="font-mono text-primary font-semibold">{SEED_PASSWORD}</code>. Abre dos
+            navegadores con usuarios distintos para ver los cursores en vivo.
           </div>
         </div>
 

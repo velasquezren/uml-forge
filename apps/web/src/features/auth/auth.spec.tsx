@@ -13,6 +13,14 @@ describe('Auth Forms', () => {
     expect(screen.getByRole('button', { name: /Iniciar Sesion/i })).toBeInTheDocument();
   });
 
+  it('ofrece acceso rapido con los tres usuarios semilla', () => {
+    renderWithProviders(<LoginForm />);
+
+    expect(screen.getByRole('button', { name: /Admin/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Demo/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Test/i })).toBeInTheDocument();
+  });
+
   it('renderiza el formulario de registro con campos name, email y password', () => {
     renderWithProviders(<RegisterForm />);
 

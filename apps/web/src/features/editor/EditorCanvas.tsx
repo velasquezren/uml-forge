@@ -4,6 +4,7 @@ import {
   Controls,
   MiniMap,
   ReactFlow,
+  ReactFlowProvider,
   applyEdgeChanges,
   applyNodeChanges,
   type Connection,
@@ -13,9 +14,11 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { createId, type UMLClass, type UMLRelationship } from '@uml-forge/uml-core';
+import { RemoteCursors } from './components/RemoteCursors';
 import { UmlClassNode } from './components/UmlClassNode';
 import { UmlRelationshipEdge } from './components/UmlRelationshipEdge';
 import { UmlSvgMarkers } from './components/UmlSvgMarkers';
+import { useCursorBroadcast } from './hooks/useCursorBroadcast';
 import { useYjsModel } from './hooks/useYjsModel';
 import type { SelectedElement, UmlEdge, UmlNode } from './types';
 
@@ -50,7 +53,7 @@ interface EditorCanvasProps {
   onInitModelHandler?: (handlers: EditorCanvasHandlers) => void;
 }
 
-export function EditorCanvas({
+function EditorCanvasInner({
   projectId,
   projectName,
   accessToken,
@@ -65,14 +68,18 @@ export function EditorCanvas({
     edges,
     model,
     remoteUsers,
+    remoteCursors,
     applyOperation,
     updatePosition,
+    publishCursor,
     replaceModel,
     undo,
     redo,
     canUndo,
     canRedo,
   } = useYjsModel({ projectId, projectName, accessToken, user });
+
+  const { handlePointerMove, handlePointerLeave } = useCursorBroadcast(publishCursor);
 
   /**
    * React Flow necesita ser duenno de las posiciones mientras se arrastra: sin
@@ -206,7 +213,11 @@ export function EditorCanvas({
   );
 
   return (
-    <div className="w-full h-full relative">
+    <div
+      className="w-full h-full relative"
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+    >
       <UmlSvgMarkers />
 
       <ReactFlow<UmlNode, UmlEdge>
@@ -231,6 +242,7 @@ export function EditorCanvas({
         deleteKeyCode={['Delete']}
         defaultEdgeOptions={{ type: 'umlRelationship' }}
       >
+        <RemoteCursors users={remoteCursors} />
         <Background gap={16} size={1} />
         <Controls className="bg-card border-border shadow-md rounded-md overflow-hidden" />
         <MiniMap
@@ -242,5 +254,18 @@ export function EditorCanvas({
         />
       </ReactFlow>
     </div>
+  );
+}
+
+/**
+ * El lienzo necesita su propio `ReactFlowProvider` porque la difusion del cursor
+ * traduce coordenadas de pantalla a coordenadas del diagrama antes de que
+ * `ReactFlow` se monte.
+ */
+export function EditorCanvas(props: EditorCanvasProps) {
+  return (
+    <ReactFlowProvider>
+      <EditorCanvasInner {...props} />
+    </ReactFlowProvider>
   );
 }

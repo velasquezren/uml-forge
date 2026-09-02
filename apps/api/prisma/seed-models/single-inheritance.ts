@@ -2,14 +2,14 @@ import type { UMLModel } from '@uml-forge/uml-core';
 
 /** Jerarquia de herencia simple con clase abstracta e interfaz. */
 export const singleInheritanceModel: UMLModel = {
-  id: 'a0000001-0000-0000-0000-000000000001',
+  id: 'a0000001-0000-4000-8000-000000000001',
   name: 'Sistema de Gestion Academica (Herencia)',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   enums: [],
   classes: [
     {
-      id: 'b0000001-0000-0000-0000-000000000001',
+      id: 'b0000001-0000-4000-8000-000000000001',
       name: 'Person',
       isAbstract: true,
       isInterface: false,
@@ -17,7 +17,7 @@ export const singleInheritanceModel: UMLModel = {
       position: { x: 250, y: 50 },
       attributes: [
         {
-          id: 'c0000001-0000-0000-0000-000000000001',
+          id: 'c0000001-0000-4000-8000-000000000001',
           name: 'name',
           type: 'String',
           visibility: 'protected',
@@ -30,7 +30,7 @@ export const singleInheritanceModel: UMLModel = {
           defaultValue: null,
         },
         {
-          id: 'c0000001-0000-0000-0000-000000000002',
+          id: 'c0000001-0000-4000-8000-000000000002',
           name: 'email',
           type: 'String',
           visibility: 'protected',
@@ -46,7 +46,7 @@ export const singleInheritanceModel: UMLModel = {
       operations: [],
     },
     {
-      id: 'b0000001-0000-0000-0000-000000000002',
+      id: 'b0000001-0000-4000-8000-000000000002',
       name: 'Student',
       isAbstract: false,
       isInterface: false,
@@ -54,7 +54,7 @@ export const singleInheritanceModel: UMLModel = {
       position: { x: 80, y: 280 },
       attributes: [
         {
-          id: 'c0000001-0000-0000-0000-000000000003',
+          id: 'c0000001-0000-4000-8000-000000000003',
           name: 'studentCode',
           type: 'String',
           visibility: 'private',
@@ -67,7 +67,7 @@ export const singleInheritanceModel: UMLModel = {
           defaultValue: null,
         },
         {
-          id: 'c0000001-0000-0000-0000-000000000004',
+          id: 'c0000001-0000-4000-8000-000000000004',
           name: 'enrollmentYear',
           type: 'Integer',
           visibility: 'private',
@@ -83,7 +83,7 @@ export const singleInheritanceModel: UMLModel = {
       operations: [],
     },
     {
-      id: 'b0000001-0000-0000-0000-000000000003',
+      id: 'b0000001-0000-4000-8000-000000000003',
       name: 'Teacher',
       isAbstract: false,
       isInterface: false,
@@ -91,7 +91,7 @@ export const singleInheritanceModel: UMLModel = {
       position: { x: 420, y: 280 },
       attributes: [
         {
-          id: 'c0000001-0000-0000-0000-000000000005',
+          id: 'c0000001-0000-4000-8000-000000000005',
           name: 'employeeCode',
           type: 'String',
           visibility: 'private',
@@ -104,7 +104,7 @@ export const singleInheritanceModel: UMLModel = {
           defaultValue: null,
         },
         {
-          id: 'c0000001-0000-0000-0000-000000000006',
+          id: 'c0000001-0000-4000-8000-000000000006',
           name: 'department',
           type: 'String',
           visibility: 'private',
@@ -122,20 +122,20 @@ export const singleInheritanceModel: UMLModel = {
   ],
   relationships: [
     {
-      id: 'd0000001-0000-0000-0000-000000000001',
+      id: 'd0000001-0000-4000-8000-000000000001',
       kind: 'generalization',
       name: '',
-      sourceId: 'b0000001-0000-0000-0000-000000000002',
-      targetId: 'b0000001-0000-0000-0000-000000000001',
+      sourceId: 'b0000001-0000-4000-8000-000000000002',
+      targetId: 'b0000001-0000-4000-8000-000000000001',
       sourceEnd: { name: '', role: '', multiplicity: '1', navigable: true },
       targetEnd: { name: '', role: '', multiplicity: '1', navigable: true },
     },
     {
-      id: 'd0000001-0000-0000-0000-000000000002',
+      id: 'd0000001-0000-4000-8000-000000000002',
       kind: 'generalization',
       name: '',
-      sourceId: 'b0000001-0000-0000-0000-000000000003',
-      targetId: 'b0000001-0000-0000-0000-000000000001',
+      sourceId: 'b0000001-0000-4000-8000-000000000003',
+      targetId: 'b0000001-0000-4000-8000-000000000001',
       sourceEnd: { name: '', role: '', multiplicity: '1', navigable: true },
       targetEnd: { name: '', role: '', multiplicity: '1', navigable: true },
     },

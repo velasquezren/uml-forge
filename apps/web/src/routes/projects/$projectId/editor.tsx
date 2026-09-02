@@ -7,9 +7,11 @@ import { EditorCanvas, type EditorCanvasHandlers } from '@/features/editor/Edito
 import { Palette } from '@/features/editor/components/Palette';
 import { ModelTree } from '@/features/editor/components/ModelTree';
 import { PropertyInspector } from '@/features/editor/components/PropertyInspector';
+import { PresenceAvatars } from '@/features/editor/components/PresenceAvatars';
 import { SyncStatusBadge } from '@/features/sync/SyncStatusBadge';
 import { useOutboxSync } from '@/features/sync/useOutboxSync';
 import { XmiActions } from '@/features/xmi/XmiActions';
+import { GenerateBackendDialog } from '@/features/codegen/GenerateBackendDialog';
 import { resolveSelection } from '@/features/editor/lib/selection';
 import type { SelectedElement } from '@/features/editor/types';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
@@ -91,8 +93,18 @@ function ProjectEditorPage() {
       canUndo={canvas?.canUndo ?? false}
       canRedo={canvas?.canRedo ?? false}
       onlineUsersCount={(canvas?.remoteUsers.length ?? 0) + 1}
+      presenceContent={
+        <PresenceAvatars remoteUsers={canvas?.remoteUsers ?? []} currentUserName={user?.name} />
+      }
       actionsContent={
-        <XmiActions model={model} onReplaceModel={(imported) => canvas?.replaceModel(imported)} />
+        <>
+          <XmiActions model={model} onReplaceModel={(imported) => canvas?.replaceModel(imported)} />
+          <GenerateBackendDialog
+            projectId={projectId}
+            projectName={project?.name}
+            hasModel={(model?.classes.length ?? 0) > 0}
+          />
+        </>
       }
       paletteContent={
         <Palette

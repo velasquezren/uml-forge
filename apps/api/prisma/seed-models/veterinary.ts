@@ -2,13 +2,13 @@ import type { UMLModel } from '@uml-forge/uml-core';
 
 /** Clinica veterinaria: asociaciones y enumeraciones. */
 export const veterinaryModel: UMLModel = {
-  id: 'a0000007-0000-0000-0000-000000000001',
+  id: 'a0000007-0000-4000-8000-000000000001',
   name: 'Clinica Veterinaria',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   enums: [
     {
-      id: 'f0000007-0000-0000-0000-000000000001',
+      id: 'f0000007-0000-4000-8000-000000000001',
       name: 'Species',
       literals: ['DOG', 'CAT', 'BIRD', 'OTHER'],
       position: { x: 640, y: 80 },
@@ -16,7 +16,7 @@ export const veterinaryModel: UMLModel = {
   ],
   classes: [
     {
-      id: 'b0000007-0000-0000-0000-000000000001',
+      id: 'b0000007-0000-4000-8000-000000000001',
       name: 'Owner',
       isAbstract: false,
       isInterface: false,
@@ -24,7 +24,7 @@ export const veterinaryModel: UMLModel = {
       position: { x: 100, y: 100 },
       attributes: [
         {
-          id: 'c0000007-0000-0000-0000-000000000001',
+          id: 'c0000007-0000-4000-8000-000000000001',
           name: 'name',
           type: 'String',
           visibility: 'private',
@@ -37,7 +37,7 @@ export const veterinaryModel: UMLModel = {
           defaultValue: null,
         },
         {
-          id: 'c0000007-0000-0000-0000-000000000002',
+          id: 'c0000007-0000-4000-8000-000000000002',
           name: 'phone',
           type: 'String',
           visibility: 'private',
@@ -53,7 +53,7 @@ export const veterinaryModel: UMLModel = {
       operations: [],
     },
     {
-      id: 'b0000007-0000-0000-0000-000000000002',
+      id: 'b0000007-0000-4000-8000-000000000002',
       name: 'Pet',
       isAbstract: false,
       isInterface: false,
@@ -61,7 +61,7 @@ export const veterinaryModel: UMLModel = {
       position: { x: 450, y: 100 },
       attributes: [
         {
-          id: 'c0000007-0000-0000-0000-000000000003',
+          id: 'c0000007-0000-4000-8000-000000000003',
           name: 'name',
           type: 'String',
           visibility: 'private',
@@ -74,9 +74,9 @@ export const veterinaryModel: UMLModel = {
           defaultValue: null,
         },
         {
-          id: 'c0000007-0000-0000-0000-000000000004',
+          id: 'c0000007-0000-4000-8000-000000000004',
           name: 'species',
-          type: 'f0000007-0000-0000-0000-000000000001',
+          type: 'f0000007-0000-4000-8000-000000000001',
           visibility: 'private',
           multiplicity: '1',
           isStatic: false,
@@ -92,11 +92,11 @@ export const veterinaryModel: UMLModel = {
   ],
   relationships: [
     {
-      id: 'd0000007-0000-0000-0000-000000000001',
+      id: 'd0000007-0000-4000-8000-000000000001',
       kind: 'composition',
       name: 'has_pets',
-      sourceId: 'b0000007-0000-0000-0000-000000000001',
-      targetId: 'b0000007-0000-0000-0000-000000000002',
+      sourceId: 'b0000007-0000-4000-8000-000000000001',
+      targetId: 'b0000007-0000-4000-8000-000000000002',
       sourceEnd: {
         name: '',
         role: 'owner',

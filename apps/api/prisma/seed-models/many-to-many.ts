@@ -2,14 +2,14 @@ import type { UMLModel } from '@uml-forge/uml-core';
 
 /** Relacion muchos a muchos con clase de asociacion. */
 export const manyToManyModel: UMLModel = {
-  id: 'a0000003-0000-0000-0000-000000000001',
+  id: 'a0000003-0000-4000-8000-000000000001',
   name: 'Inscripciones Cursos y Estudiantes (N:M)',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   enums: [],
   classes: [
     {
-      id: 'b0000003-0000-0000-0000-000000000001',
+      id: 'b0000003-0000-4000-8000-000000000001',
       name: 'Student',
       isAbstract: false,
       isInterface: false,
@@ -17,7 +17,7 @@ export const manyToManyModel: UMLModel = {
       position: { x: 80, y: 120 },
       attributes: [
         {
-          id: 'c0000003-0000-0000-0000-000000000001',
+          id: 'c0000003-0000-4000-8000-000000000001',
           name: 'fullName',
           type: 'String',
           visibility: 'private',
@@ -30,7 +30,7 @@ export const manyToManyModel: UMLModel = {
           defaultValue: null,
         },
         {
-          id: 'c0000003-0000-0000-0000-000000000002',
+          id: 'c0000003-0000-4000-8000-000000000002',
           name: 'email',
           type: 'String',
           visibility: 'private',
@@ -46,7 +46,7 @@ export const manyToManyModel: UMLModel = {
       operations: [],
     },
     {
-      id: 'b0000003-0000-0000-0000-000000000002',
+      id: 'b0000003-0000-4000-8000-000000000002',
       name: 'Course',
       isAbstract: false,
       isInterface: false,
@@ -54,7 +54,7 @@ export const manyToManyModel: UMLModel = {
       position: { x: 440, y: 120 },
       attributes: [
         {
-          id: 'c0000003-0000-0000-0000-000000000003',
+          id: 'c0000003-0000-4000-8000-000000000003',
           name: 'code',
           type: 'String',
           visibility: 'private',
@@ -67,7 +67,7 @@ export const manyToManyModel: UMLModel = {
           defaultValue: null,
         },
         {
-          id: 'c0000003-0000-0000-0000-000000000004',
+          id: 'c0000003-0000-4000-8000-000000000004',
           name: 'title',
           type: 'String',
           visibility: 'private',
@@ -80,7 +80,7 @@ export const manyToManyModel: UMLModel = {
           defaultValue: null,
         },
         {
-          id: 'c0000003-0000-0000-0000-000000000005',
+          id: 'c0000003-0000-4000-8000-000000000005',
           name: 'credits',
           type: 'Integer',
           visibility: 'private',
@@ -98,11 +98,11 @@ export const manyToManyModel: UMLModel = {
   ],
   relationships: [
     {
-      id: 'd0000003-0000-0000-0000-000000000001',
+      id: 'd0000003-0000-4000-8000-000000000001',
       kind: 'association',
       name: 'enrollment',
-      sourceId: 'b0000003-0000-0000-0000-000000000001',
-      targetId: 'b0000003-0000-0000-0000-000000000002',
+      sourceId: 'b0000003-0000-4000-8000-000000000001',
+      targetId: 'b0000003-0000-4000-8000-000000000002',
       sourceEnd: {
         name: '',
         role: 'students',

@@ -43,7 +43,6 @@ uml-forge/
     tsconfig/             Presets de TypeScript compartidos
     eslint-config/        Configuracion ESLint compartida
   docs/adr/               Decisiones de arquitectura
-  docs/puds/              Artefactos de la metodologia
 ```
 
 `packages/uml-core` es la pieza central. Web y API dependen de el. **Nunca se

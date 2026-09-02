@@ -31,3 +31,6 @@ nuevo que sustituya al anterior y se marca el antiguo como sustituido.
 | [0022](0022-generador-spring-boot-jpa.md)                                                 | Generador de Spring Boot 3 con Java 21, JPA y Maven              | Aceptado |
 | [0023](0023-xmi-2-1-exportador-importador-tolerante-y-autolayout.md)                      | XMI 2.1: exportacion, importacion tolerante y autolayout         | Aceptado |
 | [0024](0024-lienzo-controlado-posicion-de-enumeraciones-e-xmi-en-el-cliente.md)           | Lienzo controlado, posicion de enumeraciones e XMI en el cliente | Aceptado |
+| [0025](0025-generacion-de-backend-bajo-demanda.md)                                        | Generacion del backend bajo demanda con descarga en ZIP          | Aceptado |
+| [0026](0026-presencia-y-cursores-remotos-por-awareness.md)                                | Presencia y cursores remotos por el canal de awareness           | Aceptado |
+| [0027](0027-costura-de-la-ia-en-el-cliente.md)                                            | Costura de la IA en el cliente antes de construir su interfaz    | Aceptado |

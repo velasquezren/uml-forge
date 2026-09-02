@@ -76,7 +76,8 @@ explicita**. No se avanza a la siguiente fase por cuenta propia.
 | 6    | Generador Spring Boot y sus seis modelos de prueba           | Completada |
 | 7    | XMI 2.1: exportacion, importacion tolerante, auto-layout     | Completada |
 | 8    | IA de servidor: Gemini (@google/genai) y respaldo Ollama     | Completada |
-| 9    | Datos semilla, pruebas E2E y documentacion final             | Pendiente  |
+| 9    | Datos semilla, integracion final y documentacion             | Completada |
+| 10   | Interfaz de IA en la PWA (voz e imagen) y E2E con Playwright | Pendiente  |
 
 ## Puntos que conviene recordar
 
@@ -90,3 +91,6 @@ explicita**. No se avanza a la siguiente fase por cuenta propia.
 - Prohibida la IA local en el navegador (sin `@mlc-ai/web-llm` ni `@huggingface/transformers`). Toda la IA de UML Forge corre en el servidor (ADR 0018).
 - La IA en servidor (Fase 8) usa por defecto la **Gemini Developer API** con el SDK unificado `@google/genai` (`GEMINI_MODEL`, `responseMimeType: 'application/json'` con `responseSchema`) y cuenta con `OllamaProvider` como respaldo local sin internet. Ambas implementaciones de `AiProvider` pasan los mismos tests de contrato (ADR 0019).
 - El reconocimiento de voz en el navegador usa exclusivamente la Web Speech API nativa, degradando a texto si no está soportada.
+- El generador de Spring Boot llega al usuario por `POST /api/projects/:id/codegen/springboot`, que devuelve el proyecto en ZIP (ADR 0025). El modelo se reconstruye en el servidor desde `YDocState`, no desde el cliente.
+- Los cursores y la presencia viajan por el canal de awareness de Hocuspocus, jamas por el CRDT (ADR 0026).
+- Toda llamada a la IA desde la PWA pasa por `apps/web/src/features/ai/aiClient.ts`, y sus operaciones se aplican con `applyOperation` del lienzo (ADR 0027).

@@ -3,7 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import * as argon2 from 'argon2';
 import * as Y from 'yjs';
-import { toYDoc, type UMLModel } from '@uml-forge/uml-core';
+import { toYDoc, validateModel, type UMLModel } from '@uml-forge/uml-core';
 import { compositionCascadeModel } from './seed-models/composition-cascade.ts';
 import { manyToManyModel } from './seed-models/many-to-many.ts';
 import { singleInheritanceModel } from './seed-models/single-inheritance.ts';
@@ -99,6 +99,16 @@ async function main() {
 
     // 4. Crear proyectos y sincronizar estado inicial de Yjs
     for (const projectData of sampleProjects) {
+      // Un modelo semilla invalido se escribiria igual en el documento Yjs y
+      // solo fallaria al leerlo, dejando el proyecto vacio en el editor.
+      const modelErrors = validateModel(projectData.model);
+      if (modelErrors.length > 0) {
+        throw new Error(
+          `El modelo semilla "${projectData.name}" no es valido: ` +
+            modelErrors.map((error) => error.message).join('; '),
+        );
+      }
+
       const ydoc = toYDoc(projectData.model);
       const encodedState = Buffer.from(Y.encodeStateAsUpdate(ydoc));
 

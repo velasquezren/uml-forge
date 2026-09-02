@@ -5,3 +5,6 @@ coverage
 .turbo
 pnpm-lock.yaml
 *.hbs
+
+# Generado por @tanstack/router-plugin: se reescribe en cada 'tsr generate'
+apps/web/src/routeTree.gen.ts
