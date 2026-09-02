@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Position, type InternalNode, type Node } from '@xyflow/react';
 import type { UMLModel } from '@uml-forge/uml-core';
+import { collabWebSocketUrl } from './collab';
 import { getEdgeAnchors } from './floatingEdge';
 import { resolveSelection } from './selection';
 import { EDGE_STYLE_BY_KIND, RELATIONSHIP_KINDS } from './edgeStyles';
@@ -144,5 +145,49 @@ describe('resolveSelection', () => {
     expect(resolveSelection(model, missing)).toBeNull();
     expect(resolveSelection(null, missing)).toBeNull();
     expect(resolveSelection(model, null)).toBeNull();
+  });
+});
+
+describe('collabWebSocketUrl', () => {
+  const originalLocation = window.location;
+
+  function stubLocation(protocol: string, hostname: string, port: string): void {
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...originalLocation, protocol, hostname, port },
+    });
+  }
+
+  afterEach(() => {
+    Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
+    vi.unstubAllEnvs();
+  });
+
+  it('en desarrollo apunta al puerto de la API', () => {
+    vi.stubEnv('DEV', true);
+    stubLocation('http:', 'localhost', '5173');
+
+    expect(collabWebSocketUrl()).toBe('ws://localhost:3000/collab');
+  });
+
+  it('compilada usa el mismo origen, que es el que hace de pasarela', () => {
+    vi.stubEnv('DEV', false);
+    stubLocation('http:', 'localhost', '8080');
+
+    expect(collabWebSocketUrl()).toBe('ws://localhost:8080/collab');
+  });
+
+  it('bajo https usa el esquema seguro y sin puerto explicito', () => {
+    vi.stubEnv('DEV', false);
+    stubLocation('https:', 'uml.example.org', '');
+
+    expect(collabWebSocketUrl()).toBe('wss://uml.example.org/collab');
+  });
+
+  it('respeta VITE_COLLAB_URL cuando se define', () => {
+    vi.stubEnv('VITE_COLLAB_URL', 'wss://colaboracion.example.org/collab');
+    stubLocation('http:', 'localhost', '8080');
+
+    expect(collabWebSocketUrl()).toBe('wss://colaboracion.example.org/collab');
   });
 });

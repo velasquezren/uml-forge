@@ -1,5 +1,9 @@
-# Infraestructura local de desarrollo de UML Forge.
-# Arranque: docker compose up -d
+# Pila completa de UML Forge: base de datos, API y PWA.
+#
+#   docker compose --profile full up --build   arranca todo y siembra los datos
+#   docker compose up -d                       solo PostgreSQL, para trabajar con pnpm dev
+#
+# La PWA queda en http://localhost:8080 y la API en http://localhost:3000.
 services:
   postgres:
     image: postgres:16-alpine
@@ -19,6 +23,66 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    image: uml-forge-api
+    container_name: uml-forge-api
+    restart: unless-stopped
+    profiles: ['full']
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-umlforge}:${POSTGRES_PASSWORD:-umlforge}@postgres:5432/${POSTGRES_DB:-umlforge}?schema=public
+      # El origen del navegador es el de la PWA en contenedor, no el de Vite.
+      CORS_ORIGIN: http://localhost:${WEB_PORT:-8080}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-umlforge_dev_jwt_access_secret_key_32bytes_min_super_secure!}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-umlforge_dev_jwt_refresh_secret_key_32bytes_min_super_secure!}
+      COOKIE_SECRET: ${COOKIE_SECRET:-umlforge_dev_cookie_secret_key_32bytes_min_super_secure!}
+      # Datos de demostracion en el primer arranque; ponlo a false para conservar lo tuyo.
+      SEED_ON_START: ${SEED_ON_START:-true}
+      AI_PROVIDER: ${AI_PROVIDER:-gemini}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      # Ollama corre en la maquina anfitriona, no en la red del contenedor.
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL_DOCKER:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:3b}
+      OLLAMA_VISION_MODEL: ${OLLAMA_VISION_MODEL:-llava:7b}
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    ports:
+      - '${API_PORT:-3000}:3000'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    image: uml-forge-web
+    container_name: uml-forge-web
+    restart: unless-stopped
+    profiles: ['full']
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - '${WEB_PORT:-8080}:80'
 
 volumes:
   postgres-data:

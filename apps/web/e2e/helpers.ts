@@ -1,4 +1,4 @@
-import { expect, type APIRequestContext, type Page } from '@playwright/test';
+import { expect, type APIRequestContext, type Locator, type Page } from '@playwright/test';
 
 /** Contrasena que cumple la politica del registro. */
 const PASSWORD = 'Password123!';
@@ -114,11 +114,61 @@ export async function openEditor(page: Page, projectName: string): Promise<void>
   await expect(page.getByRole('button', { name: 'Nueva Clase' })).toBeVisible();
 }
 
-/** Anade una clase desde la paleta y espera a verla en el lienzo. */
-export async function addClass(page: Page): Promise<string> {
-  await page.getByRole('button', { name: 'Nueva Clase' }).click();
+/** Identificadores de las clases dibujadas ahora mismo en el lienzo. */
+async function nodeIds(page: Page): Promise<string[]> {
+  return page
+    .locator('.react-flow__node')
+    .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-id') ?? ''));
+}
 
-  const node = page.locator('.react-flow__node').first();
-  await expect(node).toBeVisible();
-  return (await node.innerText()).split('\n')[0] ?? '';
+/**
+ * Anade una clase desde la paleta y devuelve su identificador. Se localiza por
+ * diferencia con las que ya habia: React Flow reordena los nodos en el DOM al
+ * arrastrarlos, de modo que su posicion en la lista no es fiable.
+ */
+export async function addClass(page: Page): Promise<string> {
+  const before = await nodeIds(page);
+  await page.getByRole('button', { name: 'Nueva Clase' }).click();
+  await expect(page.locator('.react-flow__node')).toHaveCount(before.length + 1);
+
+  const after = await nodeIds(page);
+  const added = after.find((id) => !before.includes(id));
+  expect(added, 'la clase nueva deberia tener identificador').toBeTruthy();
+  return added ?? '';
+}
+
+/** Localiza una clase del lienzo por su identificador. */
+export function nodeById(page: Page, id: string): Locator {
+  return page.locator(`.react-flow__node[data-id="${id}"]`);
+}
+
+/** Conecta dos clases arrastrando del conector derecho al izquierdo. */
+export async function connectNodes(page: Page, source: Locator, target: Locator): Promise<void> {
+  const sourceHandle = await source.locator('.react-flow__handle-right').last().boundingBox();
+  const targetHandle = await target.locator('.react-flow__handle-left').first().boundingBox();
+  expect(sourceHandle, 'la clase origen deberia tener conector').not.toBeNull();
+  expect(targetHandle, 'la clase destino deberia tener conector').not.toBeNull();
+
+  await page.mouse.move(
+    sourceHandle!.x + sourceHandle!.width / 2,
+    sourceHandle!.y + sourceHandle!.height / 2,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    targetHandle!.x + targetHandle!.width / 2,
+    targetHandle!.y + targetHandle!.height / 2,
+    { steps: 12 },
+  );
+  await page.mouse.up();
+}
+
+/** Importa un modelo XMI desde el editor y confirma el reemplazo. */
+export async function importXmiModel(page: Page, xml: string): Promise<void> {
+  await page.getByLabel('Fichero XMI a importar').setInputFiles({
+    name: 'modelo.xmi',
+    mimeType: 'application/xml',
+    buffer: Buffer.from(xml, 'utf8'),
+  });
+
+  await page.getByRole('button', { name: 'Reemplazar e importar' }).click();
 }

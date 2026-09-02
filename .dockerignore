@@ -1,0 +1,14 @@
+# Todo lo que no debe entrar en el contexto de construccion.
+**/node_modules
+**/dist
+**/dev-dist
+**/build
+**/coverage
+**/.turbo
+**/*.tsbuildinfo
+**/test-results
+**/playwright-report
+.git
+.github
+.env
+docs

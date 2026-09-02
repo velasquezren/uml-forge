@@ -24,12 +24,33 @@ Node 22 es obligatorio, no recomendado: `@hocuspocus/server` lo exige.
 
 ## Puesta en marcha
 
+### Todo en Docker
+
+Una sola orden levanta base de datos, API y PWA, aplica las migraciones y
+siembra los datos de demostracion:
+
+```bash
+cp .env.example .env
+docker compose --profile full up --build
+```
+
+- PWA: <http://localhost:8080>
+- API y Swagger: <http://localhost:3000/api/docs>
+
+Nginx sirve la PWA compilada y hace de pasarela hacia `/api`, `/health` y el
+canal de colaboracion `/collab`, de modo que el navegador ve un unico origen.
+Pon `SEED_ON_START=false` en el `.env` cuando no quieras que cada arranque
+reponga los datos de demostracion.
+
+### Con las herramientas de desarrollo
+
 ```bash
 pnpm install
 cp .env.example .env
-docker compose up -d
+docker compose up -d          # solo PostgreSQL
 pnpm --filter @uml-forge/api run prisma:migrate
-pnpm seed          # usuario y proyectos de demostracion
+pnpm seed                     # usuarios y proyectos de demostracion
+pnpm dev                      # API en :3000 y PWA en :5173
 ```
 
 ## Comandos
@@ -37,18 +58,19 @@ pnpm seed          # usuario y proyectos de demostracion
 Todos se ejecutan desde la raiz y Turborepo los propaga a los workspaces
 respetando el grafo de dependencias.
 
-| Comando                | Efecto                                             |
-| ---------------------- | -------------------------------------------------- |
-| `pnpm typecheck`       | Comprobacion de tipos de todo el monorepo          |
-| `pnpm lint`            | ESLint 9 con reglas basadas en tipos               |
-| `pnpm test`            | Bateria de pruebas (unitarias y E2E de la API)     |
-| `pnpm seed`            | Usuarios y proyectos de demostracion               |
-| `pnpm e2e`             | Pruebas E2E de navegador con Playwright            |
-| `pnpm build`           | Compilacion de todos los paquetes y aplicaciones   |
-| `pnpm format`          | Prettier en modo escritura                         |
-| `pnpm format:check`    | Prettier en modo verificacion, el mismo que usa CI |
-| `docker compose up -d` | PostgreSQL 16 en segundo plano                     |
-| `docker compose down`  | Detiene la base de datos conservando el volumen    |
+| Comando                                    | Efecto                                             |
+| ------------------------------------------ | -------------------------------------------------- |
+| `pnpm typecheck`                           | Comprobacion de tipos de todo el monorepo          |
+| `pnpm lint`                                | ESLint 9 con reglas basadas en tipos               |
+| `pnpm test`                                | Bateria de pruebas (unitarias y E2E de la API)     |
+| `pnpm seed`                                | Usuarios y proyectos de demostracion               |
+| `pnpm e2e`                                 | Pruebas E2E de navegador con Playwright            |
+| `pnpm build`                               | Compilacion de todos los paquetes y aplicaciones   |
+| `pnpm format`                              | Prettier en modo escritura                         |
+| `pnpm format:check`                        | Prettier en modo verificacion, el mismo que usa CI |
+| `docker compose up -d`                     | PostgreSQL 16 en segundo plano                     |
+| `docker compose --profile full up --build` | Toda la pila en contenedores                       |
+| `docker compose down`                      | Detiene la base de datos conservando el volumen    |
 
 > Las pruebas E2E de la API vacian la base de datos de desarrollo antes de cada
 > caso. Despues de un `pnpm test` hay que repoblarla con `pnpm seed` o no se
@@ -118,6 +140,11 @@ Se declaran todas en `.env.example`.
 | `OLLAMA_BASE_URL`        | `http://localhost:11434`                                               | Servidor de Ollama para la IA local                    |
 | `OLLAMA_MODEL`           | `qwen2.5:3b`                                                           | Modelo de texto local que genera las operaciones       |
 | `OLLAMA_VISION_MODEL`    | `llava:7b`                                                             | Modelo multimodal local que lee la foto del diagrama   |
+| `API_PORT`               | `3000`                                                                 | Puerto de la API publicado por Docker Compose          |
+| `WEB_PORT`               | `8080`                                                                 | Puerto de la PWA publicado por Docker Compose          |
+| `SEED_ON_START`          | `true`                                                                 | Siembra los datos de demostracion al arrancar la API   |
+| `OLLAMA_BASE_URL_DOCKER` | `http://host.docker.internal:11434`                                    | Ollama visto desde dentro del contenedor               |
+| `VITE_COLLAB_URL`        | vacio                                                                  | Canal de colaboracion, si no vive en el mismo origen   |
 
 ## Andamiaje
 
