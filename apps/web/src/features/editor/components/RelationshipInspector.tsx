@@ -1,4 +1,4 @@
-import type { UMLRelationship, UmlOperationInput } from '@uml-forge/uml-core';
+import type { UMLEnd, UMLRelationship, UmlOperationInput } from '@uml-forge/uml-core';
 import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { RELATIONSHIP_KIND_LABELS, RELATIONSHIP_KINDS } from '../lib/edgeStyles';
+import { RelationshipEndFields } from './RelationshipEndFields';
+
+/** Extremo de respaldo para relaciones creadas antes de tener extremos. */
+const DEFAULT_END: UMLEnd = { name: '', multiplicity: '1', navigable: true, role: '' };
 
 interface RelationshipInspectorProps {
   rel: UMLRelationship;
@@ -24,6 +28,16 @@ export function RelationshipInspector({ rel, onApplyOperation }: RelationshipIns
       id: rel.id,
       changes: { kind },
     });
+  };
+
+  // El extremo se envia completo: `updateRelationship` lo reemplaza entero, de
+  // modo que mandar solo la cardinalidad borraria el rol y la navegabilidad.
+  const handleUpdateSourceEnd = (sourceEnd: UMLEnd) => {
+    onApplyOperation({ type: 'updateRelationship', id: rel.id, changes: { sourceEnd } });
+  };
+
+  const handleUpdateTargetEnd = (targetEnd: UMLEnd) => {
+    onApplyOperation({ type: 'updateRelationship', id: rel.id, changes: { targetEnd } });
   };
 
   return (
@@ -63,6 +77,19 @@ export function RelationshipInspector({ rel, onApplyOperation }: RelationshipIns
             })
           }
           className="h-8 text-xs mt-1"
+        />
+      </div>
+
+      <div className="space-y-3 border-t border-border pt-3">
+        <RelationshipEndFields
+          title="Origen"
+          end={rel.sourceEnd ?? DEFAULT_END}
+          onChange={handleUpdateSourceEnd}
+        />
+        <RelationshipEndFields
+          title="Destino"
+          end={rel.targetEnd ?? DEFAULT_END}
+          onChange={handleUpdateTargetEnd}
         />
       </div>
 
