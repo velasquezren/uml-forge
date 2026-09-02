@@ -15,6 +15,7 @@ import {
   type UMLModel,
   type UmlOperationInput,
 } from '@uml-forge/uml-core';
+import { presenceSignature, toUserAwareness } from '../lib/awareness';
 import { modelToEdges, modelToNodes } from '../lib/flowMapper';
 import { collabWebSocketUrl, colorForUser } from '../lib/collab';
 import type { UmlEdge, UmlNode, UserAwarenessState } from '../types';
@@ -130,6 +131,35 @@ export function useYjsModel({
       return detach;
     }
 
+    const publishIdentity = () => {
+      providerRef.current?.setAwarenessField('user', {
+        id: user?.id ?? 'anon',
+        name: user?.name ?? 'Usuario',
+        color: colorForUser(user?.id ?? 'anon'),
+      });
+    };
+
+    /**
+     * La presencia se toma de los eventos del proveedor y no del objeto
+     * `awareness`: escuchando directamente en el objeto, quien ya estaba en el
+     * lienzo no se enteraba de que entraba alguien nuevo.
+     */
+    const applyAwareness = (states: readonly { clientId: number }[]) => {
+      const others = (states as readonly Record<string, unknown>[])
+        .map((state) => toUserAwareness(state))
+        .filter(
+          (state): state is UserAwarenessState => state !== null && state.user.id !== user?.id,
+        );
+
+      setRemoteCursors(others);
+
+      const signature = presenceSignature(others);
+      if (signature !== remoteSignatureRef.current) {
+        remoteSignatureRef.current = signature;
+        setRemoteUsers(others.map((state) => ({ user: state.user })));
+      }
+    };
+
     // 2. Proveedor WebSocket Hocuspocus
     const provider = new HocuspocusProvider({
       url: collabWebSocketUrl(),
@@ -139,7 +169,13 @@ export function useYjsModel({
       onStatus: (event) => {
         setStatus(event.status);
       },
+      onAwarenessUpdate: ({ states }) => applyAwareness(states),
+      onAwarenessChange: ({ states }) => applyAwareness(states),
       onSynced: () => {
+        // La identidad se vuelve a anunciar al sincronizar: publicarla solo al
+        // construir el proveedor deja a los demas esperando hasta el siguiente
+        // latido de awareness, casi diez segundos despues.
+        publishIdentity();
         // Solo tras sincronizar con el servidor se sabe si el proyecto ya tenia
         // modelo: crearlo antes duplicaria el contenido al reconectar.
         ensureModel();
@@ -148,35 +184,11 @@ export function useYjsModel({
     });
 
     providerRef.current = provider;
+    publishIdentity();
 
-    provider.setAwarenessField('user', {
-      id: user?.id ?? 'anon',
-      name: user?.name ?? 'Usuario',
-      color: colorForUser(user?.id ?? 'anon'),
-    });
-
-    const handleAwarenessChange = () => {
-      const awareness = provider.awareness;
-      if (!awareness) return;
-      const states = Array.from(awareness.getStates().values()) as UserAwarenessState[];
-      const others = states.filter((state) => state.user && state.user.id !== user?.id);
-
-      setRemoteCursors(others);
-
-      const signature = others
-        .map((state) => `${state.user.id}:${state.user.name}:${state.user.color}`)
-        .join('|');
-      if (signature !== remoteSignatureRef.current) {
-        remoteSignatureRef.current = signature;
-        setRemoteUsers(others.map((state) => ({ user: state.user })));
-      }
-    };
-
-    provider.awareness?.on('change', handleAwarenessChange);
     syncFromYDoc();
 
     return () => {
-      provider.awareness?.off('change', handleAwarenessChange);
       provider.destroy();
       providerRef.current = null;
       detach();

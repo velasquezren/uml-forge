@@ -8,7 +8,7 @@ UML compartido, API NestJS 11 con Prisma 7 y PostgreSQL 16, PWA instalable con
 lienzo colaborativo, modo offline, generador de Spring Boot descargable en ZIP,
 interoperabilidad XMI 2.1 y modulo de IA en el servidor.
 
-Queda pendiente unicamente la bateria E2E de navegador con Playwright.
+Las once fases del plan estan completas.
 
 ## Requisitos
 
@@ -41,8 +41,9 @@ respetando el grafo de dependencias.
 | ---------------------- | -------------------------------------------------- |
 | `pnpm typecheck`       | Comprobacion de tipos de todo el monorepo          |
 | `pnpm lint`            | ESLint 9 con reglas basadas en tipos               |
-| `pnpm test`            | Bateria de pruebas (unitarias y E2E)               |
+| `pnpm test`            | Bateria de pruebas (unitarias y E2E de la API)     |
 | `pnpm seed`            | Usuarios y proyectos de demostracion               |
+| `pnpm e2e`             | Pruebas E2E de navegador con Playwright            |
 | `pnpm build`           | Compilacion de todos los paquetes y aplicaciones   |
 | `pnpm format`          | Prettier en modo escritura                         |
 | `pnpm format:check`    | Prettier en modo verificacion, el mismo que usa CI |
@@ -52,6 +53,20 @@ respetando el grafo de dependencias.
 > Las pruebas E2E de la API vacian la base de datos de desarrollo antes de cada
 > caso. Despues de un `pnpm test` hay que repoblarla con `pnpm seed` o no se
 > podra iniciar sesion con los usuarios de demostracion.
+
+### Pruebas E2E de navegador
+
+`pnpm e2e` arranca la API y la PWA si no estan ya en marcha y recorre con
+Chromium los caminos de la defensa: acceso y proyectos, lienzo con relaciones y
+cardinalidades, colaboracion entre dos navegadores, generacion del backend y
+exportacion XMI. La primera vez hay que descargar el navegador:
+
+```bash
+pnpm --filter @uml-forge/web exec playwright install chromium
+```
+
+Las pruebas crean su propio usuario en cada caso, de modo que no dependen de los
+datos semilla ni los destruyen.
 
 ## Estructura
 
@@ -234,8 +249,9 @@ Construida con React 19, Vite, Tailwind CSS v4 CSS-First y shadcn/ui.
 | 8    | IA de servidor: Gemini (@google/genai) y respaldo Ollama     | Completada |
 | 9    | Datos semilla, integracion final y documentacion             | Completada |
 | 10   | Asistente de IA en la PWA: voz, imagen y aplicacion revisada | Completada |
+| 11   | Pruebas E2E de navegador con Playwright                      | Completada |
 
-Pendiente para el cierre del proyecto: las pruebas E2E de navegador con
-Playwright. Las de la API, que recorren autenticacion, proyectos,
-sincronizacion y generacion de backend contra PostgreSQL real, ya se ejecutan
-con `pnpm --filter @uml-forge/api test:e2e`.
+El plan de fases esta completo. Las pruebas E2E de la API (`pnpm --filter
+@uml-forge/api test:e2e`) recorren autenticacion, proyectos, sincronizacion y
+generacion de backend contra PostgreSQL real; las de navegador (`pnpm e2e`)
+recorren la aplicacion entera con Chromium.

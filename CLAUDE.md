@@ -59,6 +59,7 @@ explicita**. No se avanza a la siguiente fase por cuenta propia.
 | `pnpm typecheck`       | Comprobacion de tipos de todo el monorepo |
 | `pnpm lint`            | ESLint 9 con reglas basadas en tipos      |
 | `pnpm test`            | Bateria de pruebas                        |
+| `pnpm e2e`             | Pruebas E2E de navegador con Playwright   |
 | `pnpm build`           | Compilacion de paquetes y aplicaciones    |
 | `pnpm format`          | Prettier en modo escritura                |
 | `docker compose up -d` | PostgreSQL 16 de desarrollo               |
@@ -78,7 +79,7 @@ explicita**. No se avanza a la siguiente fase por cuenta propia.
 | 8    | IA de servidor: Gemini (@google/genai) y respaldo Ollama     | Completada |
 | 9    | Datos semilla, integracion final y documentacion             | Completada |
 | 10   | Asistente de IA en la PWA: voz, imagen y aplicacion revisada | Completada |
-| 11   | Pruebas E2E de navegador con Playwright                      | Pendiente  |
+| 11   | Pruebas E2E de navegador con Playwright                      | Completada |
 
 ## Puntos que conviene recordar
 
@@ -94,6 +95,7 @@ explicita**. No se avanza a la siguiente fase por cuenta propia.
 - El reconocimiento de voz en el navegador usa exclusivamente la Web Speech API nativa, degradando a texto si no está soportada.
 - El generador de Spring Boot llega al usuario por `POST /api/projects/:id/codegen/springboot`, que devuelve el proyecto en ZIP (ADR 0025). El modelo se reconstruye en el servidor desde `YDocState`, no desde el cliente.
 - Los cursores y la presencia viajan por el canal de awareness de Hocuspocus, jamas por el CRDT (ADR 0026).
+- La presencia se lee de `onAwarenessUpdate`/`onAwarenessChange` del proveedor, no del objeto `awareness`, y la identidad se reanuncia en `onSynced`: sin eso, quien ya estaba en el lienzo tardaba diez segundos en ver entrar a otro.
 - Toda llamada a la IA desde la PWA pasa por `apps/web/src/features/ai/aiClient.ts`, y sus operaciones se aplican con `applyOperation` del lienzo (ADR 0027).
 - La salida de la IA nunca se aplica sola: se muestra como propuesta y la persona confirma (ADR 0028). El dictado usa la Web Speech API nativa con tipos de `@types/dom-speech-recognition`.
 - El XMI se exporta con los espacios de nombres de la OMG, los tipos por referencia (`uml:PrimitiveType`) y las asociaciones con sus dos `memberEnd`; se importa recorriendo paquetes anidados y aceptando extremos declarados como `ownedAttribute` de la clase (ADR 0029). Nunca escribir `type="String"` en crudo.
