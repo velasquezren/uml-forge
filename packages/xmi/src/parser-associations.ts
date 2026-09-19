@@ -35,11 +35,19 @@ export function emptyClassOwnedEnds(): ClassOwnedEnds {
 /** Referencia de tipo, ya sea atributo `type` o hijo `<type xmi:idref>` como escribe EA. */
 export function typeReference(node: RawXmlNode): string | undefined {
   const direct = attr(node, 'type');
-  if (direct !== undefined) {
-    return direct;
+  if (direct !== undefined && direct.trim() !== '') {
+    return direct.trim();
   }
   const child = asNode(node['type']);
-  return child === null ? undefined : firstAttr(child, 'xmi:idref', 'idref', 'href');
+  if (child !== null) {
+    const idRef = firstAttr(child, 'xmi:idref', 'idref', 'href', 'name', 'type', 'xmi:type');
+    if (idRef !== undefined && idRef.trim() !== '') {
+      return idRef.trim();
+    }
+  } else if (typeof node['type'] === 'string' && node['type'].trim() !== '') {
+    return node['type'].trim();
+  }
+  return undefined;
 }
 
 /**

@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 780" width="1200" height="780">
+  <defs>
+    <style>
+      .ea-title { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 13.5px; font-weight: bold; fill: #1B365D; }
+      .ea-subtitle { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; fill: #4A6B82; }
+      .ea-meta-lbl { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: bold; fill: #475569; }
+      .ea-meta-val { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; fill: #1E293B; }
+      .ea-actor-name { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; font-weight: bold; fill: #17202A; text-anchor: middle; }
+      .ea-actor-role { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 9.5px; fill: #5D6D7E; font-style: italic; text-anchor: middle; }
+      .ea-uc-code { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: bold; fill: #20638F; text-anchor: middle; }
+      .ea-uc-name { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11.5px; font-weight: 600; fill: #1A252F; text-anchor: middle; }
+      .ea-uc-sub { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 9.5px; fill: #4A5568; text-anchor: middle; }
+      .ea-edge-label { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: 600; fill: #2C3E50; text-anchor: middle; }
+      .ea-boundary-title { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; font-weight: bold; fill: #2C3E50; }
+    </style>
+    
+    <!-- Flechas y Conectores EA -->
+    <marker id="ea-open-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <polyline points="1 1, 9 5, 1 9" fill="none" stroke="#2C3E50" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ea-generalization" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <polygon points="1 1, 11 6, 1 11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.3" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ea-composition" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="11" markerHeight="7" orient="auto">
+      <polygon points="1 5, 7 1.5, 13 5, 7 8.5" fill="#2C3E50" stroke="#2C3E50" stroke-width="1.2"/>
+    </marker>
+    <marker id="ea-aggregation" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="11" markerHeight="7" orient="auto">
+      <polygon points="1 5, 7 1.5, 13 5, 7 8.5" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.2"/>
+    </marker>
+  </defs>
+
+  <!-- Fondo Lienzo Blanco -->
+  <rect width="1200" height="780" fill="#FFFFFF" />
+
+  <!-- Marco Exterior de Diagrama Enterprise Architect -->
+  <rect x="20" y="20" width="1160" height="740" fill="none" stroke="#708090" stroke-width="1.2" stroke-dasharray="none"/>
+
+  <!-- Bloque de Título Oficial EA (Esquina superior izquierda ampliada) -->
+  <g id="ea-diagram-header">
+    <!-- Pestaña de tipo de diagrama -->
+    <rect x="20" y="18" width="110" height="22" fill="#F0F4F8" stroke="#708090" stroke-width="1"/>
+    <text x="75.0" y="33" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="bold" fill="#1B365D" text-anchor="middle">usecase</text>
+    
+    <!-- Caja principal de metadatos generosa -->
+    <rect x="20" y="40" width="640" height="68" fill="#FAFCFE" stroke="#708090" stroke-width="1.2"/>
+    
+    <!-- Línea 1: Título completo protegido sin desbordes -->
+    <text x="34" y="61" class="ea-title">Diagrama de Casos de Uso: Seguridad y Gestión de Acceso</text>
+    
+    <!-- Línea 2: Nombre del Paquete PUDS -->
+    <text x="34" y="79" class="ea-subtitle">Paquete: Paquete 1: Gestión de Seguridad y Acceso [PUDS_CU_02]</text>
+    
+    <!-- Línea 3: Metadatos EA ordenados con amplio espacio -->
+    <text x="34" y="97" class="ea-meta-lbl">Autor: <tspan class="ea-meta-val">Equipo UML Forge</tspan></text>
+    <text x="210" y="97" class="ea-meta-lbl">Fecha: <tspan class="ea-meta-val">18/09/2026</tspan></text>
+    <text x="360" y="97" class="ea-meta-lbl">Versión: <tspan class="ea-meta-val">1.0</tspan></text>
+    <text x="470" y="97" class="ea-meta-lbl">Estado: <tspan class="ea-meta-val">Approved</tspan></text>
+  </g>
+
+  <!-- System Boundary: Subsystem: Seguridad y Autenticación -->
+  <g id="system-boundary">
+    <rect x="250" y="116" width="680" height="624" fill="#FCFDFE" stroke="#7A8B99" stroke-width="1.2" stroke-dasharray="none"/>
+    <rect x="250" y="116" width="280" height="24" fill="#E8EFF5" stroke="#7A8B99" stroke-width="1.2"/>
+    <text x="262" y="132" class="ea-boundary-title">Subsystem: Seguridad y Autenticación</text>
+  </g>
+
+  <!-- Actor: Usuario No Registrado -->
+  <g id="actor-usuario-no-registrado">
+    <!-- Cabeza -->
+    <circle cx="120" cy="211" r="11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Tronco -->
+    <line x1="120" y1="222" x2="120" y2="252" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Brazos -->
+    <line x1="102" y1="235" x2="138" y2="235" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Piernas -->
+    <line x1="120" y1="252" x2="105" y2="274" stroke="#2C3E50" stroke-width="1.5"/>
+    <line x1="120" y1="252" x2="135" y2="274" stroke="#2C3E50" stroke-width="1.5"/>
+    <text x="120" y="290" class="ea-actor-name">Usuario No Registrado</text>    <text x="120" y="303" class="ea-actor-role">Visitante</text>
+  </g>
+
+  <!-- Actor: Usuario Autenticado -->
+  <g id="actor-usuario-autenticado">
+    <!-- Cabeza -->
+    <circle cx="120" cy="491" r="11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Tronco -->
+    <line x1="120" y1="502" x2="120" y2="532" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Brazos -->
+    <line x1="102" y1="515" x2="138" y2="515" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Piernas -->
+    <line x1="120" y1="532" x2="105" y2="554" stroke="#2C3E50" stroke-width="1.5"/>
+    <line x1="120" y1="532" x2="135" y2="554" stroke="#2C3E50" stroke-width="1.5"/>
+    <text x="120" y="570" class="ea-actor-name">Usuario Autenticado</text>    <text x="120" y="583" class="ea-actor-role">Sesión Iniciada</text>
+  </g>
+
+  <!-- Actor: Servicio Argon2id -->
+  <g id="actor-servicio-argon2id">
+    <!-- Cabeza -->
+    <circle cx="1070" cy="221" r="11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Tronco -->
+    <line x1="1070" y1="232" x2="1070" y2="262" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Brazos -->
+    <line x1="1052" y1="245" x2="1088" y2="245" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Piernas -->
+    <line x1="1070" y1="262" x2="1055" y2="284" stroke="#2C3E50" stroke-width="1.5"/>
+    <line x1="1070" y1="262" x2="1085" y2="284" stroke="#2C3E50" stroke-width="1.5"/>
+    <text x="1070" y="298" font-family="'Segoe UI', Arial" font-size="9" fill="#7F8C8D" text-anchor="middle">«system»</text>    <text x="1070" y="310" class="ea-actor-name">Servicio Argon2id</text>    <text x="1070" y="323" class="ea-actor-role">Hash Criptográfico</text>
+  </g>
+
+  <!-- Actor: Gestor de Tokens JWT -->
+  <g id="actor-gestor-de-tokens-jwt">
+    <!-- Cabeza -->
+    <circle cx="1070" cy="451" r="11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Tronco -->
+    <line x1="1070" y1="462" x2="1070" y2="492" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Brazos -->
+    <line x1="1052" y1="475" x2="1088" y2="475" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Piernas -->
+    <line x1="1070" y1="492" x2="1055" y2="514" stroke="#2C3E50" stroke-width="1.5"/>
+    <line x1="1070" y1="492" x2="1085" y2="514" stroke="#2C3E50" stroke-width="1.5"/>
+    <text x="1070" y="528" font-family="'Segoe UI', Arial" font-size="9" fill="#7F8C8D" text-anchor="middle">«system»</text>    <text x="1070" y="540" class="ea-actor-name">Gestor de Tokens JWT</text>    <text x="1070" y="553" class="ea-actor-role">Family Rotation</text>
+  </g>
+
+  <!-- Use Case: CU-01 Registro de Nuevos Usuarios -->
+  <g id="uc-cu-01">
+    <ellipse cx="420" cy="220" rx="115" ry="30" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="420" y="208" class="ea-uc-code">CU-01</text>
+    <text x="420" y="224" class="ea-uc-name">Registro de Nuevos Usuarios</text>
+    <text x="420" y="238" class="ea-uc-name">Validación y Alta en PostgreSQL</text>
+  </g>
+
+  <!-- Use Case: CU-02 Autenticación e Inicio de Sesión -->
+  <g id="uc-cu-02">
+    <ellipse cx="420" cy="360" rx="115" ry="30" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="420" y="348" class="ea-uc-code">CU-02</text>
+    <text x="420" y="364" class="ea-uc-name">Autenticación e Inicio de Sesión</text>
+    <text x="420" y="378" class="ea-uc-name">Emisión de Tokens JWT</text>
+  </g>
+
+  <!-- Use Case: CU-04 Rotación y Refresco de Token -->
+  <g id="uc-cu-04">
+    <ellipse cx="750" cy="360" rx="115" ry="30" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="750" y="348" class="ea-uc-code">CU-04</text>
+    <text x="750" y="364" class="ea-uc-name">Rotación y Refresco de Token</text>
+    <text x="750" y="378" class="ea-uc-name">Renovación Transparente</text>
+  </g>
+
+  <!-- Use Case: CU-03 Cierre de Sesión y Salida -->
+  <g id="uc-cu-03">
+    <ellipse cx="420" cy="520" rx="115" ry="30" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="420" y="508" class="ea-uc-code">CU-03</text>
+    <text x="420" y="524" class="ea-uc-name">Cierre de Sesión y Salida</text>
+    <text x="420" y="538" class="ea-uc-name">Revocación de Refresh Token</text>
+  </g>
+
+  <!-- Use Case: CU-04b Detección de Reuso de Token -->
+  <g id="uc-cu-04b">
+    <ellipse cx="750" cy="520" rx="115" ry="30" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="750" y="508" class="ea-uc-code">CU-04b</text>
+    <text x="750" y="524" class="ea-uc-name">Detección de Reuso de Token</text>
+    <text x="750" y="538" class="ea-uc-name">Invalidación Total de Familia</text>
+  </g>
+  <line x1="145" y1="230" x2="305" y2="220" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="145" y1="250" x2="305" y2="350" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="145" y1="510" x2="305" y2="370" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="145" y1="530" x2="305" y2="520" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="420" y1="250" x2="420" y2="330" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <g>
+    <rect x="379.25" y="281.0" width="81.5" height="18" rx="2" fill="#FFFFFF" stroke="#BDC3C7" stroke-width="0.8"/>
+    <text x="420.0" y="294.0" class="ea-edge-label">«include»</text>
+  </g>
+  <line x1="535" y1="360" x2="635" y2="360" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <g>
+    <rect x="548.0" y="351.0" width="74.0" height="18" rx="2" fill="#FFFFFF" stroke="#BDC3C7" stroke-width="0.8"/>
+    <text x="585.0" y="364.0" class="ea-edge-label">«extend»</text>
+  </g>
+  <line x1="750" y1="390" x2="750" y2="490" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <g>
+    <rect x="713.0" y="431.0" width="74.0" height="18" rx="2" fill="#FFFFFF" stroke="#BDC3C7" stroke-width="0.8"/>
+    <text x="750.0" y="444.0" class="ea-edge-label">«extend»</text>
+  </g>
+  <line x1="535" y1="210" x2="1045" y2="240" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <line x1="535" y1="370" x2="1045" y2="470" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <line x1="865" y1="360" x2="1045" y2="480" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <line x1="535" y1="530" x2="1045" y2="490" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <line x1="865" y1="520" x2="1045" y2="500" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+
+  <!-- EA Note -->
+  <g id="ea-note">
+    <path d="M 830 40 L 1148 40 L 1160 52 L 1160 95 L 830 95 Z" fill="#FFFDE7" stroke="#F9A825" stroke-width="1"/>
+    <path d="M 1148 40 L 1148 52 L 1160 52 Z" fill="#FFF59D" stroke="#F9A825" stroke-width="1"/>
+    <text x="840" y="60" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">Regla de Negocio RN-03 / ADR 0013:</text>
+    <text x="840" y="76" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">El Access Token vive exclusivamente en memoria RAM.</text>
+    <text x="840" y="92" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">El Refresh Token se almacena en Cookie HttpOnly.</text>
+  </g>
+
+</svg>

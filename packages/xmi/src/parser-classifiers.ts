@@ -19,7 +19,12 @@ import { attr, childValue, firstAttr, type RawXmlNode } from './raw-xml.js';
 const NEUTRAL_END = { name: '', role: '', multiplicity: '1', navigable: true } as const;
 
 /** Lee los `ownedAttribute` de un clasificador como propiedades del metamodelo. */
-export function parseAttributes(element: RawXmlNode, idMapper: IdMapper): UMLProperty[] {
+export function parseAttributes(
+  element: RawXmlNode,
+  idMapper: IdMapper,
+  typeDefs?: Map<string, string>,
+  eaPropertyTypes?: Map<string, string>,
+): UMLProperty[] {
   const attributes: UMLProperty[] = [];
 
   for (const node of toArray(element['ownedAttribute']) as RawXmlNode[]) {
@@ -29,15 +34,22 @@ export function parseAttributes(element: RawXmlNode, idMapper: IdMapper): UMLPro
       continue;
     }
 
+    const rawAttrId = attr(node, 'xmi:id');
     const name = attr(node, 'name') ?? 'attr';
-    const rawType = typeReference(node);
+    let rawType = typeReference(node);
+
+    // Si no se encontro tipo en el nodo pero EA lo definio en su extension:
+    if ((!rawType || rawType.trim() === '') && eaPropertyTypes) {
+      rawType = (rawAttrId ? eaPropertyTypes.get(rawAttrId) : undefined) ?? eaPropertyTypes.get(name);
+    }
+
     const lower = childValue(node, 'lowerValue') ?? '1';
     const upper = childValue(node, 'upperValue') ?? '1';
 
     attributes.push({
-      id: idMapper.toUuid(attr(node, 'xmi:id')),
+      id: idMapper.toUuid(rawAttrId),
       name,
-      type: normalizeType(rawType, idMapper),
+      type: normalizeType(rawType, idMapper, typeDefs),
       visibility: normalizeVisibility(attr(node, 'visibility')),
       multiplicity: normalizeMultiplicity(lower, upper),
       isStatic: attr(node, 'isStatic') === 'true',
@@ -57,6 +69,7 @@ export function parseOperations(
   element: RawXmlNode,
   idMapper: IdMapper,
   isInterface: boolean,
+  typeDefs?: Map<string, string>,
 ): UMLOperation[] {
   const operations: UMLOperation[] = [];
 
@@ -66,10 +79,10 @@ export function parseOperations(
 
     for (const parameterNode of toArray(node['ownedParameter']) as RawXmlNode[]) {
       const direction = attr(parameterNode, 'direction') ?? 'in';
-      const type = normalizeType(typeReference(parameterNode), idMapper);
+      const type = normalizeType(typeReference(parameterNode), idMapper, typeDefs);
 
       if (direction === 'return') {
-        returnType = type;
+        returnType = type === 'void' ? null : type;
         continue;
       }
       parameters.push({

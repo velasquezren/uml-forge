@@ -43,6 +43,8 @@ services:
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-umlforge_dev_jwt_access_secret_key_32bytes_min_super_secure!}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-umlforge_dev_jwt_refresh_secret_key_32bytes_min_super_secure!}
       COOKIE_SECRET: ${COOKIE_SECRET:-umlforge_dev_cookie_secret_key_32bytes_min_super_secure!}
+      # Esta pila local sirve HTTP; al publicar con HTTPS usa COOKIE_SECURE=true.
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
       # Datos de demostracion en el primer arranque; ponlo a false para conservar lo tuyo.
       SEED_ON_START: ${SEED_ON_START:-true}
       AI_PROVIDER: ${AI_PROVIDER:-ollama}

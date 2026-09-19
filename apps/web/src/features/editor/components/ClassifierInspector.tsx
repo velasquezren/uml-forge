@@ -14,9 +14,37 @@ import { Label } from '@/components/ui/label';
 interface ClassifierInspectorProps {
   cls: UMLClass;
   onApplyOperation: (op: UmlOperationInput) => void;
+  typeNames?: Record<string, string>;
 }
 
-export function ClassifierInspector({ cls, onApplyOperation }: ClassifierInspectorProps) {
+function normalizeInputType(input: string, typeNames?: Record<string, string>): string {
+  const trimmed = input.trim();
+  if (!trimmed) return 'String';
+
+  const lower = trimmed.toLowerCase();
+  if (lower === 'string' || lower === 'str' || lower === 'varchar' || lower === 'char') return 'String';
+  if (lower === 'int' || lower === 'integer' || lower === 'short' || lower === 'byte') return 'Integer';
+  if (lower === 'long' || lower === 'bigint') return 'Long';
+  if (lower === 'double' || lower === 'float' || lower === 'real' || lower === 'number') return 'Double';
+  if (lower === 'decimal' || lower === 'bigdecimal' || lower === 'numeric') return 'BigDecimal';
+  if (lower === 'bool' || lower === 'boolean') return 'Boolean';
+  if (lower === 'date') return 'Date';
+  if (lower === 'datetime' || lower === 'timestamp' || lower === 'time') return 'DateTime';
+  if (lower === 'uuid' || lower === 'guid') return 'UUID';
+  if (lower === 'text' || lower === 'clob') return 'Text';
+
+  if (typeNames) {
+    for (const [id, name] of Object.entries(typeNames)) {
+      if (name.toLowerCase() === lower) {
+        return id;
+      }
+    }
+  }
+
+  return trimmed;
+}
+
+export function ClassifierInspector({ cls, onApplyOperation, typeNames }: ClassifierInspectorProps) {
   const [newAttrName, setNewAttrName] = useState('');
   const [newAttrType, setNewAttrType] = useState('String');
   const [newOpName, setNewOpName] = useState('');
@@ -48,13 +76,14 @@ export function ClassifierInspector({ cls, onApplyOperation }: ClassifierInspect
 
   const handleAddAttribute = () => {
     if (!newAttrName.trim()) return;
+    const resolvedType = normalizeInputType(newAttrType, typeNames);
     onApplyOperation({
       type: 'addAttribute',
       classId: cls.id,
       attribute: {
         id: createId(),
         name: newAttrName.trim(),
-        type: newAttrType.trim() || 'String',
+        type: resolvedType,
         visibility: 'private',
         multiplicity: '1',
         isStatic: false,
@@ -66,6 +95,7 @@ export function ClassifierInspector({ cls, onApplyOperation }: ClassifierInspect
       },
     });
     setNewAttrName('');
+    setNewAttrType('String');
   };
 
   const handleDeleteAttribute = (attrId: string) => {
@@ -77,13 +107,18 @@ export function ClassifierInspector({ cls, onApplyOperation }: ClassifierInspect
 
   const handleAddOperation = () => {
     if (!newOpName.trim()) return;
+    const rawReturn = newOpReturn.trim();
+    const returnType =
+      !rawReturn || rawReturn.toLowerCase() === 'void'
+        ? null
+        : normalizeInputType(rawReturn, typeNames);
     onApplyOperation({
       type: 'addOperation',
       classId: cls.id,
       operation: {
         id: createId(),
         name: newOpName.trim(),
-        returnType: newOpReturn.trim() === 'void' ? null : newOpReturn.trim(),
+        returnType,
         visibility: 'public',
         isAbstract: false,
         isStatic: false,
@@ -91,6 +126,7 @@ export function ClassifierInspector({ cls, onApplyOperation }: ClassifierInspect
       },
     });
     setNewOpName('');
+    setNewOpReturn('void');
   };
 
   const handleDeleteOperation = (opId: string) => {
@@ -142,7 +178,8 @@ export function ClassifierInspector({ cls, onApplyOperation }: ClassifierInspect
         </Label>
         <div className="space-y-1.5 max-h-36 overflow-y-auto mb-2 pr-1 font-mono">
           {cls.attributes?.map((attr: UMLProperty) => {
-            const label = `${attr.visibility === 'public' ? '+' : '-'} ${attr.name}: ${attr.type}`;
+            const displayedType = typeNames?.[attr.type] ?? attr.type;
+            const label = `${attr.visibility === 'public' ? '+' : '-'} ${attr.name}: ${displayedType}`;
             return (
               <div
                 key={attr.id}
@@ -174,9 +211,10 @@ export function ClassifierInspector({ cls, onApplyOperation }: ClassifierInspect
           />
           <Input
             placeholder="Tipo"
+            list="common-types-list"
             value={newAttrType}
             onChange={(e) => setNewAttrType(e.target.value)}
-            className="h-7 text-xs w-20"
+            className="h-7 text-xs w-24"
           />
           <Button
             size="sm"
@@ -197,7 +235,8 @@ export function ClassifierInspector({ cls, onApplyOperation }: ClassifierInspect
         </Label>
         <div className="space-y-1.5 max-h-36 overflow-y-auto mb-2 pr-1 font-mono">
           {cls.operations?.map((op: UMLOperation) => {
-            const label = `+ ${op.name}(): ${op.returnType || 'void'}`;
+            const displayedReturn = op.returnType ? (typeNames?.[op.returnType] ?? op.returnType) : 'void';
+            const label = `+ ${op.name}(): ${displayedReturn}`;
             return (
               <div
                 key={op.id}
@@ -229,9 +268,10 @@ export function ClassifierInspector({ cls, onApplyOperation }: ClassifierInspect
           />
           <Input
             placeholder="Retorno"
+            list="common-types-list"
             value={newOpReturn}
             onChange={(e) => setNewOpReturn(e.target.value)}
-            className="h-7 text-xs w-20"
+            className="h-7 text-xs w-24"
           />
           <Button
             size="sm"
@@ -244,6 +284,23 @@ export function ClassifierInspector({ cls, onApplyOperation }: ClassifierInspect
           </Button>
         </div>
       </div>
+
+      <datalist id="common-types-list">
+        <option value="String" />
+        <option value="Integer" />
+        <option value="Long" />
+        <option value="Double" />
+        <option value="BigDecimal" />
+        <option value="Boolean" />
+        <option value="Date" />
+        <option value="DateTime" />
+        <option value="UUID" />
+        <option value="Text" />
+        {typeNames &&
+          Object.values(typeNames).map((typeName) => (
+            <option key={typeName} value={typeName} />
+          ))}
+      </datalist>
     </div>
   );
 }

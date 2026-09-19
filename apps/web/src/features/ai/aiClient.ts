@@ -26,6 +26,9 @@ export type AiResult = { ok: true; suggestion: AiSuggestion } | { ok: false; err
 /** Traduce el error de la API a un mensaje presentable. */
 async function describeError(error: unknown): Promise<string> {
   if (error instanceof HTTPError) {
+    if (error.response.status === 401) {
+      return 'Tu sesion expiro. Vuelve a iniciar sesion y repite la solicitud.';
+    }
     try {
       const body = await error.response.json<{ message?: string | string[] }>();
       const message = body.message;
@@ -45,7 +48,7 @@ async function describeError(error: unknown): Promise<string> {
 
 async function requestSuggestion(path: string, json: Record<string, unknown>): Promise<AiResult> {
   try {
-    const suggestion = await apiClient.post(path, { json, timeout: 120000 }).json<AiSuggestion>();
+    const suggestion = await apiClient.post(path, { json, timeout: 210000 }).json<AiSuggestion>();
     return { ok: true, suggestion };
   } catch (error) {
     return { ok: false, error: await describeError(error) };

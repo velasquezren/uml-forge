@@ -1,0 +1,261 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 880" width="1320" height="880">
+  <defs>
+    <style>
+      .ea-title { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 13.5px; font-weight: bold; fill: #1B365D; }
+      .ea-subtitle { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; fill: #4A6B82; }
+      .ea-meta-lbl { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: bold; fill: #475569; }
+      .ea-meta-val { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; fill: #1E293B; }
+      .ea-actor-name { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; font-weight: bold; fill: #17202A; text-anchor: middle; }
+      .ea-actor-role { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 9.5px; fill: #5D6D7E; font-style: italic; text-anchor: middle; }
+      .ea-uc-code { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: bold; fill: #20638F; text-anchor: middle; }
+      .ea-uc-name { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11.5px; font-weight: 600; fill: #1A252F; text-anchor: middle; }
+      .ea-uc-sub { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 9.5px; fill: #4A5568; text-anchor: middle; }
+      .ea-edge-label { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: 600; fill: #2C3E50; text-anchor: middle; }
+      .ea-boundary-title { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; font-weight: bold; fill: #2C3E50; }
+    </style>
+    
+    <!-- Flechas y Conectores EA -->
+    <marker id="ea-open-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <polyline points="1 1, 9 5, 1 9" fill="none" stroke="#2C3E50" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ea-generalization" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <polygon points="1 1, 11 6, 1 11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.3" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ea-composition" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="11" markerHeight="7" orient="auto">
+      <polygon points="1 5, 7 1.5, 13 5, 7 8.5" fill="#2C3E50" stroke="#2C3E50" stroke-width="1.2"/>
+    </marker>
+    <marker id="ea-aggregation" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="11" markerHeight="7" orient="auto">
+      <polygon points="1 5, 7 1.5, 13 5, 7 8.5" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.2"/>
+    </marker>
+  </defs>
+
+  <!-- Fondo Lienzo Blanco -->
+  <rect width="1320" height="880" fill="#FFFFFF" />
+
+  <!-- Marco Exterior de Diagrama Enterprise Architect -->
+  <rect x="20" y="20" width="1280" height="840" fill="none" stroke="#708090" stroke-width="1.2" stroke-dasharray="none"/>
+
+  <!-- Bloque de Título Oficial EA (Esquina superior izquierda ampliada) -->
+  <g id="ea-diagram-header">
+    <!-- Pestaña de tipo de diagrama -->
+    <rect x="20" y="18" width="110" height="22" fill="#F0F4F8" stroke="#708090" stroke-width="1"/>
+    <text x="75.0" y="33" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="bold" fill="#1B365D" text-anchor="middle">usecase</text>
+    
+    <!-- Caja principal de metadatos generosa -->
+    <rect x="20" y="40" width="640" height="68" fill="#FAFCFE" stroke="#708090" stroke-width="1.2"/>
+    
+    <!-- Línea 1: Título completo protegido sin desbordes -->
+    <text x="34" y="61" class="ea-title">Diagrama General de Casos de Uso del Sistema</text>
+    
+    <!-- Línea 2: Nombre del Paquete PUDS -->
+    <text x="34" y="79" class="ea-subtitle">Paquete: Modelo de Casos de Uso [PUDS_CU_01]</text>
+    
+    <!-- Línea 3: Metadatos EA ordenados con amplio espacio -->
+    <text x="34" y="97" class="ea-meta-lbl">Autor: <tspan class="ea-meta-val">Equipo UML Forge</tspan></text>
+    <text x="210" y="97" class="ea-meta-lbl">Fecha: <tspan class="ea-meta-val">18/09/2026</tspan></text>
+    <text x="360" y="97" class="ea-meta-lbl">Versión: <tspan class="ea-meta-val">1.0</tspan></text>
+    <text x="470" y="97" class="ea-meta-lbl">Estado: <tspan class="ea-meta-val">Approved</tspan></text>
+  </g>
+
+  <!-- System Boundary: System: Plataforma Web UML Forge (PWA / NestJS) -->
+  <g id="system-boundary">
+    <rect x="250" y="116" width="770" height="724" fill="#FCFDFE" stroke="#7A8B99" stroke-width="1.2" stroke-dasharray="none"/>
+    <rect x="250" y="116" width="280" height="24" fill="#E8EFF5" stroke="#7A8B99" stroke-width="1.2"/>
+    <text x="262" y="132" class="ea-boundary-title">System: Plataforma Web UML Forge (PWA / NestJS)</text>
+  </g>
+
+  <!-- Actor: Usuario No Registrado -->
+  <g id="actor-usuario-no-registrado">
+    <!-- Cabeza -->
+    <circle cx="120" cy="181" r="11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Tronco -->
+    <line x1="120" y1="192" x2="120" y2="222" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Brazos -->
+    <line x1="102" y1="205" x2="138" y2="205" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Piernas -->
+    <line x1="120" y1="222" x2="105" y2="244" stroke="#2C3E50" stroke-width="1.5"/>
+    <line x1="120" y1="222" x2="135" y2="244" stroke="#2C3E50" stroke-width="1.5"/>
+    <text x="120" y="260" class="ea-actor-name">Usuario No Registrado</text>    <text x="120" y="273" class="ea-actor-role">Visitante</text>
+  </g>
+
+  <!-- Actor: Arquitecto de Software -->
+  <g id="actor-arquitecto-de-software">
+    <!-- Cabeza -->
+    <circle cx="120" cy="391" r="11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Tronco -->
+    <line x1="120" y1="402" x2="120" y2="432" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Brazos -->
+    <line x1="102" y1="415" x2="138" y2="415" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Piernas -->
+    <line x1="120" y1="432" x2="105" y2="454" stroke="#2C3E50" stroke-width="1.5"/>
+    <line x1="120" y1="432" x2="135" y2="454" stroke="#2C3E50" stroke-width="1.5"/>
+    <text x="120" y="470" class="ea-actor-name">Arquitecto de Software</text>    <text x="120" y="483" class="ea-actor-role">Modelador Principal</text>
+  </g>
+
+  <!-- Actor: Desarrollador Colaborador -->
+  <g id="actor-desarrollador-colaborador">
+    <!-- Cabeza -->
+    <circle cx="120" cy="651" r="11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Tronco -->
+    <line x1="120" y1="662" x2="120" y2="692" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Brazos -->
+    <line x1="102" y1="675" x2="138" y2="675" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Piernas -->
+    <line x1="120" y1="692" x2="105" y2="714" stroke="#2C3E50" stroke-width="1.5"/>
+    <line x1="120" y1="692" x2="135" y2="714" stroke="#2C3E50" stroke-width="1.5"/>
+    <text x="120" y="730" class="ea-actor-name">Desarrollador Colaborador</text>    <text x="120" y="743" class="ea-actor-role">Miembro del Equipo</text>
+  </g>
+
+  <!-- Actor: Motor Spring Boot -->
+  <g id="actor-motor-spring-boot">
+    <!-- Cabeza -->
+    <circle cx="1170" cy="231" r="11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Tronco -->
+    <line x1="1170" y1="242" x2="1170" y2="272" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Brazos -->
+    <line x1="1152" y1="255" x2="1188" y2="255" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Piernas -->
+    <line x1="1170" y1="272" x2="1155" y2="294" stroke="#2C3E50" stroke-width="1.5"/>
+    <line x1="1170" y1="272" x2="1185" y2="294" stroke="#2C3E50" stroke-width="1.5"/>
+    <text x="1170" y="308" font-family="'Segoe UI', Arial" font-size="9" fill="#7F8C8D" text-anchor="middle">«system»</text>    <text x="1170" y="320" class="ea-actor-name">Motor Spring Boot</text>    <text x="1170" y="333" class="ea-actor-role">Transpilador JPA</text>
+  </g>
+
+  <!-- Actor: Herramienta CASE Externa -->
+  <g id="actor-herramienta-case-externa">
+    <!-- Cabeza -->
+    <circle cx="1170" cy="381" r="11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Tronco -->
+    <line x1="1170" y1="392" x2="1170" y2="422" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Brazos -->
+    <line x1="1152" y1="405" x2="1188" y2="405" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Piernas -->
+    <line x1="1170" y1="422" x2="1155" y2="444" stroke="#2C3E50" stroke-width="1.5"/>
+    <line x1="1170" y1="422" x2="1185" y2="444" stroke="#2C3E50" stroke-width="1.5"/>
+    <text x="1170" y="458" font-family="'Segoe UI', Arial" font-size="9" fill="#7F8C8D" text-anchor="middle">«system»</text>    <text x="1170" y="470" class="ea-actor-name">Herramienta CASE Externa</text>    <text x="1170" y="483" class="ea-actor-role">Sparx EA / StarUML</text>
+  </g>
+
+  <!-- Actor: Servidor Hocuspocus -->
+  <g id="actor-servidor-hocuspocus">
+    <!-- Cabeza -->
+    <circle cx="1170" cy="651" r="11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Tronco -->
+    <line x1="1170" y1="662" x2="1170" y2="692" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Brazos -->
+    <line x1="1152" y1="675" x2="1188" y2="675" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Piernas -->
+    <line x1="1170" y1="692" x2="1155" y2="714" stroke="#2C3E50" stroke-width="1.5"/>
+    <line x1="1170" y1="692" x2="1185" y2="714" stroke="#2C3E50" stroke-width="1.5"/>
+    <text x="1170" y="728" font-family="'Segoe UI', Arial" font-size="9" fill="#7F8C8D" text-anchor="middle">«system»</text>    <text x="1170" y="740" class="ea-actor-name">Servidor Hocuspocus</text>    <text x="1170" y="753" class="ea-actor-role">WebSocket CRDT</text>
+  </g>
+
+  <!-- Use Case: CU-01 / CU-02 Autenticación y Registro -->
+  <g id="uc-cu-01-/-cu-02">
+    <ellipse cx="430" cy="200" rx="120" ry="30" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="430" y="188" class="ea-uc-code">CU-01 / CU-02</text>
+    <text x="430" y="204" class="ea-uc-name">Autenticación y Registro</text>
+    <text x="430" y="218" class="ea-uc-name">Acceso con JWT y Cookies</text>
+  </g>
+
+  <!-- Use Case: CU-05..08 Gestión de Proyectos UML -->
+  <g id="uc-cu-05..08">
+    <ellipse cx="430" cy="320" rx="120" ry="30" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="430" y="308" class="ea-uc-code">CU-05..08</text>
+    <text x="430" y="324" class="ea-uc-name">Gestión de Proyectos UML</text>
+    <text x="430" y="338" class="ea-uc-name">Crear, Abrir y Administrar</text>
+  </g>
+
+  <!-- Use Case: CU-09..12 Modelado de Clases y Enums -->
+  <g id="uc-cu-09..12">
+    <ellipse cx="430" cy="430" rx="120" ry="30" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="430" y="418" class="ea-uc-code">CU-09..12</text>
+    <text x="430" y="434" class="ea-uc-name">Modelado de Clases y Enums</text>
+    <text x="430" y="448" class="ea-uc-name">Atributos, Métodos y Tipos</text>
+  </g>
+
+  <!-- Use Case: CU-13..18 Modelado de Relaciones UML -->
+  <g id="uc-cu-13..18">
+    <ellipse cx="430" cy="550" rx="120" ry="30" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="430" y="538" class="ea-uc-code">CU-13..18</text>
+    <text x="430" y="554" class="ea-uc-name">Modelado de Relaciones UML</text>
+    <text x="430" y="568" class="ea-uc-name">Asociación, Composición, Herencia</text>
+  </g>
+
+  <!-- Use Case: CU-29 Edición en Modo Offline -->
+  <g id="uc-cu-29">
+    <ellipse cx="430" cy="680" rx="120" ry="30" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="430" y="668" class="ea-uc-code">CU-29</text>
+    <text x="430" y="684" class="ea-uc-name">Edición en Modo Offline</text>
+    <text x="430" y="698" class="ea-uc-name">Encolado Outbox e IndexedDB</text>
+  </g>
+
+  <!-- Use Case: CU-21 / CU-22 Síntesis Backend Spring Boot -->
+  <g id="uc-cu-21-/-cu-22">
+    <ellipse cx="820" cy="260" rx="120" ry="30" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="820" y="248" class="ea-uc-code">CU-21 / CU-22</text>
+    <text x="820" y="264" class="ea-uc-name">Síntesis Backend Spring Boot</text>
+    <text x="820" y="278" class="ea-uc-name">Generar Entidades, DTO y Repos</text>
+  </g>
+
+  <!-- Use Case: CU-23 / CU-24 Interoperabilidad OMG XMI 2.1 -->
+  <g id="uc-cu-23-/-cu-24">
+    <ellipse cx="820" cy="410" rx="120" ry="30" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="820" y="398" class="ea-uc-code">CU-23 / CU-24</text>
+    <text x="820" y="414" class="ea-uc-name">Interoperabilidad OMG XMI 2.1</text>
+    <text x="820" y="428" class="ea-uc-name">Importar / Exportar XMI Nativo</text>
+  </g>
+
+  <!-- Use Case: CU-19 / CU-20 Validación de Metamodelo -->
+  <g id="uc-cu-19-/-cu-20">
+    <ellipse cx="820" cy="540" rx="120" ry="30" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="820" y="528" class="ea-uc-code">CU-19 / CU-20</text>
+    <text x="820" y="544" class="ea-uc-name">Validación de Metamodelo</text>
+    <text x="820" y="558" class="ea-uc-name">Integridad Zod y Ciclos</text>
+  </g>
+
+  <!-- Use Case: CU-27 / CU-28 Colaboración en Tiempo Real -->
+  <g id="uc-cu-27-/-cu-28">
+    <ellipse cx="820" cy="680" rx="120" ry="30" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="820" y="668" class="ea-uc-code">CU-27 / CU-28</text>
+    <text x="820" y="684" class="ea-uc-name">Colaboración en Tiempo Real</text>
+    <text x="820" y="698" class="ea-uc-name">Sincronización CRDT Yjs</text>
+  </g>
+  <line x1="145" y1="200" x2="310" y2="200" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="145" y1="400" x2="310" y2="320" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="145" y1="420" x2="310" y2="430" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="145" y1="440" x2="310" y2="550" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="145" y1="660" x2="310" y2="550" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="145" y1="680" x2="310" y2="680" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="550" y1="410" x2="700" y2="280" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <g>
+    <rect x="588.0" y="336.0" width="74.0" height="18" rx="2" fill="#FFFFFF" stroke="#BDC3C7" stroke-width="0.8"/>
+    <text x="625.0" y="349.0" class="ea-edge-label">«extend»</text>
+  </g>
+  <line x1="550" y1="430" x2="700" y2="410" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <g>
+    <rect x="588.0" y="411.0" width="74.0" height="18" rx="2" fill="#FFFFFF" stroke="#BDC3C7" stroke-width="0.8"/>
+    <text x="625.0" y="424.0" class="ea-edge-label">«extend»</text>
+  </g>
+  <line x1="550" y1="550" x2="700" y2="540" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <g>
+    <rect x="584.25" y="536.0" width="81.5" height="18" rx="2" fill="#FFFFFF" stroke="#BDC3C7" stroke-width="0.8"/>
+    <text x="625.0" y="549.0" class="ea-edge-label">«include»</text>
+  </g>
+  <line x1="550" y1="680" x2="700" y2="680" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <g>
+    <rect x="588.0" y="671.0" width="74.0" height="18" rx="2" fill="#FFFFFF" stroke="#BDC3C7" stroke-width="0.8"/>
+    <text x="625.0" y="684.0" class="ea-edge-label">«extend»</text>
+  </g>
+  <line x1="940" y1="260" x2="1145" y2="260" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <line x1="940" y1="410" x2="1145" y2="410" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <line x1="940" y1="680" x2="1145" y2="680" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+
+  <!-- EA Note -->
+  <g id="ea-note">
+    <path d="M 940 35 L 1268 35 L 1280 47 L 1280 95 L 940 95 Z" fill="#FFFDE7" stroke="#F9A825" stroke-width="1"/>
+    <path d="M 1268 35 L 1268 47 L 1280 47 Z" fill="#FFF59D" stroke="#F9A825" stroke-width="1"/>
+    <text x="950" y="55" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">Metodología PUDS: Arquitectura de Casos de Uso.</text>
+    <text x="950" y="71" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">8 Paquetes de Casos de Uso estructurados</text>
+    <text x="950" y="87" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">con sincronización CRDT y transpilación limpia.</text>
+  </g>
+
+</svg>

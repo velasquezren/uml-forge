@@ -1,0 +1,252 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1380 880" width="1380" height="880">
+  <defs>
+    <style>
+      .ea-title { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 13.5px; font-weight: bold; fill: #1B365D; }
+      .ea-subtitle { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; fill: #4A6B82; }
+      .ea-meta-lbl { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: bold; fill: #475569; }
+      .ea-meta-val { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; fill: #1E293B; }
+      .ea-actor-name { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; font-weight: bold; fill: #17202A; text-anchor: middle; }
+      .ea-actor-role { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 9.5px; fill: #5D6D7E; font-style: italic; text-anchor: middle; }
+      .ea-uc-code { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: bold; fill: #20638F; text-anchor: middle; }
+      .ea-uc-name { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11.5px; font-weight: 600; fill: #1A252F; text-anchor: middle; }
+      .ea-uc-sub { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 9.5px; fill: #4A5568; text-anchor: middle; }
+      .ea-edge-label { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: 600; fill: #2C3E50; text-anchor: middle; }
+      .ea-boundary-title { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; font-weight: bold; fill: #2C3E50; }
+    </style>
+    
+    <!-- Flechas y Conectores EA -->
+    <marker id="ea-open-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <polyline points="1 1, 9 5, 1 9" fill="none" stroke="#2C3E50" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ea-generalization" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <polygon points="1 1, 11 6, 1 11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.3" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ea-composition" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="11" markerHeight="7" orient="auto">
+      <polygon points="1 5, 7 1.5, 13 5, 7 8.5" fill="#2C3E50" stroke="#2C3E50" stroke-width="1.2"/>
+    </marker>
+    <marker id="ea-aggregation" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="11" markerHeight="7" orient="auto">
+      <polygon points="1 5, 7 1.5, 13 5, 7 8.5" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.2"/>
+    </marker>
+  </defs>
+
+  <!-- Fondo Lienzo Blanco -->
+  <rect width="1380" height="880" fill="#FFFFFF" />
+
+  <!-- Marco Exterior de Diagrama Enterprise Architect -->
+  <rect x="20" y="20" width="1340" height="840" fill="none" stroke="#708090" stroke-width="1.2" stroke-dasharray="none"/>
+
+  <!-- Bloque de Título Oficial EA (Esquina superior izquierda ampliada) -->
+  <g id="ea-diagram-header">
+    <!-- Pestaña de tipo de diagrama -->
+    <rect x="20" y="18" width="125" height="22" fill="#F0F4F8" stroke="#708090" stroke-width="1"/>
+    <text x="82.5" y="33" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="bold" fill="#1B365D" text-anchor="middle">deployment</text>
+    
+    <!-- Caja principal de metadatos generosa -->
+    <rect x="20" y="40" width="665" height="68" fill="#FAFCFE" stroke="#708090" stroke-width="1.2"/>
+    
+    <!-- Línea 1: Título completo protegido sin desbordes -->
+    <text x="34" y="61" class="ea-title">Diagrama de Despliegue Físico en Contenedores Docker (PUDS)</text>
+    
+    <!-- Línea 2: Nombre del Paquete PUDS -->
+    <text x="34" y="79" class="ea-subtitle">Paquete: Modelo de Despliegue [PUDS_DEP_01]</text>
+    
+    <!-- Línea 3: Metadatos EA ordenados con amplio espacio -->
+    <text x="34" y="97" class="ea-meta-lbl">Autor: <tspan class="ea-meta-val">Equipo UML Forge</tspan></text>
+    <text x="210" y="97" class="ea-meta-lbl">Fecha: <tspan class="ea-meta-val">18/09/2026</tspan></text>
+    <text x="360" y="97" class="ea-meta-lbl">Versión: <tspan class="ea-meta-val">1.0</tspan></text>
+    <text x="470" y="97" class="ea-meta-lbl">Estado: <tspan class="ea-meta-val">Approved</tspan></text>
+  </g>
+
+  <!-- Deployment Node: Estación de Trabajo Cliente -->
+  <g id="node-estaci-n-de-trabajo-cliente">
+    <!-- Caras 3D perspectiva EA -->
+    <polygon points="40,164 54,150 400,150 386,164" fill="#E2E8F0" stroke="#475569" stroke-width="1.2"/>
+    <polygon points="386,164 400,150 400,816 386,830" fill="#CBD5E1" stroke="#475569" stroke-width="1.2"/>
+    <!-- Cara Frontal -->
+    <rect x="40" y="164" width="346" height="666" fill="#F8FAFC" stroke="#475569" stroke-width="1.2"/>
+    <text x="213.0" y="184" font-family="'Segoe UI', Arial" font-size="10" fill="#64748B" text-anchor="middle">«device»</text>
+    <text x="213.0" y="200" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1E293B" text-anchor="middle">Estación de Trabajo Cliente</text>
+  </g>
+
+  <!-- Component: Navegador Web Moderno -->
+  <g id="cmp-navegador-web-moderno">
+    <rect x="65" y="240" width="290" height="75" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.2"/>
+    <!-- Icono UML Component EA en esquina superior derecha -->
+    <rect x="331" y="248" width="16" height="12" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="328" y="250" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="328" y="255" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <text x="210.0" y="258" font-family="'Segoe UI', Arial" font-size="9.5" fill="#566573" text-anchor="middle">«component»</text>
+    <text x="210.0" y="274" font-family="'Segoe UI', Arial" font-size="11.5" font-weight="bold" fill="#1B365D" text-anchor="middle">Navegador Web Moderno</text>
+    <text x="210.0" y="290" font-family="'Segoe UI', Arial" font-size="9.5" fill="#475569" text-anchor="middle">Chromium / Brave / Firefox / Edge</text>
+  </g>
+
+  <!-- Component: PWA Service Worker -->
+  <g id="cmp-pwa-service-worker">
+    <rect x="65" y="360" width="290" height="75" fill="#EBF4FA" stroke="#2C3E50" stroke-width="1.2"/>
+    <!-- Icono UML Component EA en esquina superior derecha -->
+    <rect x="331" y="368" width="16" height="12" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="328" y="370" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="328" y="375" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <text x="210.0" y="378" font-family="'Segoe UI', Arial" font-size="9.5" fill="#566573" text-anchor="middle">«component»</text>
+    <text x="210.0" y="394" font-family="'Segoe UI', Arial" font-size="11.5" font-weight="bold" fill="#1B365D" text-anchor="middle">PWA Service Worker</text>
+    <text x="210.0" y="410" font-family="'Segoe UI', Arial" font-size="9.5" fill="#475569" text-anchor="middle">Cache de Activos Offline &amp; Shell</text>
+  </g>
+
+  <!-- Component: IndexedDB Database -->
+  <g id="cmp-indexeddb-database">
+    <rect x="65" y="480" width="290" height="75" fill="#FEF9E7" stroke="#2C3E50" stroke-width="1.2"/>
+    <!-- Icono UML Component EA en esquina superior derecha -->
+    <rect x="331" y="488" width="16" height="12" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="328" y="490" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="328" y="495" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <text x="210.0" y="498" font-family="'Segoe UI', Arial" font-size="9.5" fill="#566573" text-anchor="middle">«component»</text>
+    <text x="210.0" y="514" font-family="'Segoe UI', Arial" font-size="11.5" font-weight="bold" fill="#1B365D" text-anchor="middle">IndexedDB Database</text>
+    <text x="210.0" y="530" font-family="'Segoe UI', Arial" font-size="9.5" fill="#475569" text-anchor="middle">Persistencia Local de Modelos y Outbox</text>
+  </g>
+
+  <!-- Component: Vite React 19 Runtime -->
+  <g id="cmp-vite-react-19-runtime">
+    <rect x="65" y="600" width="290" height="75" fill="#EBF4FA" stroke="#2C3E50" stroke-width="1.2"/>
+    <!-- Icono UML Component EA en esquina superior derecha -->
+    <rect x="331" y="608" width="16" height="12" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="328" y="610" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="328" y="615" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <text x="210.0" y="618" font-family="'Segoe UI', Arial" font-size="9.5" fill="#566573" text-anchor="middle">«component»</text>
+    <text x="210.0" y="634" font-family="'Segoe UI', Arial" font-size="11.5" font-weight="bold" fill="#1B365D" text-anchor="middle">Vite React 19 Runtime</text>
+    <text x="210.0" y="650" font-family="'Segoe UI', Arial" font-size="9.5" fill="#475569" text-anchor="middle">Motor Gráfico React Flow v12</text>
+  </g>
+
+  <!-- Deployment Node: Servidor Host Docker (Linux x86_64) -->
+  <g id="node-servidor-host-docker-linux-x86_64">
+    <!-- Caras 3D perspectiva EA -->
+    <polygon points="480,164 494,150 1320,150 1306,164" fill="#E2E8F0" stroke="#475569" stroke-width="1.2"/>
+    <polygon points="1306,164 1320,150 1320,816 1306,830" fill="#CBD5E1" stroke="#475569" stroke-width="1.2"/>
+    <!-- Cara Frontal -->
+    <rect x="480" y="164" width="826" height="666" fill="#F8FAFC" stroke="#475569" stroke-width="1.2"/>
+    <text x="893.0" y="184" font-family="'Segoe UI', Arial" font-size="10" fill="#64748B" text-anchor="middle">«device»</text>
+    <text x="893.0" y="200" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1E293B" text-anchor="middle">Servidor Host Docker (Linux x86_64)</text>
+  </g>
+
+  <!-- Package: uml-forge-network (Docker Bridge TCP/IP) -->
+  <g id="pkg-uml-forge-network-docker-bridge-tcp-ip">
+    <rect x="510" y="218" width="220" height="22" fill="#F1F5F9" stroke="#64748B" stroke-width="1.2"/>
+    <text x="520" y="233" font-family="'Segoe UI', Arial" font-size="10" font-weight="bold" fill="#334155">uml-forge-network (Docker Bridge TCP/IP)</text>
+    <rect x="510" y="240" width="780" height="560" fill="#FAFCFE" stroke="#64748B" stroke-width="1.2" stroke-dasharray="5,4"/>
+    <text x="522" y="258" font-family="'Segoe UI', Arial" font-size="9.5" fill="#64748B">«network»</text>
+  </g>
+
+  <!-- Deployment Node: uml-forge-web -->
+  <g id="node-uml-forge-web">
+    <!-- Caras 3D perspectiva EA -->
+    <polygon points="530,294 544,280 850,280 836,294" fill="#E2E8F0" stroke="#475569" stroke-width="1.2"/>
+    <polygon points="836,294 850,280 850,456 836,470" fill="#CBD5E1" stroke="#475569" stroke-width="1.2"/>
+    <!-- Cara Frontal -->
+    <rect x="530" y="294" width="306" height="176" fill="#EBF4FA" stroke="#475569" stroke-width="1.2"/>
+    <text x="683.0" y="314" font-family="'Segoe UI', Arial" font-size="10" fill="#64748B" text-anchor="middle">«container»</text>
+    <text x="683.0" y="330" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1E293B" text-anchor="middle">uml-forge-web</text>
+  </g>
+
+  <!-- Component: Nginx Static Web Server -->
+  <g id="cmp-nginx-static-web-server">
+    <rect x="545" y="350" width="270" height="75" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.2"/>
+    <!-- Icono UML Component EA en esquina superior derecha -->
+    <rect x="791" y="358" width="16" height="12" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="788" y="360" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="788" y="365" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <text x="680.0" y="368" font-family="'Segoe UI', Arial" font-size="9.5" fill="#566573" text-anchor="middle">«component»</text>
+    <text x="680.0" y="384" font-family="'Segoe UI', Arial" font-size="11.5" font-weight="bold" fill="#1B365D" text-anchor="middle">Nginx Static Web Server</text>
+    <text x="680.0" y="400" font-family="'Segoe UI', Arial" font-size="9.5" fill="#475569" text-anchor="middle">Puerto Externo: 5173</text>
+    <text x="680.0" y="415" font-family="'Segoe UI', Arial" font-size="9.5" fill="#475569" text-anchor="middle">Protocolo: HTTP / HTTPS</text>
+  </g>
+
+  <!-- Deployment Node: uml-forge-api -->
+  <g id="node-uml-forge-api">
+    <!-- Caras 3D perspectiva EA -->
+    <polygon points="910,294 924,280 1250,280 1236,294" fill="#E2E8F0" stroke="#475569" stroke-width="1.2"/>
+    <polygon points="1236,294 1250,280 1250,506 1236,520" fill="#CBD5E1" stroke="#475569" stroke-width="1.2"/>
+    <!-- Cara Frontal -->
+    <rect x="910" y="294" width="326" height="226" fill="#E8F8F5" stroke="#475569" stroke-width="1.2"/>
+    <text x="1073.0" y="314" font-family="'Segoe UI', Arial" font-size="10" fill="#64748B" text-anchor="middle">«container»</text>
+    <text x="1073.0" y="330" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1E293B" text-anchor="middle">uml-forge-api</text>
+  </g>
+
+  <!-- Component: NestJS REST API -->
+  <g id="cmp-nestjs-rest-api">
+    <rect x="925" y="350" width="290" height="65" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.2"/>
+    <!-- Icono UML Component EA en esquina superior derecha -->
+    <rect x="1191" y="358" width="16" height="12" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="1188" y="360" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="1188" y="365" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <text x="1070.0" y="368" font-family="'Segoe UI', Arial" font-size="9.5" fill="#566573" text-anchor="middle">«component»</text>
+    <text x="1070.0" y="384" font-family="'Segoe UI', Arial" font-size="11.5" font-weight="bold" fill="#1B365D" text-anchor="middle">NestJS REST API</text>
+    <text x="1070.0" y="400" font-family="'Segoe UI', Arial" font-size="9.5" fill="#475569" text-anchor="middle">Puerto: 3000 /api</text>
+  </g>
+
+  <!-- Component: Hocuspocus WS Server -->
+  <g id="cmp-hocuspocus-ws-server">
+    <rect x="925" y="430" width="290" height="65" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.2"/>
+    <!-- Icono UML Component EA en esquina superior derecha -->
+    <rect x="1191" y="438" width="16" height="12" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="1188" y="440" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="1188" y="445" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <text x="1070.0" y="448" font-family="'Segoe UI', Arial" font-size="9.5" fill="#566573" text-anchor="middle">«component»</text>
+    <text x="1070.0" y="464" font-family="'Segoe UI', Arial" font-size="11.5" font-weight="bold" fill="#1B365D" text-anchor="middle">Hocuspocus WS Server</text>
+    <text x="1070.0" y="480" font-family="'Segoe UI', Arial" font-size="9.5" fill="#475569" text-anchor="middle">Puerto: 3000 /collab</text>
+  </g>
+
+  <!-- Deployment Node: uml-forge-postgres -->
+  <g id="node-uml-forge-postgres">
+    <!-- Caras 3D perspectiva EA -->
+    <polygon points="700,564 714,550 1060,550 1046,564" fill="#E2E8F0" stroke="#475569" stroke-width="1.2"/>
+    <polygon points="1046,564 1060,550 1060,756 1046,770" fill="#CBD5E1" stroke="#475569" stroke-width="1.2"/>
+    <!-- Cara Frontal -->
+    <rect x="700" y="564" width="346" height="206" fill="#F5EEF8" stroke="#475569" stroke-width="1.2"/>
+    <text x="873.0" y="584" font-family="'Segoe UI', Arial" font-size="10" fill="#64748B" text-anchor="middle">«container»</text>
+    <text x="873.0" y="600" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1E293B" text-anchor="middle">uml-forge-postgres</text>
+  </g>
+
+  <!-- Component: PostgreSQL 16 Database Engine -->
+  <g id="cmp-postgresql-16-database-engine">
+    <rect x="715" y="620" width="310" height="60" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.2"/>
+    <!-- Icono UML Component EA en esquina superior derecha -->
+    <rect x="1001" y="628" width="16" height="12" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="998" y="630" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="998" y="635" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <text x="870.0" y="638" font-family="'Segoe UI', Arial" font-size="9.5" fill="#566573" text-anchor="middle">«component»</text>
+    <text x="870.0" y="654" font-family="'Segoe UI', Arial" font-size="11.5" font-weight="bold" fill="#1B365D" text-anchor="middle">PostgreSQL 16 Database Engine</text>
+    <text x="870.0" y="670" font-family="'Segoe UI', Arial" font-size="9.5" fill="#475569" text-anchor="middle">Puerto: 5432 (Interno Red Bridge)</text>
+  </g>
+
+  <!-- Component: postgres_data -->
+  <g id="cmp-postgres_data">
+    <rect x="715" y="695" width="310" height="50" fill="#F1F5F9" stroke="#2C3E50" stroke-width="1.2"/>
+    <!-- Icono UML Component EA en esquina superior derecha -->
+    <rect x="1001" y="703" width="16" height="12" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="998" y="705" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <rect x="998" y="710" width="6" height="3" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1"/>
+    <text x="870.0" y="713" font-family="'Segoe UI', Arial" font-size="9.5" fill="#566573" text-anchor="middle">«component»</text>
+    <text x="870.0" y="729" font-family="'Segoe UI', Arial" font-size="11.5" font-weight="bold" fill="#1B365D" text-anchor="middle">postgres_data</text>
+    <text x="870.0" y="745" font-family="'Segoe UI', Arial" font-size="9.5" fill="#475569" text-anchor="middle">«volume» Persistencia SSD</text>
+  </g>
+  <line x1="355" y1="275" x2="530" y2="340" stroke="#2C3E50" stroke-width="1.2"   marker-end="url(#ea-open-arrow)"/>
+  <g>
+    <rect x="394.25" y="298.5" width="96.5" height="18" rx="2" fill="#FFFFFF" stroke="#BDC3C7" stroke-width="0.8"/>
+    <text x="442.5" y="311.5" class="ea-edge-label">HTTPS: 5173</text>
+  </g>
+  <path d="M 355 295 L 440 295 L 440 180 L 880 180 L 880 340 L 910 340" fill="none" stroke="#2C3E50" stroke-width="1.2"   marker-end="url(#ea-open-arrow)"/>
+  <g>
+    <rect x="593.0" y="171.0" width="134.0" height="18" rx="2" fill="#FFFFFF" stroke="#BDC3C7" stroke-width="0.8"/>
+    <text x="660.0" y="184.0" class="ea-edge-label">HTTPS: 3000 /api</text>
+  </g>
+  <path d="M 355 640 L 440 640 L 440 500 L 880 500 L 880 460 L 910 460" fill="none" stroke="#2C3E50" stroke-width="1.2"   marker-end="url(#ea-open-arrow)"/>
+  <g>
+    <rect x="589.25" y="491.0" width="141.5" height="18" rx="2" fill="#FFFFFF" stroke="#BDC3C7" stroke-width="0.8"/>
+    <text x="660.0" y="504.0" class="ea-edge-label">WSS: 3000 /collab</text>
+  </g>
+  <line x1="1010" y1="520" x2="930" y2="620" stroke="#2C3E50" stroke-width="1.2"   marker-end="url(#ea-open-arrow)"/>
+  <g>
+    <rect x="880.5" y="561.0" width="179.0" height="18" rx="2" fill="#FFFFFF" stroke="#BDC3C7" stroke-width="0.8"/>
+    <text x="970.0" y="574.0" class="ea-edge-label">TCP 5432 (Pool Prisma)</text>
+  </g>
+
+</svg>

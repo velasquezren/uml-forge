@@ -25,16 +25,35 @@ export interface ProjectDto {
   updatedAt: string;
 }
 
-let isRefreshing = false;
-let refreshSubscribers: Array<(token: string | null) => void> = [];
+let pendingRefresh: Promise<AuthResponse> | null = null;
 
-function subscribeTokenRefresh(cb: (token: string | null) => void): void {
-  refreshSubscribers.push(cb);
-}
-
-function onRefreshed(token: string | null): void {
-  refreshSubscribers.forEach((cb) => cb(token));
-  refreshSubscribers = [];
+/** El arranque y los 401 comparten una sola rotacion de la cookie. */
+export function refreshSession(): Promise<AuthResponse> {
+  if (!pendingRefresh) {
+    const previousToken = useAuthStore.getState().accessToken;
+    pendingRefresh = ky
+      .post(new URL('/api/auth/refresh', window.location.origin), {
+        credentials: 'include',
+        retry: 0,
+      })
+      .json<AuthResponse>()
+      .then((session) => {
+        if (useAuthStore.getState().accessToken === previousToken) {
+          useAuthStore.getState().setAuth(session.user, session.accessToken);
+        }
+        return session;
+      })
+      .catch((error: unknown) => {
+        if (useAuthStore.getState().accessToken === previousToken) {
+          useAuthStore.getState().clearAuth();
+        }
+        throw error;
+      })
+      .finally(() => {
+        pendingRefresh = null;
+      });
+  }
+  return pendingRefresh;
 }
 
 export const apiClient = ky.create({
@@ -58,37 +77,20 @@ export const apiClient = ky.create({
           request.url.includes('/auth/refresh');
 
         if (response.status === 401 && !isAuthUrl) {
-          if (!isRefreshing) {
-            isRefreshing = true;
-
-            try {
-              const refreshResponse = await ky
-                .post('/api/auth/refresh', { credentials: 'include' })
-                .json<AuthResponse>();
-
-              useAuthStore.getState().setAuth(refreshResponse.user, refreshResponse.accessToken);
-              onRefreshed(refreshResponse.accessToken);
-
-              request.headers.set('Authorization', `Bearer ${refreshResponse.accessToken}`);
-              return ky(request, options);
-            } catch (err) {
-              onRefreshed(null);
-              useAuthStore.getState().clearAuth();
-              throw err;
-            } finally {
-              isRefreshing = false;
-            }
+          const currentToken = useAuthStore.getState().accessToken;
+          if (!currentToken || request.headers.get('Authorization') === `Bearer ${currentToken}`) {
+            await refreshSession();
           }
-
-          return new Promise((resolve, reject) => {
-            subscribeTokenRefresh((newToken) => {
-              if (newToken) {
-                request.headers.set('Authorization', `Bearer ${newToken}`);
-                resolve(ky(request, options));
-              } else {
-                reject(new Error('Sesion expirada'));
-              }
-            });
+          const token = useAuthStore.getState().accessToken;
+          if (!token) {
+            return response;
+          }
+          request.headers.set('Authorization', `Bearer ${token}`);
+          // Un segundo 401 se devuelve: no iniciar un bucle de renovaciones.
+          return ky(request, {
+            ...options,
+            headers: request.headers,
+            hooks: { beforeRequest: [], afterResponse: [] },
           });
         }
 

@@ -52,23 +52,141 @@ export function normalizeMultiplicity(
 }
 
 /** Normaliza los tipos primitivos UML hacia el metamodelo de UML Forge. */
-export function normalizeType(typeStr: string | undefined, idMapper: IdMapper): string {
-  if (!typeStr) return 'String';
-  const clean = typeStr.trim();
+function matchPrimitive(rawStr: string): string | null {
+  let clean = rawStr.trim();
+  if (clean.includes('#')) {
+    clean = clean.split('#').pop()!.trim();
+  }
+  clean = clean.replace(/^(EAJava_|EAC_|EACsharp_|EAVB_|EA_|umlforge-primitive-)/i, '');
   const lower = clean.toLowerCase();
 
-  if (lower.includes('string') || lower.includes('char') || lower.includes('varchar'))
+  // 1. Cadenas / Caracteres (string, str, char, varchar)
+  if (
+    lower === 'string' ||
+    lower === 'str' ||
+    lower === 'char' ||
+    lower === 'varchar' ||
+    lower === 'character' ||
+    lower.includes('string') ||
+    lower.includes('varchar')
+  ) {
     return 'String';
-  if (lower === 'integer' || lower === 'int') return 'Integer';
-  if (lower === 'long') return 'Long';
-  if (lower === 'double' || lower === 'float' || lower === 'real') return 'Double';
-  if (lower === 'boolean' || lower === 'bool') return 'Boolean';
-  if (lower.includes('date') && !lower.includes('time')) return 'Date';
-  if (lower.includes('datetime') || lower.includes('timestamp')) return 'DateTime';
-  if (lower === 'uuid') return 'UUID';
-  if (lower === 'text' || lower === 'clob') return 'Text';
+  }
 
-  return idMapper.toUuid(clean);
+  // 2. Enteros (int, integer, short, byte, smallint, tinyint)
+  if (
+    lower === 'int' ||
+    lower === 'integer' ||
+    lower === 'short' ||
+    lower === 'byte' ||
+    lower === 'smallint' ||
+    lower === 'tinyint' ||
+    lower.endsWith('int') ||
+    lower.endsWith('integer')
+  ) {
+    return 'Integer';
+  }
+
+  // 3. Enteros largos (long, bigint)
+  if (lower === 'long' || lower === 'bigint' || lower.endsWith('long')) {
+    return 'Long';
+  }
+
+  // 4. Numeros decimales / flotantes (double, float, real, number)
+  if (
+    lower === 'double' ||
+    lower === 'float' ||
+    lower === 'real' ||
+    lower === 'number' ||
+    lower.endsWith('double') ||
+    lower.endsWith('float')
+  ) {
+    return 'Double';
+  }
+
+  // 5. Decimales de alta precision (bigdecimal, decimal, numeric, money)
+  if (
+    lower === 'bigdecimal' ||
+    lower === 'decimal' ||
+    lower === 'numeric' ||
+    lower === 'money'
+  ) {
+    return 'BigDecimal';
+  }
+
+  // 6. Booleanos (bool, boolean, bit)
+  if (lower === 'bool' || lower === 'boolean' || lower === 'bit' || lower.endsWith('bool') || lower.endsWith('boolean')) {
+    return 'Boolean';
+  }
+
+  // 7. Fechas (date)
+  if (lower === 'date' || (lower.includes('date') && !lower.includes('time'))) {
+    return 'Date';
+  }
+
+  // 8. Fecha y hora / Timestamp (datetime, timestamp, time)
+  if (lower === 'datetime' || lower === 'timestamp' || lower === 'time' || lower.includes('timestamp')) {
+    return 'DateTime';
+  }
+
+  // 9. UUID (uuid, guid)
+  if (lower === 'uuid' || lower === 'guid') {
+    return 'UUID';
+  }
+
+  // 10. Texto largo (text, clob)
+  if (lower === 'text' || lower === 'clob') {
+    return 'Text';
+  }
+
+  // 11. Si es void
+  if (lower === 'void') {
+    return 'void';
+  }
+
+  return null;
+}
+
+export function normalizeType(
+  typeStr: string | undefined,
+  idMapper: IdMapper,
+  typeDefs?: Map<string, string>,
+): string {
+  if (!typeStr || typeStr.trim() === '') return 'String';
+  const raw = typeStr.trim();
+
+  // 1. Coincidencia directa con tipo primitivo
+  const directMatch = matchPrimitive(raw);
+  if (directMatch !== null) {
+    return directMatch;
+  }
+
+  // 2. Si typeStr es un ID definido en typeDefs (PrimitiveType o DataType en el XML):
+  if (typeDefs && typeDefs.has(raw)) {
+    const definedName = typeDefs.get(raw)!;
+    const defMatch = matchPrimitive(definedName);
+    if (defMatch !== null) {
+      return defMatch;
+    }
+  }
+
+  // 3. Si tiene prefijos de dialectos como Enterprise Architect:
+  const withoutPrefix = raw.replace(/^(EAJava_|EAC_|EACsharp_|EAVB_|EA_|umlforge-primitive-)/i, '');
+  if (withoutPrefix !== raw) {
+    const prefixMatch = matchPrimitive(withoutPrefix);
+    if (prefixMatch !== null) {
+      return prefixMatch;
+    }
+    if (typeDefs && typeDefs.has(withoutPrefix)) {
+      const defMatch = matchPrimitive(typeDefs.get(withoutPrefix)!);
+      if (defMatch !== null) {
+        return defMatch;
+      }
+    }
+  }
+
+  // 4. Si no es primitivo, es una referencia a otro Clasificador (Class, Enum, etc.) por su ID
+  return idMapper.toUuid(raw);
 }
 
 /** Extrae un array independientemente de si fast-xml-parser devuelve un objeto o un array. */

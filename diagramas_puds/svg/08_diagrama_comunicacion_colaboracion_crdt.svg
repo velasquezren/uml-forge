@@ -1,0 +1,211 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1360 860" width="1360" height="860">
+  <defs>
+    <style>
+      .ea-title { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 13.5px; font-weight: bold; fill: #1B365D; }
+      .ea-subtitle { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; fill: #4A6B82; }
+      .ea-meta-lbl { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: bold; fill: #475569; }
+      .ea-meta-val { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; fill: #1E293B; }
+      .ea-actor-name { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; font-weight: bold; fill: #17202A; text-anchor: middle; }
+      .ea-actor-role { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 9.5px; fill: #5D6D7E; font-style: italic; text-anchor: middle; }
+      .ea-uc-code { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: bold; fill: #20638F; text-anchor: middle; }
+      .ea-uc-name { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11.5px; font-weight: 600; fill: #1A252F; text-anchor: middle; }
+      .ea-uc-sub { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 9.5px; fill: #4A5568; text-anchor: middle; }
+      .ea-edge-label { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: 600; fill: #2C3E50; text-anchor: middle; }
+      .ea-boundary-title { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; font-weight: bold; fill: #2C3E50; }
+    </style>
+    
+    <!-- Flechas y Conectores EA -->
+    <marker id="ea-open-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <polyline points="1 1, 9 5, 1 9" fill="none" stroke="#2C3E50" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ea-generalization" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <polygon points="1 1, 11 6, 1 11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.3" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ea-composition" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="11" markerHeight="7" orient="auto">
+      <polygon points="1 5, 7 1.5, 13 5, 7 8.5" fill="#2C3E50" stroke="#2C3E50" stroke-width="1.2"/>
+    </marker>
+    <marker id="ea-aggregation" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="11" markerHeight="7" orient="auto">
+      <polygon points="1 5, 7 1.5, 13 5, 7 8.5" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.2"/>
+    </marker>
+  </defs>
+
+  <!-- Fondo Lienzo Blanco -->
+  <rect width="1360" height="860" fill="#FFFFFF" />
+
+  <!-- Marco Exterior de Diagrama Enterprise Architect -->
+  <rect x="20" y="20" width="1320" height="820" fill="none" stroke="#708090" stroke-width="1.2" stroke-dasharray="none"/>
+
+  <!-- Bloque de Título Oficial EA (Esquina superior izquierda ampliada) -->
+  <g id="ea-diagram-header">
+    <!-- Pestaña de tipo de diagrama -->
+    <rect x="20" y="18" width="153" height="22" fill="#F0F4F8" stroke="#708090" stroke-width="1"/>
+    <text x="96.5" y="33" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="bold" fill="#1B365D" text-anchor="middle">communication</text>
+    
+    <!-- Caja principal de metadatos generosa -->
+    <rect x="20" y="40" width="767" height="68" fill="#FAFCFE" stroke="#708090" stroke-width="1.2"/>
+    
+    <!-- Línea 1: Título completo protegido sin desbordes -->
+    <text x="34" y="61" class="ea-title">Diagrama de Comunicación 2: Edición Concurrente y Sincronización CRDT</text>
+    
+    <!-- Línea 2: Nombre del Paquete PUDS -->
+    <text x="34" y="79" class="ea-subtitle">Paquete: Modelo de Dinámica [PUDS_COM_02]</text>
+    
+    <!-- Línea 3: Metadatos EA ordenados con amplio espacio -->
+    <text x="34" y="97" class="ea-meta-lbl">Autor: <tspan class="ea-meta-val">Equipo UML Forge</tspan></text>
+    <text x="210" y="97" class="ea-meta-lbl">Fecha: <tspan class="ea-meta-val">18/09/2026</tspan></text>
+    <text x="360" y="97" class="ea-meta-lbl">Versión: <tspan class="ea-meta-val">1.0</tspan></text>
+    <text x="470" y="97" class="ea-meta-lbl">Estado: <tspan class="ea-meta-val">Approved</tspan></text>
+  </g>
+
+  <!-- Comm Circle Node: arq : ArquitectoLocal -->
+  <g id="comm-node-arq">
+    <circle cx="140" cy="180" r="32" fill="#F8FAFC" stroke="#2C3E50" stroke-width="1.6"/>
+    <text x="140" y="184.5" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1B365D" text-anchor="middle">arq</text>
+    <text x="140" y="230" font-family="'Segoe UI', Arial" font-size="11" font-weight="bold" fill="#1B365D" text-anchor="middle">arq : ArquitectoLocal</text>
+    <line x1="68.60000000000001" y1="232" x2="211.39999999999998" y2="232" stroke="#1B365D" stroke-width="1"/>
+    <text x="140" y="244" font-family="'Segoe UI', Arial" font-size="9.5" font-style="italic" fill="#566573" text-anchor="middle">«actor»</text>
+  </g>
+
+  <!-- Comm Circle Node: canvas : ReactFlowCanvas -->
+  <g id="comm-node-canvas">
+    <line x1="416" y1="164" x2="416" y2="196" stroke="#2C3E50" stroke-width="2"/>
+    <line x1="416" y1="180" x2="428" y2="180" stroke="#2C3E50" stroke-width="1.8"/>
+    <circle cx="460" cy="180" r="32" fill="#EBF4FA" stroke="#2C3E50" stroke-width="1.6"/>
+    <text x="460" y="184.5" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1B365D" text-anchor="middle">canvas</text>
+    <text x="460" y="230" font-family="'Segoe UI', Arial" font-size="11" font-weight="bold" fill="#1B365D" text-anchor="middle">canvas : ReactFlowCanvas</text>
+    <line x1="378.4" y1="232" x2="541.6" y2="232" stroke="#1B365D" stroke-width="1"/>
+    <text x="460" y="244" font-family="'Segoe UI', Arial" font-size="9.5" font-style="italic" fill="#566573" text-anchor="middle">«boundary»</text>
+  </g>
+
+  <!-- Comm Circle Node: doc : YjsDocument -->
+  <g id="comm-node-doc">
+    <line x1="760" y1="214" x2="800" y2="214" stroke="#2C3E50" stroke-width="2.2"/>
+    <circle cx="780" cy="180" r="32" fill="#F5EEF8" stroke="#2C3E50" stroke-width="1.6"/>
+    <text x="780" y="184.5" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1B365D" text-anchor="middle">doc</text>
+    <text x="780" y="230" font-family="'Segoe UI', Arial" font-size="11" font-weight="bold" fill="#1B365D" text-anchor="middle">doc : YjsDocument</text>
+    <line x1="722.2" y1="232" x2="837.8" y2="232" stroke="#1B365D" stroke-width="1"/>
+    <text x="780" y="244" font-family="'Segoe UI', Arial" font-size="9.5" font-style="italic" fill="#566573" text-anchor="middle">«entity»</text>
+  </g>
+
+  <!-- Comm Circle Node: ws : HocuspocusProvider -->
+  <g id="comm-node-ws">
+    <line x1="1056" y1="164" x2="1056" y2="196" stroke="#2C3E50" stroke-width="2"/>
+    <line x1="1056" y1="180" x2="1068" y2="180" stroke="#2C3E50" stroke-width="1.8"/>
+    <circle cx="1100" cy="180" r="32" fill="#EBF4FA" stroke="#2C3E50" stroke-width="1.6"/>
+    <text x="1100" y="184.5" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1B365D" text-anchor="middle">ws</text>
+    <text x="1100" y="230" font-family="'Segoe UI', Arial" font-size="11" font-weight="bold" fill="#1B365D" text-anchor="middle">ws : HocuspocusProvider</text>
+    <line x1="1021.8" y1="232" x2="1178.2" y2="232" stroke="#1B365D" stroke-width="1"/>
+    <text x="1100" y="244" font-family="'Segoe UI', Arial" font-size="9.5" font-style="italic" fill="#566573" text-anchor="middle">«boundary»</text>
+  </g>
+
+  <!-- Comm Circle Node: rem : ColaboradorRemoto -->
+  <g id="comm-node-rem">
+    <circle cx="140" cy="500" r="32" fill="#FEF9E7" stroke="#2C3E50" stroke-width="1.6"/>
+    <text x="140" y="504.5" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1B365D" text-anchor="middle">rem</text>
+    <text x="140" y="550" font-family="'Segoe UI', Arial" font-size="11" font-weight="bold" fill="#1B365D" text-anchor="middle">rem : ColaboradorRemoto</text>
+    <line x1="61.8" y1="552" x2="218.2" y2="552" stroke="#1B365D" stroke-width="1"/>
+    <text x="140" y="564" font-family="'Segoe UI', Arial" font-size="9.5" font-style="italic" fill="#566573" text-anchor="middle">«actor»</text>
+  </g>
+
+  <!-- Comm Circle Node: db : PostgreSQL -->
+  <g id="comm-node-db">
+    <line x1="440" y1="534" x2="480" y2="534" stroke="#2C3E50" stroke-width="2.2"/>
+    <circle cx="460" cy="500" r="32" fill="#E8F8F5" stroke="#2C3E50" stroke-width="1.6"/>
+    <text x="460" y="504.5" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1B365D" text-anchor="middle">db</text>
+    <text x="460" y="550" font-family="'Segoe UI', Arial" font-size="11" font-weight="bold" fill="#1B365D" text-anchor="middle">db : PostgreSQL</text>
+    <line x1="409.0" y1="552" x2="511.0" y2="552" stroke="#1B365D" stroke-width="1"/>
+    <text x="460" y="564" font-family="'Segoe UI', Arial" font-size="9.5" font-style="italic" fill="#566573" text-anchor="middle">«entity»</text>
+  </g>
+
+  <!-- Comm Circle Node: repo : YDocStateRepo -->
+  <g id="comm-node-repo">
+    <path d="M 770 465 A 10 10 0 1 1 786 465" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+    <polygon points="786,461 792,465 786,469" fill="#2C3E50"/>
+    <circle cx="780" cy="500" r="32" fill="#E8F8F5" stroke="#2C3E50" stroke-width="1.6"/>
+    <text x="780" y="504.5" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1B365D" text-anchor="middle">repo</text>
+    <text x="780" y="550" font-family="'Segoe UI', Arial" font-size="11" font-weight="bold" fill="#1B365D" text-anchor="middle">repo : YDocStateRepo</text>
+    <line x1="712.0" y1="552" x2="848.0" y2="552" stroke="#1B365D" stroke-width="1"/>
+    <text x="780" y="564" font-family="'Segoe UI', Arial" font-size="9.5" font-style="italic" fill="#566573" text-anchor="middle">«control»</text>
+  </g>
+
+  <!-- Comm Circle Node: srv : HocuspocusServer -->
+  <g id="comm-node-srv">
+    <path d="M 1090 465 A 10 10 0 1 1 1106 465" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+    <polygon points="1106,461 1112,465 1106,469" fill="#2C3E50"/>
+    <circle cx="1100" cy="500" r="32" fill="#E8F8F5" stroke="#2C3E50" stroke-width="1.6"/>
+    <text x="1100" y="504.5" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1B365D" text-anchor="middle">srv</text>
+    <text x="1100" y="550" font-family="'Segoe UI', Arial" font-size="11" font-weight="bold" fill="#1B365D" text-anchor="middle">srv : HocuspocusServer</text>
+    <line x1="1025.2" y1="552" x2="1174.8" y2="552" stroke="#1B365D" stroke-width="1"/>
+    <text x="1100" y="564" font-family="'Segoe UI', Arial" font-size="9.5" font-style="italic" fill="#566573" text-anchor="middle">«control»</text>
+  </g>
+  <line x1="172" y1="180" x2="428" y2="180" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="492" y1="180" x2="748" y2="180" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="812" y1="180" x2="1068" y2="180" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="1100" y1="212" x2="1100" y2="468" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="1068" y1="500" x2="812" y2="500" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="748" y1="500" x2="492" y2="500" stroke="#2C3E50" stroke-width="1.2"   />
+  <path d="M 1068 490 L 940 490 L 940 340 L 140 340 L 140 468" fill="none" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="140" y1="468" x2="140" y2="212" stroke="#2C3E50" stroke-width="1.2"   />
+
+  <!-- Comm Vector: 1: arrastrarNodo / mutarClase ──▶ -->
+  <g>
+    <rect x="171.2" y="150.0" width="257.6" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8"/>
+    <text x="300.0" y="164.0" font-family="'Segoe UI', Arial" font-size="9.5" font-weight="600" fill="#1E293B" text-anchor="middle">1: arrastrarNodo / mutarClase ──▶</text>
+  </g>
+
+  <!-- Comm Vector: 2: transact(applyClassMutation) ──▶ -->
+  <g>
+    <rect x="484.0" y="150.0" width="272.0" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8"/>
+    <text x="620.0" y="164.0" font-family="'Segoe UI', Arial" font-size="9.5" font-weight="600" fill="#1E293B" text-anchor="middle">2: transact(applyClassMutation) ──▶</text>
+  </g>
+
+  <!-- Comm Vector: 3: on(&#x27;update&#x27;, sendBinaryDelta) ──▶ -->
+  <g>
+    <rect x="800.4" y="150.0" width="279.2" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8"/>
+    <text x="940.0" y="164.0" font-family="'Segoe UI', Arial" font-size="9.5" font-weight="600" fill="#1E293B" text-anchor="middle">3: on(&#x27;update&#x27;, sendBinaryDelta) ──▶</text>
+  </g>
+
+  <!-- Comm Vector: 4: WebSocket.send(binaryDelta) ▼ -->
+  <g>
+    <rect x="1013.8" y="330.0" width="250.4" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8"/>
+    <text x="1139.0" y="344.0" font-family="'Segoe UI', Arial" font-size="9.5" font-weight="600" fill="#1E293B" text-anchor="middle">4: WebSocket.send(binaryDelta) ▼</text>
+  </g>
+
+  <!-- Comm Vector: ◀── 5: onStoreDocument(Uint8Array) -->
+  <g>
+    <rect x="807.6" y="510.0" width="264.8" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8"/>
+    <text x="940.0" y="524.0" font-family="'Segoe UI', Arial" font-size="9.5" font-weight="600" fill="#1E293B" text-anchor="middle">◀── 5: onStoreDocument(Uint8Array)</text>
+  </g>
+
+  <!-- Comm Vector: ◀── 6: UPDATE ydoc_states SET data=? -->
+  <g>
+    <rect x="480.4" y="510.0" width="279.2" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8"/>
+    <text x="620.0" y="524.0" font-family="'Segoe UI', Arial" font-size="9.5" font-weight="600" fill="#1E293B" text-anchor="middle">◀── 6: UPDATE ydoc_states SET data=?</text>
+  </g>
+
+  <!-- Comm Vector: ◀── 7: broadcastToRoom(binaryDelta) -->
+  <g>
+    <rect x="364.0" y="348.0" width="272.0" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8"/>
+    <text x="500.0" y="362.0" font-family="'Segoe UI', Arial" font-size="9.5" font-weight="600" fill="#1E293B" text-anchor="middle">◀── 7: broadcastToRoom(binaryDelta)</text>
+  </g>
+
+  <!-- Comm Vector: ▲ 8: applyUpdate() &amp; re-render(60fps) -->
+  <g>
+    <rect x="-42.20000000000002" y="330.0" width="286.40000000000003" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8"/>
+    <text x="101.0" y="344.0" font-family="'Segoe UI', Arial" font-size="9.5" font-weight="600" fill="#1E293B" text-anchor="middle">▲ 8: applyUpdate() &amp; re-render(60fps)</text>
+  </g>
+
+  <!-- EA Note -->
+  <g id="ea-note">
+    <path d="M 320 640 L 1028 640 L 1040 652 L 1040 800 L 320 800 Z" fill="#FFFDE7" stroke="#F9A825" stroke-width="1"/>
+    <path d="M 1028 640 L 1028 652 L 1040 652 Z" fill="#FFF59D" stroke="#F9A825" stroke-width="1"/>
+    <text x="330" y="660" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">Mecanismo de Sincronización CRDT (Yjs / Hocuspocus):</text>
+    <text x="330" y="676" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F"></text>
+    <text x="330" y="692" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">• Estructura de Datos: Tipos Y.Map y Y.Array sin bloqueo.</text>
+    <text x="330" y="708" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">• Resolución Concurrente: Algoritmo YATA libre de conflictos.</text>
+    <text x="330" y="724" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">• Transporte: Conexión WebSocket bidireccional de baja latencia.</text>
+    <text x="330" y="740" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">• Persistencia Binaria: Almacenamiento directo del vector Uint8Array en BYTEA.</text>
+    <text x="330" y="756" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">• Soporte Offline: Cola IndexedDB con reintento automático.</text>
+  </g>
+
+</svg>

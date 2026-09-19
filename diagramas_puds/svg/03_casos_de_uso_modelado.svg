@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 780" width="1200" height="780">
+  <defs>
+    <style>
+      .ea-title { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 13.5px; font-weight: bold; fill: #1B365D; }
+      .ea-subtitle { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; fill: #4A6B82; }
+      .ea-meta-lbl { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: bold; fill: #475569; }
+      .ea-meta-val { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; fill: #1E293B; }
+      .ea-actor-name { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; font-weight: bold; fill: #17202A; text-anchor: middle; }
+      .ea-actor-role { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 9.5px; fill: #5D6D7E; font-style: italic; text-anchor: middle; }
+      .ea-uc-code { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: bold; fill: #20638F; text-anchor: middle; }
+      .ea-uc-name { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11.5px; font-weight: 600; fill: #1A252F; text-anchor: middle; }
+      .ea-uc-sub { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 9.5px; fill: #4A5568; text-anchor: middle; }
+      .ea-edge-label { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: 600; fill: #2C3E50; text-anchor: middle; }
+      .ea-boundary-title { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; font-weight: bold; fill: #2C3E50; }
+    </style>
+    
+    <!-- Flechas y Conectores EA -->
+    <marker id="ea-open-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <polyline points="1 1, 9 5, 1 9" fill="none" stroke="#2C3E50" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ea-generalization" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <polygon points="1 1, 11 6, 1 11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.3" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ea-composition" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="11" markerHeight="7" orient="auto">
+      <polygon points="1 5, 7 1.5, 13 5, 7 8.5" fill="#2C3E50" stroke="#2C3E50" stroke-width="1.2"/>
+    </marker>
+    <marker id="ea-aggregation" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="11" markerHeight="7" orient="auto">
+      <polygon points="1 5, 7 1.5, 13 5, 7 8.5" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.2"/>
+    </marker>
+  </defs>
+
+  <!-- Fondo Lienzo Blanco -->
+  <rect width="1200" height="780" fill="#FFFFFF" />
+
+  <!-- Marco Exterior de Diagrama Enterprise Architect -->
+  <rect x="20" y="20" width="1160" height="740" fill="none" stroke="#708090" stroke-width="1.2" stroke-dasharray="none"/>
+
+  <!-- Bloque de Título Oficial EA (Esquina superior izquierda ampliada) -->
+  <g id="ea-diagram-header">
+    <!-- Pestaña de tipo de diagrama -->
+    <rect x="20" y="18" width="110" height="22" fill="#F0F4F8" stroke="#708090" stroke-width="1"/>
+    <text x="75.0" y="33" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="bold" fill="#1B365D" text-anchor="middle">usecase</text>
+    
+    <!-- Caja principal de metadatos generosa -->
+    <rect x="20" y="40" width="640" height="68" fill="#FAFCFE" stroke="#708090" stroke-width="1.2"/>
+    
+    <!-- Línea 1: Título completo protegido sin desbordes -->
+    <text x="34" y="61" class="ea-title">Diagrama de Casos de Uso: Modelado y Metamodelo UML</text>
+    
+    <!-- Línea 2: Nombre del Paquete PUDS -->
+    <text x="34" y="79" class="ea-subtitle">Paquete: Paquete 2: Modelado Visual y Metamodelo [PUDS_CU_03]</text>
+    
+    <!-- Línea 3: Metadatos EA ordenados con amplio espacio -->
+    <text x="34" y="97" class="ea-meta-lbl">Autor: <tspan class="ea-meta-val">Equipo UML Forge</tspan></text>
+    <text x="210" y="97" class="ea-meta-lbl">Fecha: <tspan class="ea-meta-val">18/09/2026</tspan></text>
+    <text x="360" y="97" class="ea-meta-lbl">Versión: <tspan class="ea-meta-val">1.0</tspan></text>
+    <text x="470" y="97" class="ea-meta-lbl">Estado: <tspan class="ea-meta-val">Approved</tspan></text>
+  </g>
+
+  <!-- System Boundary: Subsystem: Diseñador Visual y Metamodelo UML -->
+  <g id="system-boundary">
+    <rect x="250" y="116" width="680" height="624" fill="#FCFDFE" stroke="#7A8B99" stroke-width="1.2" stroke-dasharray="none"/>
+    <rect x="250" y="116" width="280" height="24" fill="#E8EFF5" stroke="#7A8B99" stroke-width="1.2"/>
+    <text x="262" y="132" class="ea-boundary-title">Subsystem: Diseñador Visual y Metamodelo UML</text>
+  </g>
+
+  <!-- Actor: Arquitecto / Diseñador -->
+  <g id="actor-arquitecto-/-diseñador">
+    <!-- Cabeza -->
+    <circle cx="120" cy="351" r="11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Tronco -->
+    <line x1="120" y1="362" x2="120" y2="392" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Brazos -->
+    <line x1="102" y1="375" x2="138" y2="375" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Piernas -->
+    <line x1="120" y1="392" x2="105" y2="414" stroke="#2C3E50" stroke-width="1.5"/>
+    <line x1="120" y1="392" x2="135" y2="414" stroke="#2C3E50" stroke-width="1.5"/>
+    <text x="120" y="430" class="ea-actor-name">Arquitecto / Diseñador</text>    <text x="120" y="443" class="ea-actor-role">Modelado de Software</text>
+  </g>
+
+  <!-- Actor: Motor de Validación Zod -->
+  <g id="actor-motor-de-validación-zod">
+    <!-- Cabeza -->
+    <circle cx="1070" cy="371" r="11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Tronco -->
+    <line x1="1070" y1="382" x2="1070" y2="412" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Brazos -->
+    <line x1="1052" y1="395" x2="1088" y2="395" stroke="#2C3E50" stroke-width="1.5"/>
+    <!-- Piernas -->
+    <line x1="1070" y1="412" x2="1055" y2="434" stroke="#2C3E50" stroke-width="1.5"/>
+    <line x1="1070" y1="412" x2="1085" y2="434" stroke="#2C3E50" stroke-width="1.5"/>
+    <text x="1070" y="448" font-family="'Segoe UI', Arial" font-size="9" fill="#7F8C8D" text-anchor="middle">«system»</text>    <text x="1070" y="460" class="ea-actor-name">Motor de Validación Zod</text>    <text x="1070" y="473" class="ea-actor-role">Reglas Semánticas</text>
+  </g>
+
+  <!-- Use Case: CU-09 Crear y Modificar Clases -->
+  <g id="uc-cu-09">
+    <ellipse cx="420" cy="200" rx="115" ry="29" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="420" y="188" class="ea-uc-code">CU-09</text>
+    <text x="420" y="204" class="ea-uc-name">Crear y Modificar Clases</text>
+    <text x="420" y="218" class="ea-uc-name">Entidades, Interfaces y Abstractas</text>
+  </g>
+
+  <!-- Use Case: CU-10 Gestionar Atributos de Clase -->
+  <g id="uc-cu-10">
+    <ellipse cx="420" cy="310" rx="115" ry="29" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="420" y="298" class="ea-uc-code">CU-10</text>
+    <text x="420" y="314" class="ea-uc-name">Gestionar Atributos de Clase</text>
+    <text x="420" y="328" class="ea-uc-name">Tipado Primitivo y Visibilidad</text>
+  </g>
+
+  <!-- Use Case: CU-11 Gestionar Operaciones UML -->
+  <g id="uc-cu-11">
+    <ellipse cx="420" cy="420" rx="115" ry="29" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="420" y="408" class="ea-uc-code">CU-11</text>
+    <text x="420" y="424" class="ea-uc-name">Gestionar Operaciones UML</text>
+    <text x="420" y="438" class="ea-uc-name">Métodos, Parámetros y Retorno</text>
+  </g>
+
+  <!-- Use Case: CU-13 Modelar Relaciones UML -->
+  <g id="uc-cu-13">
+    <ellipse cx="420" cy="540" rx="115" ry="29" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="420" y="528" class="ea-uc-code">CU-13</text>
+    <text x="420" y="544" class="ea-uc-name">Modelar Relaciones UML</text>
+    <text x="420" y="558" class="ea-uc-name">Asociación, Composición, Herencia</text>
+  </g>
+
+  <!-- Use Case: CU-12 Modelar Enumeraciones -->
+  <g id="uc-cu-12">
+    <ellipse cx="420" cy="660" rx="115" ry="29" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="420" y="648" class="ea-uc-code">CU-12</text>
+    <text x="420" y="664" class="ea-uc-name">Modelar Enumeraciones</text>
+    <text x="420" y="678" class="ea-uc-name">Literales y Valores</text>
+  </g>
+
+  <!-- Use Case: CU-19 Validar Reglas del Metamodelo -->
+  <g id="uc-cu-19">
+    <ellipse cx="760" cy="400" rx="115" ry="29" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="760" y="388" class="ea-uc-code">CU-19</text>
+    <text x="760" y="404" class="ea-uc-name">Validar Reglas del Metamodelo</text>
+    <text x="760" y="418" class="ea-uc-name">Prevención de Ciclos y Duplicados</text>
+  </g>
+
+  <!-- Use Case: CU-17 Configurar Multiplicidades -->
+  <g id="uc-cu-17">
+    <ellipse cx="760" cy="540" rx="115" ry="29" fill="#EBF4FA" stroke="#2980B9" stroke-width="1.3"/>
+    <text x="760" y="528" class="ea-uc-code">CU-17</text>
+    <text x="760" y="544" class="ea-uc-name">Configurar Multiplicidades</text>
+    <text x="760" y="558" class="ea-uc-name">Rangos 1, 0..1, 0..*, n..m</text>
+  </g>
+  <line x1="145" y1="360" x2="305" y2="200" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="145" y1="370" x2="305" y2="310" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="145" y1="380" x2="305" y2="420" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="145" y1="390" x2="305" y2="540" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="145" y1="400" x2="305" y2="660" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="420" y1="229" x2="420" y2="281" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <g>
+    <rect x="379.25" y="246.0" width="81.5" height="18" rx="2" fill="#FFFFFF" stroke="#BDC3C7" stroke-width="0.8"/>
+    <text x="420.0" y="259.0" class="ea-edge-label">«include»</text>
+  </g>
+  <line x1="420" y1="339" x2="420" y2="391" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <g>
+    <rect x="379.25" y="356.0" width="81.5" height="18" rx="2" fill="#FFFFFF" stroke="#BDC3C7" stroke-width="0.8"/>
+    <text x="420.0" y="369.0" class="ea-edge-label">«include»</text>
+  </g>
+  <line x1="535" y1="540" x2="645" y2="540" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <g>
+    <rect x="549.25" y="531.0" width="81.5" height="18" rx="2" fill="#FFFFFF" stroke="#BDC3C7" stroke-width="0.8"/>
+    <text x="590.0" y="544.0" class="ea-edge-label">«include»</text>
+  </g>
+  <line x1="535" y1="210" x2="645" y2="390" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <g>
+    <rect x="549.25" y="291.0" width="81.5" height="18" rx="2" fill="#FFFFFF" stroke="#BDC3C7" stroke-width="0.8"/>
+    <text x="590.0" y="304.0" class="ea-edge-label">«include»</text>
+  </g>
+  <line x1="535" y1="530" x2="645" y2="415" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+  <g>
+    <rect x="549.25" y="463.5" width="81.5" height="18" rx="2" fill="#FFFFFF" stroke="#BDC3C7" stroke-width="0.8"/>
+    <text x="590.0" y="476.5" class="ea-edge-label">«include»</text>
+  </g>
+  <line x1="875" y1="400" x2="1045" y2="400" stroke="#2C3E50" stroke-width="1.2" stroke-dasharray="5,4"  marker-end="url(#ea-open-arrow)"/>
+
+  <!-- EA Note -->
+  <g id="ea-note">
+    <path d="M 830 40 L 1148 40 L 1160 52 L 1160 95 L 830 95 Z" fill="#FFFDE7" stroke="#F9A825" stroke-width="1"/>
+    <path d="M 1148 40 L 1148 52 L 1160 52 Z" fill="#FFF59D" stroke="#F9A825" stroke-width="1"/>
+    <text x="840" y="60" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">Metamodelo Inmutable (@uml-forge/uml-core):</text>
+    <text x="840" y="76" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">Cada mutación genera un nuevo estado validado.</text>
+    <text x="840" y="92" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">Cumplimiento estricto del estándar OMG UML 2.5.</text>
+  </g>
+
+</svg>

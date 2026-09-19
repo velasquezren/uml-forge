@@ -108,7 +108,7 @@ export class AuthController {
   private setRefreshTokenCookie(res: Response, token: string): void {
     res.cookie(REFRESH_COOKIE_NAME, token, {
       httpOnly: true,
-      secure: this.configService.isProduction,
+      secure: this.configService.cookieSecure,
       sameSite: 'lax',
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -118,7 +118,7 @@ export class AuthController {
   private clearRefreshTokenCookie(res: Response): void {
     res.clearCookie(REFRESH_COOKIE_NAME, {
       httpOnly: true,
-      secure: this.configService.isProduction,
+      secure: this.configService.cookieSecure,
       sameSite: 'lax',
       path: '/',
     });

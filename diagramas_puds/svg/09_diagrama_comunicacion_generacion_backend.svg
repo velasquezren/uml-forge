@@ -1,0 +1,213 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1360 860" width="1360" height="860">
+  <defs>
+    <style>
+      .ea-title { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 13.5px; font-weight: bold; fill: #1B365D; }
+      .ea-subtitle { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; fill: #4A6B82; }
+      .ea-meta-lbl { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: bold; fill: #475569; }
+      .ea-meta-val { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; fill: #1E293B; }
+      .ea-actor-name { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; font-weight: bold; fill: #17202A; text-anchor: middle; }
+      .ea-actor-role { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 9.5px; fill: #5D6D7E; font-style: italic; text-anchor: middle; }
+      .ea-uc-code { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: bold; fill: #20638F; text-anchor: middle; }
+      .ea-uc-name { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11.5px; font-weight: 600; fill: #1A252F; text-anchor: middle; }
+      .ea-uc-sub { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 9.5px; fill: #4A5568; text-anchor: middle; }
+      .ea-edge-label { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 10px; font-weight: 600; fill: #2C3E50; text-anchor: middle; }
+      .ea-boundary-title { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; font-weight: bold; fill: #2C3E50; }
+    </style>
+    
+    <!-- Flechas y Conectores EA -->
+    <marker id="ea-open-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <polyline points="1 1, 9 5, 1 9" fill="none" stroke="#2C3E50" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ea-generalization" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <polygon points="1 1, 11 6, 1 11" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.3" stroke-linejoin="round"/>
+    </marker>
+    <marker id="ea-composition" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="11" markerHeight="7" orient="auto">
+      <polygon points="1 5, 7 1.5, 13 5, 7 8.5" fill="#2C3E50" stroke="#2C3E50" stroke-width="1.2"/>
+    </marker>
+    <marker id="ea-aggregation" viewBox="0 0 14 10" refX="1" refY="5" markerWidth="11" markerHeight="7" orient="auto">
+      <polygon points="1 5, 7 1.5, 13 5, 7 8.5" fill="#FFFFFF" stroke="#2C3E50" stroke-width="1.2"/>
+    </marker>
+  </defs>
+
+  <!-- Fondo Lienzo Blanco -->
+  <rect width="1360" height="860" fill="#FFFFFF" />
+
+  <!-- Marco Exterior de Diagrama Enterprise Architect -->
+  <rect x="20" y="20" width="1320" height="820" fill="none" stroke="#708090" stroke-width="1.2" stroke-dasharray="none"/>
+
+  <!-- Bloque de Título Oficial EA (Esquina superior izquierda ampliada) -->
+  <g id="ea-diagram-header">
+    <!-- Pestaña de tipo de diagrama -->
+    <rect x="20" y="18" width="153" height="22" fill="#F0F4F8" stroke="#708090" stroke-width="1"/>
+    <text x="96.5" y="33" font-family="'Segoe UI', Arial, sans-serif" font-size="10.5" font-weight="bold" fill="#1B365D" text-anchor="middle">communication</text>
+    
+    <!-- Caja principal de metadatos generosa -->
+    <rect x="20" y="40" width="686" height="68" fill="#FAFCFE" stroke="#708090" stroke-width="1.2"/>
+    
+    <!-- Línea 1: Título completo protegido sin desbordes -->
+    <text x="34" y="61" class="ea-title">Diagrama de Comunicación 3: Síntesis de Backend Spring Boot 3</text>
+    
+    <!-- Línea 2: Nombre del Paquete PUDS -->
+    <text x="34" y="79" class="ea-subtitle">Paquete: Modelo de Dinámica [PUDS_COM_03]</text>
+    
+    <!-- Línea 3: Metadatos EA ordenados con amplio espacio -->
+    <text x="34" y="97" class="ea-meta-lbl">Autor: <tspan class="ea-meta-val">Equipo UML Forge</tspan></text>
+    <text x="210" y="97" class="ea-meta-lbl">Fecha: <tspan class="ea-meta-val">18/09/2026</tspan></text>
+    <text x="360" y="97" class="ea-meta-lbl">Versión: <tspan class="ea-meta-val">1.0</tspan></text>
+    <text x="470" y="97" class="ea-meta-lbl">Estado: <tspan class="ea-meta-val">Approved</tspan></text>
+  </g>
+
+  <!-- Comm Circle Node: usr : Usuario -->
+  <g id="comm-node-usr">
+    <circle cx="140" cy="180" r="32" fill="#F8FAFC" stroke="#2C3E50" stroke-width="1.6"/>
+    <text x="140" y="184.5" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1B365D" text-anchor="middle">usr</text>
+    <text x="140" y="230" font-family="'Segoe UI', Arial" font-size="11" font-weight="bold" fill="#1B365D" text-anchor="middle">usr : Usuario</text>
+    <line x1="95.80000000000001" y1="232" x2="184.2" y2="232" stroke="#1B365D" stroke-width="1"/>
+    <text x="140" y="244" font-family="'Segoe UI', Arial" font-size="9.5" font-style="italic" fill="#566573" text-anchor="middle">«actor»</text>
+  </g>
+
+  <!-- Comm Circle Node: modal : ExportModal -->
+  <g id="comm-node-modal">
+    <line x1="416" y1="164" x2="416" y2="196" stroke="#2C3E50" stroke-width="2"/>
+    <line x1="416" y1="180" x2="428" y2="180" stroke="#2C3E50" stroke-width="1.8"/>
+    <circle cx="460" cy="180" r="32" fill="#EBF4FA" stroke="#2C3E50" stroke-width="1.6"/>
+    <text x="460" y="184.5" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1B365D" text-anchor="middle">modal</text>
+    <text x="460" y="230" font-family="'Segoe UI', Arial" font-size="11" font-weight="bold" fill="#1B365D" text-anchor="middle">modal : ExportModal</text>
+    <line x1="395.4" y1="232" x2="524.6" y2="232" stroke="#1B365D" stroke-width="1"/>
+    <text x="460" y="244" font-family="'Segoe UI', Arial" font-size="9.5" font-style="italic" fill="#566573" text-anchor="middle">«boundary»</text>
+  </g>
+
+  <!-- Comm Circle Node: ctrl : CodegenController -->
+  <g id="comm-node-ctrl">
+    <path d="M 770 145 A 10 10 0 1 1 786 145" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+    <polygon points="786,141 792,145 786,149" fill="#2C3E50"/>
+    <circle cx="780" cy="180" r="32" fill="#EBF4FA" stroke="#2C3E50" stroke-width="1.6"/>
+    <text x="780" y="184.5" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1B365D" text-anchor="middle">ctrl</text>
+    <text x="780" y="230" font-family="'Segoe UI', Arial" font-size="11" font-weight="bold" fill="#1B365D" text-anchor="middle">ctrl : CodegenController</text>
+    <line x1="698.4" y1="232" x2="861.6" y2="232" stroke="#1B365D" stroke-width="1"/>
+    <text x="780" y="244" font-family="'Segoe UI', Arial" font-size="9.5" font-style="italic" fill="#566573" text-anchor="middle">«control»</text>
+  </g>
+
+  <!-- Comm Circle Node: srv : CodegenService -->
+  <g id="comm-node-srv">
+    <path d="M 1090 145 A 10 10 0 1 1 1106 145" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+    <polygon points="1106,141 1112,145 1106,149" fill="#2C3E50"/>
+    <circle cx="1100" cy="180" r="32" fill="#EBF4FA" stroke="#2C3E50" stroke-width="1.6"/>
+    <text x="1100" y="184.5" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1B365D" text-anchor="middle">srv</text>
+    <text x="1100" y="230" font-family="'Segoe UI', Arial" font-size="11" font-weight="bold" fill="#1B365D" text-anchor="middle">srv : CodegenService</text>
+    <line x1="1032.0" y1="232" x2="1168.0" y2="232" stroke="#1B365D" stroke-width="1"/>
+    <text x="1100" y="244" font-family="'Segoe UI', Arial" font-size="9.5" font-style="italic" fill="#566573" text-anchor="middle">«control»</text>
+  </g>
+
+  <!-- Comm Circle Node: fs : BrowserDownload -->
+  <g id="comm-node-fs">
+    <line x1="96" y1="484" x2="96" y2="516" stroke="#2C3E50" stroke-width="2"/>
+    <line x1="96" y1="500" x2="108" y2="500" stroke="#2C3E50" stroke-width="1.8"/>
+    <circle cx="140" cy="500" r="32" fill="#E8F8F5" stroke="#2C3E50" stroke-width="1.6"/>
+    <text x="140" y="504.5" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1B365D" text-anchor="middle">fs</text>
+    <text x="140" y="550" font-family="'Segoe UI', Arial" font-size="11" font-weight="bold" fill="#1B365D" text-anchor="middle">fs : BrowserDownload</text>
+    <line x1="72.0" y1="552" x2="208.0" y2="552" stroke="#1B365D" stroke-width="1"/>
+    <text x="140" y="564" font-family="'Segoe UI', Arial" font-size="9.5" font-style="italic" fill="#566573" text-anchor="middle">«boundary»</text>
+  </g>
+
+  <!-- Comm Circle Node: zip : ZipArchiver -->
+  <g id="comm-node-zip">
+    <path d="M 450 465 A 10 10 0 1 1 466 465" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+    <polygon points="466,461 472,465 466,469" fill="#2C3E50"/>
+    <circle cx="460" cy="500" r="32" fill="#FEF9E7" stroke="#2C3E50" stroke-width="1.6"/>
+    <text x="460" y="504.5" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1B365D" text-anchor="middle">zip</text>
+    <text x="460" y="550" font-family="'Segoe UI', Arial" font-size="11" font-weight="bold" fill="#1B365D" text-anchor="middle">zip : ZipArchiver</text>
+    <line x1="402.2" y1="552" x2="517.8" y2="552" stroke="#1B365D" stroke-width="1"/>
+    <text x="460" y="564" font-family="'Segoe UI', Arial" font-size="9.5" font-style="italic" fill="#566573" text-anchor="middle">«control»</text>
+  </g>
+
+  <!-- Comm Circle Node: gen : SpringBootGen -->
+  <g id="comm-node-gen">
+    <path d="M 770 465 A 10 10 0 1 1 786 465" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+    <polygon points="786,461 792,465 786,469" fill="#2C3E50"/>
+    <circle cx="780" cy="500" r="32" fill="#E8F8F5" stroke="#2C3E50" stroke-width="1.6"/>
+    <text x="780" y="504.5" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1B365D" text-anchor="middle">gen</text>
+    <text x="780" y="550" font-family="'Segoe UI', Arial" font-size="11" font-weight="bold" fill="#1B365D" text-anchor="middle">gen : SpringBootGen</text>
+    <line x1="715.4" y1="552" x2="844.6" y2="552" stroke="#1B365D" stroke-width="1"/>
+    <text x="780" y="564" font-family="'Segoe UI', Arial" font-size="9.5" font-style="italic" fill="#566573" text-anchor="middle">«control»</text>
+  </g>
+
+  <!-- Comm Circle Node: val : UmlValidator -->
+  <g id="comm-node-val">
+    <path d="M 1090 465 A 10 10 0 1 1 1106 465" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+    <polygon points="1106,461 1112,465 1106,469" fill="#2C3E50"/>
+    <circle cx="1100" cy="500" r="32" fill="#F5EEF8" stroke="#2C3E50" stroke-width="1.6"/>
+    <text x="1100" y="504.5" font-family="'Segoe UI', Arial" font-size="12" font-weight="bold" fill="#1B365D" text-anchor="middle">val</text>
+    <text x="1100" y="550" font-family="'Segoe UI', Arial" font-size="11" font-weight="bold" fill="#1B365D" text-anchor="middle">val : UmlValidator</text>
+    <line x1="1038.8" y1="552" x2="1161.2" y2="552" stroke="#1B365D" stroke-width="1"/>
+    <text x="1100" y="564" font-family="'Segoe UI', Arial" font-size="9.5" font-style="italic" fill="#566573" text-anchor="middle">«control»</text>
+  </g>
+  <line x1="172" y1="180" x2="428" y2="180" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="492" y1="180" x2="748" y2="180" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="812" y1="180" x2="1068" y2="180" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="1100" y1="212" x2="1100" y2="468" stroke="#2C3E50" stroke-width="1.2"   />
+  <path d="M 1068 195 L 940 195 L 940 500 L 812 500" fill="none" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="748" y1="500" x2="492" y2="500" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="428" y1="500" x2="172" y2="500" stroke="#2C3E50" stroke-width="1.2"   />
+  <line x1="140" y1="468" x2="140" y2="212" stroke="#2C3E50" stroke-width="1.2"   />
+
+  <!-- Comm Vector: 1: clickGenerarBackend(opciones) ──▶ -->
+  <g>
+    <rect x="160.4" y="150.0" width="279.2" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8"/>
+    <text x="300.0" y="164.0" font-family="'Segoe UI', Arial" font-size="9.5" font-weight="600" fill="#1E293B" text-anchor="middle">1: clickGenerarBackend(opciones) ──▶</text>
+  </g>
+
+  <!-- Comm Vector: 2: POST /api/codegen/spring-boot ──▶ -->
+  <g>
+    <rect x="480.4" y="150.0" width="279.2" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8"/>
+    <text x="620.0" y="164.0" font-family="'Segoe UI', Arial" font-size="9.5" font-weight="600" fill="#1E293B" text-anchor="middle">2: POST /api/codegen/spring-boot ──▶</text>
+  </g>
+
+  <!-- Comm Vector: 3: generateProject(model) ──▶ -->
+  <g>
+    <rect x="825.6" y="150.0" width="228.8" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8"/>
+    <text x="940.0" y="164.0" font-family="'Segoe UI', Arial" font-size="9.5" font-weight="600" fill="#1E293B" text-anchor="middle">3: generateProject(model) ──▶</text>
+  </g>
+
+  <!-- Comm Vector: 4: validateInvariants(model) ▼ -->
+  <g>
+    <rect x="1021.0" y="330.0" width="236.0" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8"/>
+    <text x="1139.0" y="344.0" font-family="'Segoe UI', Arial" font-size="9.5" font-weight="600" fill="#1E293B" text-anchor="middle">4: validateInvariants(model) ▼</text>
+  </g>
+
+  <!-- Comm Vector: ◀── 5: synthesizeJpaAndLayers(classes) -->
+  <g>
+    <rect x="729.2" y="510.0" width="293.6" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8"/>
+    <text x="876.0" y="524.0" font-family="'Segoe UI', Arial" font-size="9.5" font-weight="600" fill="#1E293B" text-anchor="middle">◀── 5: synthesizeJpaAndLayers(classes)</text>
+  </g>
+
+  <!-- Comm Vector: ◀── 6: createArchive(fileTree, pomXml) -->
+  <g>
+    <rect x="473.2" y="510.0" width="293.6" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8"/>
+    <text x="620.0" y="524.0" font-family="'Segoe UI', Arial" font-size="9.5" font-weight="600" fill="#1E293B" text-anchor="middle">◀── 6: createArchive(fileTree, pomXml)</text>
+  </g>
+
+  <!-- Comm Vector: ◀── 7: saveBlob(&#x27;spring-boot.zip&#x27;) -->
+  <g>
+    <rect x="167.6" y="510.0" width="264.8" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8"/>
+    <text x="300.0" y="524.0" font-family="'Segoe UI', Arial" font-size="9.5" font-weight="600" fill="#1E293B" text-anchor="middle">◀── 7: saveBlob(&#x27;spring-boot.zip&#x27;)</text>
+  </g>
+
+  <!-- Comm Vector: ▲ 8: descargarArchivoZip() -->
+  <g>
+    <rect x="-2.6000000000000085" y="330.0" width="207.20000000000002" height="20" rx="3" fill="#FFFFFF" stroke="#94A3B8" stroke-width="0.8"/>
+    <text x="101.0" y="344.0" font-family="'Segoe UI', Arial" font-size="9.5" font-weight="600" fill="#1E293B" text-anchor="middle">▲ 8: descargarArchivoZip()</text>
+  </g>
+
+  <!-- EA Note -->
+  <g id="ea-note">
+    <path d="M 320 640 L 1028 640 L 1040 652 L 1040 800 L 320 800 Z" fill="#FFFDE7" stroke="#F9A825" stroke-width="1"/>
+    <path d="M 1028 640 L 1028 652 L 1040 652 Z" fill="#FFF59D" stroke="#F9A825" stroke-width="1"/>
+    <text x="330" y="660" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">Especificación del Backend Generado (Spring Boot 3.3):</text>
+    <text x="330" y="676" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F"></text>
+    <text x="330" y="692" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">• Stack Tecnológico: Java 21 LTS, Spring Boot 3.3.x, Hibernate JPA.</text>
+    <text x="330" y="708" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">• Arquitectura Limpia: entity/, repository/, service/, controller/.</text>
+    <text x="330" y="724" font-family="'Segoe UI', Arial" font-size="10.5" fill="#37474F">• Compilación: Archivo pom.xml autogestionado con Maven Wrapper.</text>
+  </g>
+
+</svg>

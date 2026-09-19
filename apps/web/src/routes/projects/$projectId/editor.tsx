@@ -131,6 +131,7 @@ function ProjectEditorPage() {
         <PropertyInspector
           selectedElement={selectedElement}
           onApplyOperation={handleApplyOperation}
+          model={model ?? undefined}
         />
       }
       syncStatusContent={

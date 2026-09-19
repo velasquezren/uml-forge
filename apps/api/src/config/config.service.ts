@@ -72,6 +72,12 @@ export class ApiConfigService {
     return this.config.COOKIE_SECRET;
   }
 
+  get cookieSecure(): boolean {
+    return this.config.COOKIE_SECURE === undefined
+      ? this.isProduction
+      : this.config.COOKIE_SECURE === 'true';
+  }
+
   get corsOrigin(): string {
     return this.config.CORS_ORIGIN;
   }

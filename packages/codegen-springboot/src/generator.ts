@@ -11,6 +11,7 @@ import { generateJavaInterface } from './generators/interface.js';
 import { generateMainApplicationClass } from './generators/main-class.js';
 import { generatePomXml } from './generators/pom.js';
 import { generateApplicationProperties } from './generators/properties.js';
+import { generateReadme } from './generators/readme.js';
 import { generateJavaRepository } from './generators/repository.js';
 import { generateJavaService } from './generators/service.js';
 import { sanitizePackageName, toKebabCase, toPascalCase } from './naming.js';
@@ -54,8 +55,9 @@ export function generateSpringBootProject(
   const analyzed = analyzeModel(model, resolvedOptions);
   const files: GeneratedFile[] = [];
 
-  // 1. pom.xml y configuraciones
+  // 1. pom.xml, README.md y configuraciones
   files.push(generatePomXml(resolvedOptions));
+  files.push(generateReadme(resolvedOptions, analyzed));
   files.push(...generateApplicationProperties(resolvedOptions));
   files.push(generateMainApplicationClass(resolvedOptions));
 

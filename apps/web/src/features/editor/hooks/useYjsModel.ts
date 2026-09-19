@@ -53,6 +53,11 @@ export function useYjsModel({
   const providerRef = useRef<HocuspocusProvider | null>(null);
   const undoManagerRef = useRef<Y.UndoManager | null>(null);
 
+  const projectNameRef = useRef(projectName);
+  projectNameRef.current = projectName;
+  const userRef = useRef(user);
+  userRef.current = user;
+
   // Deriva el estado de React exclusivamente a partir de Y.Doc
   const syncFromYDoc = useCallback(() => {
     if (!hasModel(ydoc)) {
@@ -67,9 +72,9 @@ export function useYjsModel({
   /** Crea el modelo vacio la primera vez que se abre un proyecto sin contenido. */
   const ensureModel = useCallback(() => {
     if (!hasModel(ydoc)) {
-      writeModel(ydoc, createEmptyModel(projectName, { id: projectId }));
+      writeModel(ydoc, createEmptyModel(projectNameRef.current, { id: projectId }));
     }
-  }, [ydoc, projectId, projectName]);
+  }, [ydoc, projectId]);
 
   // Historial local de deshacer y rehacer sobre las cuatro raices del documento.
   useEffect(() => {
@@ -132,10 +137,11 @@ export function useYjsModel({
     }
 
     const publishIdentity = () => {
-      providerRef.current?.setAwarenessField('user', {
-        id: user?.id ?? 'anon',
-        name: user?.name ?? 'Usuario',
-        color: colorForUser(user?.id ?? 'anon'),
+      const currentUser = userRef.current;
+      provider.setAwarenessField('user', {
+        id: currentUser?.id ?? 'anon',
+        name: currentUser?.name ?? 'Usuario',
+        color: colorForUser(currentUser?.id ?? 'anon'),
       });
     };
 
@@ -145,10 +151,11 @@ export function useYjsModel({
      * lienzo no se enteraba de que entraba alguien nuevo.
      */
     const applyAwareness = (states: readonly { clientId: number }[]) => {
+      const currentUserId = userRef.current?.id;
       const others = (states as readonly Record<string, unknown>[])
         .map((state) => toUserAwareness(state))
         .filter(
-          (state): state is UserAwarenessState => state !== null && state.user.id !== user?.id,
+          (state): state is UserAwarenessState => state !== null && state.user.id !== currentUserId,
         );
 
       setRemoteCursors(others);
@@ -193,7 +200,18 @@ export function useYjsModel({
       providerRef.current = null;
       detach();
     };
-  }, [projectId, accessToken, user, ydoc, syncFromYDoc, ensureModel]);
+  }, [projectId, accessToken, ydoc, syncFromYDoc, ensureModel]);
+
+  // Si cambian los datos del usuario con el proveedor activo, reanuncia la identidad
+  useEffect(() => {
+    if (providerRef.current && user) {
+      providerRef.current.setAwarenessField('user', {
+        id: user.id,
+        name: user.name,
+        color: colorForUser(user.id),
+      });
+    }
+  }, [user]);
 
   const applyOperation = useCallback(
     (op: UmlOperationInput) => {

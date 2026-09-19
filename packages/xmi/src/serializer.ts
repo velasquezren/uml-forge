@@ -84,19 +84,81 @@ function indexInheritance(model: UMLModel): InheritanceIndex {
 }
 
 /**
- * Las coordenadas del lienzo no forman parte del estandar, asi que viajan en
- * una extension propia. Las herramientas externas la ignoran sin protestar y
- * UML Forge recupera el diagrama tal cual estaba.
+ * Exporta las coordenadas del lienzo tanto en el formato nativo de Enterprise Architect
+ * (<diagrams><diagram><elements>) como en la extension propia de UMLForge (<diagramElements>).
+ * De este modo, al importar en Enterprise Architect 15/16/17 se crea automaticamente
+ * el diagrama de clases con todos los clasificadores ya posicionados.
  */
 function positionExtensionLines(model: UMLModel): string[] {
-  const lines = ['  <xmi:Extension extender="UMLForge">', '    <diagramElements>'];
+  const allElements = [...model.classes, ...model.enums];
+  const cleanModelId = model.id.replace(/-/g, '_');
+  const nowStr = new Date().toISOString().replace('T', ' ').slice(0, 19);
 
-  for (const element of [...model.classes, ...model.enums]) {
+  const lines: string[] = [
+    '  <xmi:Extension extender="Enterprise Architect" extenderID="6.5">',
+    '    <elements>',
+  ];
+
+  // Elementos para Enterprise Architect
+  let localId = 1;
+  for (const cls of model.classes) {
+    const isAbs = cls.isAbstract ? 'true' : 'false';
+    const isInterface = cls.isInterface ? 'true' : 'false';
+    const sType = cls.isInterface ? 'Interface' : 'Class';
+    lines.push(
+      `      <element xmi:idref="${cls.id}" xmi:type="uml:${sType}" name="${escapeXml(cls.name)}" scope="public">`,
+      `        <model package="${model.id}" tType="${sType}" ea_localid="${localId++}"/>`,
+      `        <properties sType="${sType}" isAbstract="${isAbs}" isSpecification="${isInterface}"/>`,
+      '      </element>',
+    );
+  }
+
+  for (const enm of model.enums) {
+    lines.push(
+      `      <element xmi:idref="${enm.id}" xmi:type="uml:Enumeration" name="${escapeXml(enm.name)}" scope="public">`,
+      `        <model package="${model.id}" tType="Enumeration" ea_localid="${localId++}"/>`,
+      '        <properties sType="Enumeration"/>',
+      '      </element>',
+    );
+  }
+  lines.push('    </elements>');
+
+  // Diagrama de clases para Enterprise Architect (permite que EA abra directamente el diagrama con los nodos)
+  lines.push(
+    '    <diagrams>',
+    `      <diagram xmi:id="EAID_DIAG_${cleanModelId}">`,
+    `        <model package="${model.id}" localID="1" ea_localid="1"/>`,
+    `        <properties name="${escapeXml(model.name)}" type="Logical"/>`,
+    `        <project author="UML Forge" version="1.0" created="${nowStr}" modified="${nowStr}"/>`,
+    '        <elements>',
+  );
+
+  allElements.forEach((item, index) => {
+    const duid = item.id.replace(/-/g, '').slice(0, 8).toUpperCase();
+    const left = Math.round(item.position.x);
+    const top = Math.round(item.position.y);
+    const right = left + 180;
+    const bottom = top + 120;
+    lines.push(
+      `          <element subject="${item.id}" seqno="${index + 1}" style="DUID=${duid};" geometry="Left=${left};Top=${top};Right=${right};Bottom=${bottom};"/>`,
+    );
+  });
+
+  lines.push(
+    '        </elements>',
+    '      </diagram>',
+    '    </diagrams>',
+    '  </xmi:Extension>',
+  );
+
+  // Extension propia UMLForge para compatibilidad de roundtrip
+  lines.push('  <xmi:Extension extender="UMLForge">', '    <diagramElements>');
+  for (const element of allElements) {
     lines.push(
       `      <element xmi:idref="${element.id}" x="${element.position.x}" y="${element.position.y}"/>`,
     );
   }
-
   lines.push('    </diagramElements>', '  </xmi:Extension>');
+
   return lines;
 }

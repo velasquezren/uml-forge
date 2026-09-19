@@ -7,6 +7,14 @@ import type { UmlEdge, UmlNode } from '../types';
  * de tres bandas; lo que cambia es el contenido de la banda central.
  */
 export function modelToNodes(model: UMLModel): UmlNode[] {
+  const typeNames: Record<string, string> = {};
+  for (const cls of model.classes) {
+    typeNames[cls.id] = cls.name;
+  }
+  for (const enm of model.enums) {
+    typeNames[enm.id] = enm.name;
+  }
+
   const classNodes: UmlNode[] = model.classes.map((cls: UMLClass) => ({
     id: cls.id,
     type: 'umlClass' as const,
@@ -20,6 +28,7 @@ export function modelToNodes(model: UMLModel): UmlNode[] {
       stereotypes: cls.stereotypes,
       attributes: cls.attributes,
       operations: cls.operations,
+      typeNames,
     },
   }));
 
@@ -37,6 +46,7 @@ export function modelToNodes(model: UMLModel): UmlNode[] {
       attributes: [],
       operations: [],
       literals: enm.literals.map((lit, index) => ({ id: `${enm.id}-lit-${index}`, name: lit })),
+      typeNames,
     },
   }));
 

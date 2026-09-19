@@ -12,7 +12,13 @@ function UmlClassNodeComponent({ data, selected }: NodeProps<UmlNode>) {
     attributes = [],
     operations = [],
     literals = [],
+    typeNames = {},
   } = data;
+
+  const formatType = (type: string | null | undefined): string => {
+    if (!type) return '';
+    return typeNames[type] || type;
+  };
 
   return (
     <div
@@ -119,12 +125,13 @@ function UmlClassNodeComponent({ data, selected }: NodeProps<UmlNode>) {
               const vis = VISIBILITY_SYMBOLS[attr.visibility] || '+';
               const multStr =
                 attr.multiplicity && attr.multiplicity !== '1' ? ` [${attr.multiplicity}]` : '';
-              const fullLabel = `${vis} ${attr.name}: ${attr.type}${multStr}`;
+              const displayedType = formatType(attr.type);
+              const fullLabel = `${vis} ${attr.name}: ${displayedType}${multStr}`;
               return (
                 <div key={attr.id} className="truncate min-w-0" title={fullLabel}>
                   <span className="text-primary font-bold mr-1.5">{vis}</span>
                   <span className="font-medium">{attr.name}</span>
-                  <span className="text-muted-foreground">: {attr.type}</span>
+                  <span className="text-muted-foreground">: {displayedType}</span>
                   {multStr && (
                     <span className="text-muted-foreground font-semibold">{multStr}</span>
                   )}
@@ -145,8 +152,11 @@ function UmlClassNodeComponent({ data, selected }: NodeProps<UmlNode>) {
           ) : (
             operations.map((op) => {
               const vis = VISIBILITY_SYMBOLS[op.visibility] || '+';
-              const paramsStr = op.parameters.map((p) => `${p.name}: ${p.type}`).join(', ');
-              const retStr = op.returnType ? `: ${op.returnType}` : '';
+              const paramsStr = op.parameters
+                .map((p) => `${p.name}: ${formatType(p.type)}`)
+                .join(', ');
+              const retType = formatType(op.returnType);
+              const retStr = retType ? `: ${retType}` : '';
               const fullLabel = `${vis} ${op.name}(${paramsStr})${retStr}`;
 
               return (

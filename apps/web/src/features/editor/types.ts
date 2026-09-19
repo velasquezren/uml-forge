@@ -31,6 +31,7 @@ export interface UmlClassNodeData extends Record<string, unknown> {
   attributes: UMLProperty[];
   operations: UMLOperation[];
   literals?: EnumLiteralItem[];
+  typeNames?: Record<string, string>;
 }
 
 export type UmlNode = Node<UmlClassNodeData, 'umlClass'>;

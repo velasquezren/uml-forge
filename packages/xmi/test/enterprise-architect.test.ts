@@ -138,5 +138,80 @@ describe('Interoperabilidad con Enterprise Architect', () => {
       expect(roundTripped?.targetEnd.multiplicity).toBe(original?.targetEnd.multiplicity);
       expect(roundTripped?.targetEnd.role).toBe(original?.targetEnd.role);
     });
+
+    it('genera extension nativa de Enterprise Architect 15 con diagrama Logical y geometria de elementos', () => {
+      expect(exported.ok).toBe(true);
+      if (!exported.ok) return;
+
+      expect(exported.value).toContain('<xmi:Extension extender="Enterprise Architect" extenderID="6.5">');
+      expect(exported.value).toContain('<diagrams>');
+      expect(exported.value).toContain('<properties name="Hospital Management" type="Logical"/>');
+      expect(exported.value).toContain(`subject="${sampleModel.classes[0]?.id}"`);
+      expect(exported.value).toMatch(/geometry="Left=-?\d+;Top=-?\d+;Right=-?\d+;Bottom=-?\d+;"/);
+    });
+
+    it('importa diagramas y tipos nativos de Enterprise Architect 15 sin generar UUIDs raros', () => {
+      const ea15Xml = `<?xml version="1.0" encoding="windows-1252"?>
+<xmi:XMI xmi:version="2.1" xmlns:uml="http://schema.omg.org/spec/UML/2.1" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1">
+  <xmi:Documentation exporter="Enterprise Architect" exporterVersion="15.2"/>
+  <uml:Model xmi:type="uml:Model" name="EA15Model">
+    <packagedElement xmi:type="uml:PrimitiveType" xmi:id="EA_PR_STR" name="string"/>
+    <packagedElement xmi:type="uml:PrimitiveType" xmi:id="EA_PR_INT" name="int"/>
+    <packagedElement xmi:type="uml:Class" xmi:id="EAID_CLS_USER" name="Usuario">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="ATTR_1" name="id">
+        <type xmi:idref="EA_PR_INT"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="ATTR_2" name="nombre">
+        <type xmi:idref="EAJava_String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="ATTR_3" name="activo">
+        <type xmi:idref="EAJava_boolean"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="ATTR_4" name="creadoEn">
+        <type xmi:idref="EAJava_Date"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="ATTR_5" name="saldo"/>
+    </packagedElement>
+  </uml:Model>
+  <xmi:Extension extender="Enterprise Architect" extenderID="6.5">
+    <elements>
+      <element xmi:idref="EAID_CLS_USER">
+        <attributes>
+          <attribute xmi:idref="ATTR_5" name="saldo">
+            <properties type="decimal"/>
+          </attribute>
+        </attributes>
+      </element>
+    </elements>
+    <diagrams>
+      <diagram xmi:id="EAID_DIAG_1">
+        <properties name="Diagrama Principal" type="Logical"/>
+        <elements>
+          <element subject="EAID_CLS_USER" geometry="Left=120;Top=-180;Right=280;Bottom=-320;"/>
+        </elements>
+      </diagram>
+    </diagrams>
+  </xmi:Extension>
+</xmi:XMI>`;
+
+      const imported = importXmi(ea15Xml, { autoLayout: false });
+      expect(imported.ok).toBe(true);
+      if (!imported.ok) return;
+
+      const userCls = imported.value.classes.find((c) => c.name === 'Usuario');
+      expect(userCls).toBeDefined();
+
+      // Coordenadas importadas del diagrama de EA
+      expect(userCls?.position.x).toBe(120);
+      expect(userCls?.position.y).toBe(180);
+
+      // Tipos mapeados correctamente a primitivos del metamodelo, NUNCA UUIDs
+      const attrs = userCls?.attributes ?? [];
+      expect(attrs.find((a) => a.name === 'id')?.type).toBe('Integer');
+      expect(attrs.find((a) => a.name === 'nombre')?.type).toBe('String');
+      expect(attrs.find((a) => a.name === 'activo')?.type).toBe('Boolean');
+      expect(attrs.find((a) => a.name === 'creadoEn')?.type).toBe('Date');
+      expect(attrs.find((a) => a.name === 'saldo')?.type).toBe('BigDecimal');
+    });
   });
 });
