@@ -40,7 +40,8 @@ export function parseAttributes(
 
     // Si no se encontro tipo en el nodo pero EA lo definio en su extension:
     if ((!rawType || rawType.trim() === '') && eaPropertyTypes) {
-      rawType = (rawAttrId ? eaPropertyTypes.get(rawAttrId) : undefined) ?? eaPropertyTypes.get(name);
+      rawType =
+        (rawAttrId ? eaPropertyTypes.get(rawAttrId) : undefined) ?? eaPropertyTypes.get(name);
     }
 
     const lower = childValue(node, 'lowerValue') ?? '1';

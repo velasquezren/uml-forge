@@ -3,11 +3,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiConfigService } from '../../config/config.service';
 import { AiService } from './ai.service';
 import { GeminiProvider } from './providers/gemini.provider';
-import { OllamaProvider } from './providers/ollama.provider';
+import { OllamaProvider, hasModel, resolveModelName } from './providers/ollama.provider';
+import { parseUmlFromFreeformText } from './ai-operation-mapper';
 
 describe('AiService', () => {
   let service: AiService;
-  let configService: { aiProvider: 'gemini' | 'ollama'; geminiModel: string; ollamaModel: string };
+  let configService: {
+    aiProvider: 'gemini' | 'ollama';
+    geminiModel: string;
+    ollamaModel: string;
+    ollamaVisionModel: string;
+  };
   let geminiProvider: {
     providerName: string;
     isAvailable: ReturnType<typeof vi.fn>;
@@ -18,6 +24,7 @@ describe('AiService', () => {
   let ollamaProvider: {
     providerName: string;
     isAvailable: ReturnType<typeof vi.fn>;
+    isVisionAvailable: ReturnType<typeof vi.fn>;
     generateFromPrompt: ReturnType<typeof vi.fn>;
     generateFromImage: ReturnType<typeof vi.fn>;
     suggestRefinements: ReturnType<typeof vi.fn>;
@@ -28,6 +35,7 @@ describe('AiService', () => {
       aiProvider: 'gemini',
       geminiModel: 'gemini-2.5-flash',
       ollamaModel: 'deepseek-r1:8b',
+      ollamaVisionModel: 'llava:7b',
     };
 
     geminiProvider = {
@@ -50,6 +58,7 @@ describe('AiService', () => {
     ollamaProvider = {
       providerName: 'ollama',
       isAvailable: vi.fn().mockResolvedValue(true),
+      isVisionAvailable: vi.fn().mockResolvedValue(true),
       generateFromPrompt: vi.fn().mockResolvedValue({
         explanation: 'Modelo generado con Ollama',
         operations: [{ type: 'addClass', class: { id: 'c3', name: 'Order' } }],
@@ -81,6 +90,8 @@ describe('AiService', () => {
     expect(status.provider).toBe('gemini');
     expect(status.available).toBe(true);
     expect(status.model).toBe('gemini-2.5-flash');
+    expect(status.visionModel).toBe('gemini-2.5-flash');
+    expect(status.visionAvailable).toBe(true);
   });
 
   it('debe mostrar el proveedor de respaldo si el primario no esta disponible', async () => {
@@ -89,6 +100,8 @@ describe('AiService', () => {
     expect(status.provider).toBe('ollama');
     expect(status.available).toBe(true);
     expect(status.model).toBe('deepseek-r1:8b');
+    expect(status.visionModel).toBe('llava:7b');
+    expect(status.visionAvailable).toBe(true);
   });
 
   it('debe generar operaciones a partir de texto usando el proveedor primario', async () => {
@@ -132,5 +145,52 @@ describe('AiService', () => {
     });
 
     expect(result.explanation).toBe('Refinamiento sugerido');
+  });
+
+  describe('Ollama model resolution and fallback parsing', () => {
+    it('debe resolver variantes de tags de modelos de Ollama correctamente', () => {
+      const installed = ['llava:latest', 'qwen2.5:3b', 'mistral:7b'];
+
+      expect(hasModel(installed, 'llava:7b')).toBe(true);
+      expect(hasModel(installed, 'llava:latest')).toBe(true);
+      expect(hasModel(installed, 'llava')).toBe(true);
+      expect(hasModel(installed, 'qwen2.5:3b')).toBe(true);
+      expect(hasModel(installed, 'non-existent')).toBe(false);
+
+      expect(resolveModelName(installed, 'llava:7b')).toBe('llava:latest');
+      expect(resolveModelName(installed, 'qwen2.5:3b')).toBe('qwen2.5:3b');
+      expect(resolveModelName(installed, 'mistral')).toBe('mistral:7b');
+    });
+
+    it('debe extraer operaciones UML a partir de texto libre o markdown', () => {
+      const freeform = `
+        Class: Customer
+        - id: Long
+        - email: String
+        - fullName: String
+        Methods:
+        - register(): void
+
+        Class: Order
+        - id: Long
+        - total: BigDecimal
+
+        Enum Status: PENDING, APPROVED, REJECTED
+
+        Customer (1) -> (0..*) Order
+      `;
+
+      const operations = parseUmlFromFreeformText(freeform);
+      expect(operations.length).toBeGreaterThanOrEqual(4);
+
+      const classOps = operations.filter((op) => op.type === 'addClass');
+      expect(classOps.length).toBe(2);
+
+      const enumOps = operations.filter((op) => op.type === 'addEnum');
+      expect(enumOps.length).toBe(1);
+
+      const relOps = operations.filter((op) => op.type === 'addRelationship');
+      expect(relOps.length).toBe(1);
+    });
   });
 });

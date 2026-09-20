@@ -3,12 +3,13 @@
 PWA colaborativa para disenar diagramas de clases UML 2.5 que genera, a partir
 del modelo, un backend Spring Boot completo y funcional.
 
-Proyecto academico. El repositorio cubre de la **Fase 0 a la Fase 9**: metamodelo
+Proyecto academico. El repositorio cubre de la **Fase 0 a la Fase 11**: metamodelo
 UML compartido, API NestJS 11 con Prisma 7 y PostgreSQL 16, PWA instalable con
 lienzo colaborativo, modo offline, generador de Spring Boot descargable en ZIP,
-interoperabilidad XMI 2.1 y modulo de IA en el servidor.
+interoperabilidad XMI 2.1, modulo de IA en el servidor, asistente en la PWA y
+pruebas E2E completas con Playwright.
 
-Las once fases del plan estan completas.
+Las doce fases del plan estan completas.
 
 ## Requisitos
 

@@ -143,7 +143,9 @@ describe('Interoperabilidad con Enterprise Architect', () => {
       expect(exported.ok).toBe(true);
       if (!exported.ok) return;
 
-      expect(exported.value).toContain('<xmi:Extension extender="Enterprise Architect" extenderID="6.5">');
+      expect(exported.value).toContain(
+        '<xmi:Extension extender="Enterprise Architect" extenderID="6.5">',
+      );
       expect(exported.value).toContain('<diagrams>');
       expect(exported.value).toContain('<properties name="Hospital Management" type="Logical"/>');
       expect(exported.value).toContain(`subject="${sampleModel.classes[0]?.id}"`);

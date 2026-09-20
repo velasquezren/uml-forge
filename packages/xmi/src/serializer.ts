@@ -144,12 +144,7 @@ function positionExtensionLines(model: UMLModel): string[] {
     );
   });
 
-  lines.push(
-    '        </elements>',
-    '      </diagram>',
-    '    </diagrams>',
-    '  </xmi:Extension>',
-  );
+  lines.push('        </elements>', '      </diagram>', '    </diagrams>', '  </xmi:Extension>');
 
   // Extension propia UMLForge para compatibilidad de roundtrip
   lines.push('  <xmi:Extension extender="UMLForge">', '    <diagramElements>');

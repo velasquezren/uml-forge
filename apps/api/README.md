@@ -12,6 +12,10 @@ Construida con NestJS 11, Prisma 7, PostgreSQL 16, SWC, y documentacion OpenAPI 
 - **users**: Gestion del perfil de usuario (`/api/users/me`).
 - **projects**: CRUD de proyectos UML con inicializacion de estado binario YDoc (`YDocState.state`), y gestion de colaboradores con roles (`OWNER`, `EDITOR`, `VIEWER`).
 - **health**: Verificacion de salud de la API y conectividad con la base de datos (`/health`).
+- **collab**: Servidor Hocuspocus embebido para sincronizacion colaborativa Yjs via WebSocket (`/collab`) y conciencia de presencia/cursores.
+- **sync**: Procesamiento de lotes de operaciones offline (`POST /api/projects/:id/operations`) con idempotencia y resolucion de conflictos.
+- **codegen**: Generacion bajo demanda de backend Spring Boot 3 comprimido en ZIP (`POST /api/projects/:id/codegen/springboot`).
+- **ai**: Modulo de IA en el servidor con soporte dual (Gemini Developer API por defecto y Ollama como respaldo local).
 
 ## Puesta en marcha
 

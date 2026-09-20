@@ -2,8 +2,9 @@ import { GoogleGenAI } from '@google/genai';
 import { Injectable, Logger } from '@nestjs/common';
 import type { UMLModel } from '@uml-forge/uml-core';
 import { ApiConfigService } from '../../../config/config.service';
-import { formatModelContext, UML_SYSTEM_PROMPT } from '../ai-prompts';
-import { mapAiOperationsToUmlOperations } from '../ai-operation-mapper';
+import { formatModelContext, UML_SYSTEM_PROMPT, UML_VISION_PROMPT } from '../ai-prompts';
+import { mapAiOperationsToUmlOperations, parseUmlFromFreeformText } from '../ai-operation-mapper';
+import { extractJsonObject } from './json-extraction';
 import type { AiGenerationResult, AiProvider } from '../interfaces/ai-provider.interface';
 
 @Injectable()
@@ -40,7 +41,7 @@ export class GeminiProvider implements AiProvider {
         contents: [{ role: 'user', parts: [{ text: `${UML_SYSTEM_PROMPT}\n\n${userPrompt}` }] }],
         config: {
           responseMimeType: 'application/json',
-          temperature: 0.2,
+          temperature: 0.1,
         },
       });
 
@@ -77,7 +78,7 @@ export class GeminiProvider implements AiProvider {
           {
             role: 'user',
             parts: [
-              { text: `${UML_SYSTEM_PROMPT}\n\n${contextStr}\n\n${userInstruction}` },
+              { text: `${UML_VISION_PROMPT}\n\n${contextStr}\n\n${userInstruction}` },
               {
                 inlineData: {
                   data: imageBuffer.toString('base64'),
@@ -89,7 +90,7 @@ export class GeminiProvider implements AiProvider {
         ],
         config: {
           responseMimeType: 'application/json',
-          temperature: 0.2,
+          temperature: 0.1,
         },
       });
 
@@ -109,25 +110,38 @@ export class GeminiProvider implements AiProvider {
   }
 
   private parseAiResponse(jsonText: string, currentModel?: UMLModel): AiGenerationResult {
-    try {
-      const cleanJson = jsonText
-        .replace(/^```json\s*/i, '')
-        .replace(/```\s*$/i, '')
-        .trim();
-      const parsed = JSON.parse(cleanJson) as { explanation?: string; operations?: unknown[] };
-      const explanation = parsed.explanation || 'Operaciones UML generadas mediante Gemini AI.';
-      const rawOps = Array.isArray(parsed.operations) ? parsed.operations : [];
-      const operations = mapAiOperationsToUmlOperations(rawOps, currentModel);
+    const candidate = extractJsonObject(jsonText);
 
-      return { explanation, operations };
-    } catch (e) {
-      this.logger.warn(
-        `No se pudo parsear el JSON de Gemini, retornando resultado vacio: ${String(e)}`,
-      );
+    if (candidate !== null) {
+      try {
+        const parsed = JSON.parse(candidate) as Record<string, unknown>;
+        const explanation =
+          typeof parsed.explanation === 'string'
+            ? parsed.explanation
+            : 'Operaciones UML generadas mediante Gemini AI.';
+
+        const operations = mapAiOperationsToUmlOperations(parsed, currentModel);
+
+        if (operations.length > 0) {
+          return { explanation, operations };
+        }
+      } catch (e) {
+        this.logger.warn(`Error al evaluar JSON de Gemini: ${String(e)}`);
+      }
+    }
+
+    // Fallback si no fue JSON estricto
+    const freeformOps = parseUmlFromFreeformText(jsonText, currentModel);
+    if (freeformOps.length > 0) {
       return {
-        explanation: 'El modelo no retorno un JSON estructurado valido.',
-        operations: [],
+        explanation: 'Operaciones extraidas correctamente de la respuesta textual del modelo.',
+        operations: freeformOps,
       };
     }
+
+    return {
+      explanation: 'El modelo no retorno un JSON estructurado valido.',
+      operations: [],
+    };
   }
 }

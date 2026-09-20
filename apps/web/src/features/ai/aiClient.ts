@@ -13,6 +13,8 @@ export interface AiStatus {
   provider: string;
   available: boolean;
   model: string;
+  visionModel?: string;
+  visionAvailable?: boolean;
 }
 
 /** Respuesta del modulo de IA: explicacion mas operaciones a aplicar. */

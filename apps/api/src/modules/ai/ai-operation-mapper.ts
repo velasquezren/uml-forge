@@ -1,29 +1,37 @@
 import { randomUUID } from 'node:crypto';
 import type { UMLModel, UmlOperation } from '@uml-forge/uml-core';
+import {
+  asString,
+  asStringOrNull,
+  convertDeclarativeToItems,
+  normalizeVisibility,
+  type RawAiItem,
+} from './ai-mapper-helpers';
+import { processRelationshipItem } from './ai-relationship-mapper';
+import { processClassItem } from './ai-class-mapper';
+import { parseTextToRawAiItems } from './ai-text-parser';
 
-interface RawAiItem {
-  [key: string]: unknown;
-}
+export {
+  parseAttributeString,
+  normalizeVisibility,
+  normalizeMultiplicity,
+  normalizeRelationshipKind,
+} from './ai-mapper-helpers';
 
-function asString(val: unknown, fallback = ''): string {
-  if (typeof val === 'string') return val;
-  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
-  return fallback;
-}
-
-function asStringOrNull(val: unknown): string | null {
-  return typeof val === 'string' ? val : null;
-}
-
-/** Transforma las sugerencias flexibles del LLM en operaciones atomicas estrictas UmlOperation. */
+/**
+ * Transforma respuestas flexibles de cualquier LLM (atómicas, declarativas o texto)
+ * en operaciones atómicas estrictas UmlOperation garantizando orden topológico y aciclicidad.
+ */
 export function mapAiOperationsToUmlOperations(
-  rawList: unknown[],
+  rawInput: unknown,
   existingModel?: UMLModel,
 ): UmlOperation[] {
+  if (!rawInput) return [];
+
   const classIdByName = new Map<string, string>();
   const enumIdByName = new Map<string, string>();
 
-  // Cargar IDs de clases y enums existentes
+  // Cargar IDs de clases y enums existentes para vincular referencias
   if (existingModel) {
     for (const c of existingModel.classes) {
       classIdByName.set(c.name.toLowerCase(), c.id);
@@ -33,11 +41,44 @@ export function mapAiOperationsToUmlOperations(
     }
   }
 
-  const operations: UmlOperation[] = [];
+  // Desempaquetar entrada flexible
+  let itemsToProcess: RawAiItem[] = [];
 
-  for (const item of rawList) {
-    if (!item || typeof item !== 'object') continue;
-    const raw = item as RawAiItem;
+  if (Array.isArray(rawInput)) {
+    itemsToProcess = rawInput.filter((x): x is RawAiItem => Boolean(x && typeof x === 'object'));
+  } else if (typeof rawInput === 'object') {
+    const obj = rawInput as RawAiItem;
+    // Si viene como { operations: [...] }
+    if (Array.isArray(obj.operations)) {
+      itemsToProcess = obj.operations.filter((x): x is RawAiItem =>
+        Boolean(x && typeof x === 'object'),
+      );
+    }
+    // Si viene como { classes: [...], relationships: [...], enums: [...] }
+    if (
+      Array.isArray(obj.classes) ||
+      Array.isArray(obj.relationships) ||
+      Array.isArray(obj.enums) ||
+      Array.isArray(obj.entities)
+    ) {
+      itemsToProcess = convertDeclarativeToItems(obj);
+    }
+  }
+
+  // Si aún está vacío, intentar extraer desde texto libre (p.ej. markdown de Llava)
+  if (itemsToProcess.length === 0 && typeof rawInput === 'string') {
+    return parseUmlFromFreeformText(rawInput, existingModel);
+  }
+
+  const classOperations: UmlOperation[] = [];
+  const enumOperations: UmlOperation[] = [];
+  const attributeOperations: UmlOperation[] = [];
+  const operationOperations: UmlOperation[] = [];
+  const relationshipOperations: UmlOperation[] = [];
+
+  let classIndex = 0;
+
+  for (const raw of itemsToProcess) {
     const rawType = asString(raw.type || raw.action).toLowerCase();
 
     // 1. Clases
@@ -45,34 +86,17 @@ export function mapAiOperationsToUmlOperations(
       rawType === 'addclass' ||
       rawType === 'add_class' ||
       rawType === 'createclass' ||
-      rawType === 'create_class'
+      rawType === 'create_class' ||
+      (!rawType && raw.name && (raw.attributes || raw.methods || raw.isAbstract !== undefined))
     ) {
-      const name = asString(raw.name || (raw.class as RawAiItem | undefined)?.name, 'NewClass');
-      const classId = asString(raw.id || (raw.class as RawAiItem | undefined)?.id, randomUUID());
-      classIdByName.set(name.toLowerCase(), classId);
-
-      operations.push({
-        type: 'addClass',
-        class: {
-          id: classId,
-          name,
-          isAbstract: Boolean(raw.isAbstract || (raw.class as RawAiItem | undefined)?.isAbstract),
-          isInterface: Boolean(
-            raw.isInterface || (raw.class as RawAiItem | undefined)?.isInterface,
-          ),
-          stereotypes: Array.isArray(raw.stereotypes)
-            ? raw.stereotypes.map((s) => asString(s))
-            : [],
-          position: {
-            x: Number(
-              (raw.position as RawAiItem | undefined)?.x ?? Math.floor(Math.random() * 400 + 50),
-            ),
-            y: Number(
-              (raw.position as RawAiItem | undefined)?.y ?? Math.floor(Math.random() * 300 + 50),
-            ),
-          },
-        },
-      });
+      classIndex = processClassItem(
+        raw,
+        classIndex,
+        classIdByName,
+        classOperations,
+        attributeOperations,
+        operationOperations,
+      );
     }
 
     // 2. Enums
@@ -90,76 +114,101 @@ export function mapAiOperationsToUmlOperations(
         (raw.enum as RawAiItem | undefined)?.literals) as unknown[];
       const literals = Array.isArray(rawLiterals)
         ? rawLiterals.map((l) => asString(l))
-        : ['DEFAULT_LITERAL'];
+        : ['DEFAULT_VALUE'];
 
-      operations.push({
+      const col = classIndex % 3;
+      const row = Math.floor(classIndex / 3);
+      classIndex++;
+
+      enumOperations.push({
         type: 'addEnum',
         enum: {
           id: enumId,
           name,
           literals,
           position: {
-            x: Number(
-              (raw.position as RawAiItem | undefined)?.x ?? Math.floor(Math.random() * 400 + 50),
-            ),
-            y: Number(
-              (raw.position as RawAiItem | undefined)?.y ?? Math.floor(Math.random() * 300 + 50),
-            ),
+            x: Number((raw.position as RawAiItem | undefined)?.x ?? col * 340 + 60),
+            y: Number((raw.position as RawAiItem | undefined)?.y ?? row * 260 + 60),
           },
         },
       });
     }
 
-    // 3. Atributos
+    // 3. Atributos atómicos
     else if (rawType === 'addattribute' || rawType === 'add_attribute') {
       const targetName = asString(raw.target || raw.className || raw.class);
-      const classId = asString(
-        raw.classId || classIdByName.get(targetName.toLowerCase()),
-        randomUUID(),
-      );
+      let classId = asString(raw.classId || classIdByName.get(targetName.toLowerCase()));
+
+      if (!classId) {
+        classId = randomUUID();
+        classIdByName.set(targetName.toLowerCase(), classId);
+        classOperations.push({
+          type: 'addClass',
+          class: {
+            id: classId,
+            name: targetName || 'GeneratedClass',
+            isAbstract: false,
+            isInterface: false,
+            stereotypes: [],
+            position: { x: 60, y: 60 },
+          },
+        });
+      }
+
       const rawAttr = (raw.attribute || raw) as RawAiItem;
       const attrName = asString(rawAttr.name, 'newAttribute');
       const propType = asString(rawAttr.type || rawAttr.propertyType, 'String');
+      const isId = Boolean(rawAttr.isIdentifier || attrName.toLowerCase() === 'id');
 
-      operations.push({
+      attributeOperations.push({
         type: 'addAttribute',
         classId,
         attribute: {
           id: asString(rawAttr.id, randomUUID()),
           name: attrName,
           type: propType,
-          visibility:
-            (rawAttr.visibility as 'public' | 'private' | 'protected' | 'package') || 'private',
+          visibility: normalizeVisibility(rawAttr.visibility),
           multiplicity: asString(rawAttr.multiplicity, '1'),
           isStatic: Boolean(rawAttr.isStatic),
           isDerived: Boolean(rawAttr.isDerived),
-          isUnique: Boolean(rawAttr.isUnique),
-          isNullable: Boolean(rawAttr.isNullable ?? true),
-          isIdentifier: Boolean(rawAttr.isIdentifier || attrName.toLowerCase() === 'id'),
+          isUnique: Boolean(rawAttr.isUnique || isId),
+          isNullable: Boolean(rawAttr.isNullable ?? !isId),
+          isIdentifier: isId,
           defaultValue: asStringOrNull(rawAttr.defaultValue),
         },
       });
     }
 
-    // 4. Operaciones
+    // 4. Operaciones atómicas
     else if (rawType === 'addoperation' || rawType === 'add_operation') {
       const targetName = asString(raw.target || raw.className || raw.class);
-      const classId = asString(
-        raw.classId || classIdByName.get(targetName.toLowerCase()),
-        randomUUID(),
-      );
-      const rawOp = (raw.operation || raw) as RawAiItem;
-      const opName = asString(rawOp.name, 'newOperation');
+      let classId = asString(raw.classId || classIdByName.get(targetName.toLowerCase()));
 
-      operations.push({
+      if (!classId) {
+        classId = randomUUID();
+        classIdByName.set(targetName.toLowerCase(), classId);
+        classOperations.push({
+          type: 'addClass',
+          class: {
+            id: classId,
+            name: targetName || 'GeneratedClass',
+            isAbstract: false,
+            isInterface: false,
+            stereotypes: [],
+            position: { x: 60, y: 60 },
+          },
+        });
+      }
+
+      const rawOp = (raw.operation || raw) as RawAiItem;
+      operationOperations.push({
         type: 'addOperation',
         classId,
         operation: {
           id: asString(rawOp.id, randomUUID()),
-          name: opName,
-          returnType: asStringOrNull(rawOp.returnType),
-          visibility:
-            (rawOp.visibility as 'public' | 'private' | 'protected' | 'package') || 'public',
+          name: asString(rawOp.name, 'newOperation'),
+          returnType: asStringOrNull(rawOp.returnType) || 'void',
+          visibility: normalizeVisibility(rawOp.visibility || 'public'),
           isAbstract: Boolean(rawOp.isAbstract),
           isStatic: Boolean(rawOp.isStatic),
           parameters: Array.isArray(rawOp.parameters)
@@ -175,51 +224,35 @@ export function mapAiOperationsToUmlOperations(
     }
 
     // 5. Relaciones
-    else if (rawType === 'addrelationship' || rawType === 'add_relationship') {
-      const rawRel = (raw.relationship || raw) as RawAiItem;
-      const srcTarget = asString(rawRel.source || rawRel.sourceName);
-      const tgtTarget = asString(rawRel.target || rawRel.targetName);
-
-      const sourceId = asString(
-        rawRel.sourceId || classIdByName.get(srcTarget.toLowerCase()),
-        randomUUID(),
+    else if (
+      rawType === 'addrelationship' ||
+      rawType === 'add_relationship' ||
+      (!rawType && (raw.source || raw.from) && (raw.target || raw.to))
+    ) {
+      const relOp = processRelationshipItem(
+        raw,
+        classIdByName,
+        classOperations,
+        () => classIndex++,
       );
-      const targetId = asString(
-        rawRel.targetId || classIdByName.get(tgtTarget.toLowerCase()),
-        randomUUID(),
-      );
-      const kind =
-        (rawRel.kind as
-          'association' | 'generalization' | 'realization' | 'aggregation' | 'composition') ||
-        'association';
-
-      operations.push({
-        type: 'addRelationship',
-        relationship: {
-          id: asString(rawRel.id, randomUUID()),
-          kind,
-          name: asString(rawRel.name),
-          sourceId,
-          targetId,
-          sourceEnd: {
-            name: '',
-            role: asString(rawRel.sourceRole),
-            multiplicity: asString(rawRel.sourceMultiplicity, '1'),
-            navigable: true,
-          },
-          targetEnd: {
-            name: '',
-            role: asString(rawRel.targetRole),
-            multiplicity: asString(
-              rawRel.targetMultiplicity,
-              kind === 'association' ? '0..*' : '1',
-            ),
-            navigable: true,
-          },
-        },
-      });
+      if (relOp) {
+        relationshipOperations.push(relOp);
+      }
     }
   }
 
-  return operations;
+  // Retornar en estricto orden topológico
+  return [
+    ...classOperations,
+    ...enumOperations,
+    ...attributeOperations,
+    ...operationOperations,
+    ...relationshipOperations,
+  ];
+}
+
+/** Parser de rescate para texto libre o markdown generado por modelos locales/visión. */
+export function parseUmlFromFreeformText(text: string, existingModel?: UMLModel): UmlOperation[] {
+  const items = parseTextToRawAiItems(text);
+  return mapAiOperationsToUmlOperations(items, existingModel);
 }

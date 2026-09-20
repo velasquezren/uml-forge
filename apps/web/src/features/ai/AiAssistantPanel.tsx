@@ -127,7 +127,7 @@ export function AiAssistantPanel({ model, applyOperation }: AiAssistantPanelProp
           aria-hidden="true"
         />
         {status
-          ? `${status.provider} · ${status.model}${status.available ? '' : ' (no disponible)'}`
+          ? `${status.provider} · ${status.model}${status.visionModel ? ` · vision: ${status.visionModel}` : ''}${status.available ? '' : ' (no disponible)'}`
           : 'Consultando el proveedor de IA...'}
       </div>
 
@@ -173,8 +173,19 @@ export function AiAssistantPanel({ model, applyOperation }: AiAssistantPanelProp
           variant="outline"
           className="gap-1.5"
           disabled={isWorking}
-          onClick={() => fileInputRef.current?.click()}
-          title="Subir la foto de un diagrama"
+          onClick={() => {
+            if (status && status.visionAvailable === false) {
+              toast.warning(
+                `El modelo de visión '${status.visionModel ?? 'llava'}' no está descargado en Ollama. Ejecuta: ollama pull ${status.visionModel ?? 'llava:7b'}`,
+              );
+            }
+            fileInputRef.current?.click();
+          }}
+          title={
+            status?.visionModel
+              ? `Subir foto de diagrama (modelo: ${status.visionModel})`
+              : 'Subir la foto de un diagrama'
+          }
         >
           <ImagePlus className="h-3.5 w-3.5" />
           Imagen

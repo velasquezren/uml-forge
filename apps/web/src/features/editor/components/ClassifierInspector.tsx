@@ -10,6 +10,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { normalizeInputType } from '../lib/normalizeInputType';
 
 interface ClassifierInspectorProps {
   cls: UMLClass;
@@ -17,34 +18,11 @@ interface ClassifierInspectorProps {
   typeNames?: Record<string, string>;
 }
 
-function normalizeInputType(input: string, typeNames?: Record<string, string>): string {
-  const trimmed = input.trim();
-  if (!trimmed) return 'String';
-
-  const lower = trimmed.toLowerCase();
-  if (lower === 'string' || lower === 'str' || lower === 'varchar' || lower === 'char') return 'String';
-  if (lower === 'int' || lower === 'integer' || lower === 'short' || lower === 'byte') return 'Integer';
-  if (lower === 'long' || lower === 'bigint') return 'Long';
-  if (lower === 'double' || lower === 'float' || lower === 'real' || lower === 'number') return 'Double';
-  if (lower === 'decimal' || lower === 'bigdecimal' || lower === 'numeric') return 'BigDecimal';
-  if (lower === 'bool' || lower === 'boolean') return 'Boolean';
-  if (lower === 'date') return 'Date';
-  if (lower === 'datetime' || lower === 'timestamp' || lower === 'time') return 'DateTime';
-  if (lower === 'uuid' || lower === 'guid') return 'UUID';
-  if (lower === 'text' || lower === 'clob') return 'Text';
-
-  if (typeNames) {
-    for (const [id, name] of Object.entries(typeNames)) {
-      if (name.toLowerCase() === lower) {
-        return id;
-      }
-    }
-  }
-
-  return trimmed;
-}
-
-export function ClassifierInspector({ cls, onApplyOperation, typeNames }: ClassifierInspectorProps) {
+export function ClassifierInspector({
+  cls,
+  onApplyOperation,
+  typeNames,
+}: ClassifierInspectorProps) {
   const [newAttrName, setNewAttrName] = useState('');
   const [newAttrType, setNewAttrType] = useState('String');
   const [newOpName, setNewOpName] = useState('');
@@ -235,7 +213,9 @@ export function ClassifierInspector({ cls, onApplyOperation, typeNames }: Classi
         </Label>
         <div className="space-y-1.5 max-h-36 overflow-y-auto mb-2 pr-1 font-mono">
           {cls.operations?.map((op: UMLOperation) => {
-            const displayedReturn = op.returnType ? (typeNames?.[op.returnType] ?? op.returnType) : 'void';
+            const displayedReturn = op.returnType
+              ? (typeNames?.[op.returnType] ?? op.returnType)
+              : 'void';
             const label = `+ ${op.name}(): ${displayedReturn}`;
             return (
               <div
@@ -297,9 +277,7 @@ export function ClassifierInspector({ cls, onApplyOperation, typeNames }: Classi
         <option value="UUID" />
         <option value="Text" />
         {typeNames &&
-          Object.values(typeNames).map((typeName) => (
-            <option key={typeName} value={typeName} />
-          ))}
+          Object.values(typeNames).map((typeName) => <option key={typeName} value={typeName} />)}
       </datalist>
     </div>
   );

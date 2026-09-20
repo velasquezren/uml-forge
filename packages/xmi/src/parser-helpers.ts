@@ -105,17 +105,18 @@ function matchPrimitive(rawStr: string): string | null {
   }
 
   // 5. Decimales de alta precision (bigdecimal, decimal, numeric, money)
-  if (
-    lower === 'bigdecimal' ||
-    lower === 'decimal' ||
-    lower === 'numeric' ||
-    lower === 'money'
-  ) {
+  if (lower === 'bigdecimal' || lower === 'decimal' || lower === 'numeric' || lower === 'money') {
     return 'BigDecimal';
   }
 
   // 6. Booleanos (bool, boolean, bit)
-  if (lower === 'bool' || lower === 'boolean' || lower === 'bit' || lower.endsWith('bool') || lower.endsWith('boolean')) {
+  if (
+    lower === 'bool' ||
+    lower === 'boolean' ||
+    lower === 'bit' ||
+    lower.endsWith('bool') ||
+    lower.endsWith('boolean')
+  ) {
     return 'Boolean';
   }
 
@@ -125,7 +126,12 @@ function matchPrimitive(rawStr: string): string | null {
   }
 
   // 8. Fecha y hora / Timestamp (datetime, timestamp, time)
-  if (lower === 'datetime' || lower === 'timestamp' || lower === 'time' || lower.includes('timestamp')) {
+  if (
+    lower === 'datetime' ||
+    lower === 'timestamp' ||
+    lower === 'time' ||
+    lower.includes('timestamp')
+  ) {
     return 'DateTime';
   }
 

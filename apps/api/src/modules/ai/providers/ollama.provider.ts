@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { UMLModel } from '@uml-forge/uml-core';
 import { ApiConfigService } from '../../../config/config.service';
-import { formatModelContext, UML_SYSTEM_PROMPT } from '../ai-prompts';
-import { mapAiOperationsToUmlOperations } from '../ai-operation-mapper';
+import { formatModelContext, UML_SYSTEM_PROMPT, UML_VISION_PROMPT } from '../ai-prompts';
+import { mapAiOperationsToUmlOperations, parseUmlFromFreeformText } from '../ai-operation-mapper';
 import { extractJsonObject } from './json-extraction';
 import type { AiGenerationResult, AiProvider } from '../interfaces/ai-provider.interface';
 
@@ -24,9 +24,7 @@ export class OllamaProvider implements AiProvider {
   constructor(private readonly config: ApiConfigService) {}
 
   /**
-   * Hay servidor y el modelo de texto esta descargado. Comprobar el modelo
-   * evita el fallo mas comun al probar en local: Ollama arrancado pero sin
-   * haber hecho `ollama pull`, que devolveria un 404 en mitad de la peticion.
+   * Comprueba si el servidor esta activo y el modelo de texto descargado.
    */
   async isAvailable(): Promise<boolean> {
     const installed = await this.installedModels();
@@ -36,13 +34,24 @@ export class OllamaProvider implements AiProvider {
 
     if (!hasModel(installed, this.config.ollamaModel)) {
       this.logger.warn(
-        `Ollama responde pero no tiene el modelo ${this.config.ollamaModel}. ` +
+        `Ollama responde pero no tiene el modelo de texto '${this.config.ollamaModel}'. ` +
           `Descargalo con: ollama pull ${this.config.ollamaModel}`,
       );
       return false;
     }
 
     return true;
+  }
+
+  /**
+   * Comprueba si el modelo de vision multimodal para diagramas e imagenes esta descargado.
+   */
+  async isVisionAvailable(): Promise<boolean> {
+    const installed = await this.installedModels();
+    if (installed === null) {
+      return false;
+    }
+    return hasModel(installed, this.config.ollamaVisionModel);
   }
 
   async generateFromPrompt(prompt: string, currentModel?: UMLModel): Promise<AiGenerationResult> {
@@ -54,10 +63,15 @@ export class OllamaProvider implements AiProvider {
       prompt: userPrompt,
       format: 'json',
       stream: false,
-      options: { temperature: 0.2 },
+      options: {
+        num_ctx: 4096,
+        temperature: 0.1,
+        top_p: 0.9,
+        num_predict: 2048,
+      },
     });
 
-    return this.parseAiResponse(rawText, currentModel);
+    return this.parseAiResponse(rawText, currentModel, false);
   }
 
   async generateFromImage(
@@ -72,14 +86,20 @@ export class OllamaProvider implements AiProvider {
     // La vision necesita un modelo multimodal distinto al de texto.
     const rawText = await this.generate({
       model: this.config.ollamaVisionModel,
-      system: UML_SYSTEM_PROMPT,
+      system: UML_VISION_PROMPT,
       prompt: `${formatModelContext(currentModel)}\n\n${instruction}`,
       images: [imageBuffer.toString('base64')],
       format: 'json',
       stream: false,
+      options: {
+        num_ctx: 4096,
+        temperature: 0.1,
+        top_p: 0.9,
+        num_predict: 2048,
+      },
     });
 
-    return this.parseAiResponse(rawText, currentModel);
+    return this.parseAiResponse(rawText, currentModel, true);
   }
 
   async suggestRefinements(model: UMLModel, context?: string): Promise<AiGenerationResult> {
@@ -129,30 +149,90 @@ export class OllamaProvider implements AiProvider {
     }
   }
 
-  private parseAiResponse(jsonText: string, currentModel?: UMLModel): AiGenerationResult {
+  private parseAiResponse(
+    jsonText: string,
+    currentModel?: UMLModel,
+    isVision = false,
+  ): AiGenerationResult {
     const candidate = extractJsonObject(jsonText);
-    if (candidate === null) {
-      this.logger.warn('Ollama no devolvio ningun objeto JSON reconocible');
-      return { explanation: 'Ollama no retorno un JSON estructurado valido.', operations: [] };
+
+    if (candidate !== null) {
+      try {
+        const parsed = JSON.parse(candidate) as Record<string, unknown>;
+        const defaultExplanation = isVision
+          ? 'Diagrama UML interpretado desde la imagen.'
+          : 'Operaciones UML generadas mediante Ollama.';
+        const explanation =
+          typeof parsed.explanation === 'string' ? parsed.explanation : defaultExplanation;
+
+        const operations = mapAiOperationsToUmlOperations(parsed, currentModel);
+        if (operations.length > 0) {
+          return { explanation, operations };
+        }
+      } catch (error) {
+        this.logger.warn(`No se pudo interpretar el JSON de Ollama: ${String(error)}`);
+      }
     }
 
-    try {
-      const parsed = JSON.parse(candidate) as { explanation?: string; operations?: unknown[] };
-      const rawOps = Array.isArray(parsed.operations) ? parsed.operations : [];
-
+    // Si el modelo local devolvió texto explicativo o markdown (muy común en Llava), intentar extraer clases por regex
+    const freeformOps = parseUmlFromFreeformText(jsonText, currentModel);
+    if (freeformOps.length > 0) {
       return {
-        explanation: parsed.explanation ?? 'Operaciones UML generadas mediante Ollama.',
-        operations: mapAiOperationsToUmlOperations(rawOps, currentModel),
+        explanation: 'Operaciones UML extraídas a partir del análisis del modelo.',
+        operations: freeformOps,
       };
-    } catch (error) {
-      this.logger.warn(`No se pudo interpretar el JSON de Ollama: ${String(error)}`);
-      return { explanation: 'Ollama no retorno un JSON estructurado valido.', operations: [] };
     }
+
+    this.logger.warn('Ollama no devolvio ninguna especificacion UML reconocible');
+    return { explanation: 'Ollama no retorno un JSON estructurado valido.', operations: [] };
   }
 }
 
-/** Compara ignorando la etiqueta `:latest`, que Ollama anade sola. */
-function hasModel(installed: readonly string[], wanted: string): boolean {
-  const normalize = (name: string): string => name.replace(/:latest$/u, '');
-  return installed.some((name) => normalize(name) === normalize(wanted));
+/** Resuelve el nombre exacto registrado en Ollama para evitar errores 404 por discrepancias de tags (:latest vs :3b vs sin tag). */
+export function resolveModelName(installed: readonly string[], wanted: string): string {
+  const cleanWanted = wanted.trim().toLowerCase();
+  const wantedBase = cleanWanted.split(':')[0] ?? '';
+
+  // 1. Coincidencia exacta
+  const exact = installed.find((m) => m.toLowerCase() === cleanWanted);
+  if (exact) return exact;
+
+  // 2. Coincidencia ignorando sufijo :latest
+  const withoutLatest = installed.find(
+    (m) => m.replace(/:latest$/u, '').toLowerCase() === cleanWanted.replace(/:latest$/u, ''),
+  );
+  if (withoutLatest) return withoutLatest;
+
+  // 3. Coincidencia por familia base (ej: wanted='llava:7b', instalado='llava:latest' o 'llava')
+  const familyMatch = installed.find((m) => {
+    const base = m.split(':')[0]?.toLowerCase() ?? '';
+    return base === wantedBase;
+  });
+  if (familyMatch) return familyMatch;
+
+  return wanted;
+}
+
+/** Comprueba si el modelo solicitado o una variante compatible esta descargada. */
+export function hasModel(installed: readonly string[], wanted: string): boolean {
+  const cleanWanted = wanted.trim().toLowerCase();
+  const wantedBase = cleanWanted.split(':')[0] ?? '';
+
+  return installed.some((installedName) => {
+    const cleanInstalled = installedName.trim().toLowerCase();
+    const installedBase = cleanInstalled.split(':')[0] ?? '';
+
+    if (cleanInstalled === cleanWanted) return true;
+    if (cleanInstalled.replace(/:latest$/u, '') === cleanWanted.replace(/:latest$/u, ''))
+      return true;
+    if (wantedBase.length > 0 && wantedBase === installedBase) {
+      const wantedTag = cleanWanted.includes(':') ? (cleanWanted.split(':')[1] ?? '') : '';
+      const installedTag = cleanInstalled.includes(':') ? (cleanInstalled.split(':')[1] ?? '') : '';
+      if (!wantedTag || !installedTag || wantedTag === 'latest' || installedTag === 'latest') {
+        return true;
+      }
+      return wantedTag === installedTag;
+    }
+    return false;
+  });
 }

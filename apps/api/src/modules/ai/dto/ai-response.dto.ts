@@ -31,8 +31,22 @@ export class AiStatusDto {
   available!: boolean;
 
   @ApiProperty({
-    description: 'Modelo de lenguaje configurado',
-    example: 'gemini-2.5-flash',
+    description: 'Modelo de lenguaje configurado para texto',
+    example: 'qwen2.5:3b',
   })
   model!: string;
+
+  @ApiProperty({
+    description: 'Modelo multimodal configurado para vision e imagenes',
+    example: 'llava:7b',
+    required: false,
+  })
+  visionModel?: string;
+
+  @ApiProperty({
+    description: 'Indica si el modelo de vision esta descargado y disponible',
+    example: true,
+    required: false,
+  })
+  visionAvailable?: boolean;
 }

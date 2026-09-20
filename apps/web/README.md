@@ -1,32 +1,41 @@
-# React + TypeScript + Vite
+# @uml-forge/web
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+PWA colaborativa de modelado UML 2.5 y cliente principal de UML Forge.
 
-Currently, two official plugins are available:
+Construida con React 19, Vite 7, Tailwind CSS v4 (CSS-First), componentes shadcn/ui, TanStack Router y soporte offline como Progressive Web App (PWA).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Caracteristicas principales
 
-## React Compiler
+- **Lienzo colaborativo**: Editor de diagramas de clases UML con `@xyflow/react` sincronizado en tiempo real sobre CRDT Yjs (`useYjsModel`).
+- **Presencia y cursores**: Avatares en vivo y cursores remotos con aceleracion y throttle via canal de awareness.
+- **Modo offline resiliente**: Persistencia local en IndexedDB (`y-indexeddb`), cola outbox para operaciones diferidas y resolucion automatica de conflictos al reconectar.
+- **Enrutamiento tipado y layouts especializados**:
+  - `AuthLayout`: Formularios centrados para `/login` y `/register`.
+  - `AppShell`: Barra lateral colapsable, estado de conexion y gestion de proyectos (`/projects`).
+  - `EditorLayout`: Lienzo a pantalla completa con paleta, arbol de elementos e inspector de propiedades.
+  - `AssistantLayout`: Interfaz minimalista para interactuar con la IA exclusivamente por voz.
+- **Asistente de IA por voz e imagen**: Dictado nativo con Web Speech API y carga de bocetos en papel para sugerir operaciones UML sin aplicarlas a ciegas.
+- **Interoperabilidad XMI 2.1**: Exportacion e importacion de modelos conformes al estandar OMG y compatibles con Enterprise Architect directamente en el navegador.
+- **Generacion de backend Spring Boot**: Modal de configuracion y descarga directa del proyecto Maven comprimido en ZIP.
+- **PWA instalable**: Registro de service worker (`injectManifest`), almacenamiento persistente con `navigator.storage.persist()` y precache de recursos estaticos.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Puesta en marcha
 
-## Expanding the Oxlint configuration
+Desde la raiz del monorepo:
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+pnpm --filter @uml-forge/web run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+El servidor de desarrollo iniciara en <http://localhost:5173>.
+
+## Scripts
+
+| Comando                                      | Descripcion                                            |
+| -------------------------------------------- | ------------------------------------------------------ |
+| `pnpm --filter @uml-forge/web run dev`       | Servidor de desarrollo Vite con recarga en caliente    |
+| `pnpm --filter @uml-forge/web run build`     | Compilacion de produccion del cliente y Service Worker |
+| `pnpm --filter @uml-forge/web run typecheck` | Verificacion estricta de tipos TypeScript              |
+| `pnpm --filter @uml-forge/web run lint`      | Analisis estatico con ESLint 9                         |
+| `pnpm --filter @uml-forge/web run test`      | Bateria de pruebas unitarias con Vitest                |
+| `pnpm --filter @uml-forge/web run test:e2e`  | Pruebas E2E de navegador con Playwright                |

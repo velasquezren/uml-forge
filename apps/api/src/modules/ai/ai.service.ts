@@ -31,32 +31,46 @@ export class AiService {
   async getStatus(): Promise<AiStatusDto> {
     const primary = this.getActiveProvider();
     if (await primary.isAvailable()) {
-      const model =
-        primary.providerName === 'gemini' ? this.config.geminiModel : this.config.ollamaModel;
+      const isOllama = primary.providerName === 'ollama';
+      const model = isOllama ? this.config.ollamaModel : this.config.geminiModel;
+      const visionModel = isOllama ? this.config.ollamaVisionModel : this.config.geminiModel;
+      const visionAvailable = isOllama ? await this.ollamaProvider.isVisionAvailable() : true;
+
       return {
         provider: primary.providerName,
         available: true,
         model,
+        visionModel,
+        visionAvailable,
       };
     }
 
     const secondary = this.getSecondaryProvider();
     if (await secondary.isAvailable()) {
-      const model =
-        secondary.providerName === 'gemini' ? this.config.geminiModel : this.config.ollamaModel;
+      const isOllama = secondary.providerName === 'ollama';
+      const model = isOllama ? this.config.ollamaModel : this.config.geminiModel;
+      const visionModel = isOllama ? this.config.ollamaVisionModel : this.config.geminiModel;
+      const visionAvailable = isOllama ? await this.ollamaProvider.isVisionAvailable() : true;
+
       return {
         provider: secondary.providerName,
         available: true,
         model,
+        visionModel,
+        visionAvailable,
       };
     }
 
-    const model =
-      this.config.aiProvider === 'gemini' ? this.config.geminiModel : this.config.ollamaModel;
+    const isOllama = this.config.aiProvider === 'ollama';
+    const model = isOllama ? this.config.ollamaModel : this.config.geminiModel;
+    const visionModel = isOllama ? this.config.ollamaVisionModel : this.config.geminiModel;
+
     return {
       provider: primary.providerName,
       available: false,
       model,
+      visionModel,
+      visionAvailable: false,
     };
   }
 
