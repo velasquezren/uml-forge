@@ -24,6 +24,7 @@ import {
 import { useAuthStore } from '@/stores/auth.store';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { apiClient } from '@/lib/api';
+import { MobilePwaGuideDialog } from '@/features/pwa/MobilePwaGuideDialog';
 
 interface AppShellProps {
   children: ReactNode;
@@ -106,6 +107,16 @@ export function AppShell({ children }: AppShellProps) {
             <FolderKanban className="h-5 w-5 shrink-0" />
             {sidebarOpen && <span>Proyectos</span>}
           </Link>
+
+          <div className="pt-2 border-t border-border/40 mt-2">
+            <MobilePwaGuideDialog
+              variant="ghost"
+              className={`w-full justify-start space-x-3 px-3 py-2 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
+                !sidebarOpen ? 'justify-center px-0' : ''
+              }`}
+              showText={sidebarOpen}
+            />
+          </div>
         </nav>
 
         <div className="border-t border-border p-3">
@@ -151,6 +162,8 @@ export function AppShell({ children }: AppShellProps) {
           </div>
 
           <div className="flex items-center space-x-3">
+            <MobilePwaGuideDialog variant="outline" size="sm" className="hidden sm:flex" />
+
             <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Cambiar tema">
               {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>

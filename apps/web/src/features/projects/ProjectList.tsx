@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { Clock, FolderKanban, Settings, Shield, Layers } from 'lucide-react';
+import { Clock, FolderKanban, Layers, Settings, Shield, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { apiClient, type ProjectDto } from '@/lib/api';
+import { MobilePwaGuideDialog } from '../pwa/MobilePwaGuideDialog';
 import { CreateProjectDialog } from './CreateProjectDialog';
 
 export function ProjectList() {
@@ -75,7 +76,10 @@ export function ProjectList() {
           </p>
         </div>
 
-        <CreateProjectDialog onProjectCreated={handleProjectCreated} />
+        <div className="flex items-center gap-2">
+          <MobilePwaGuideDialog />
+          <CreateProjectDialog onProjectCreated={handleProjectCreated} />
+        </div>
       </div>
 
       {projects.length === 0 ? (
@@ -159,15 +163,34 @@ export function ProjectList() {
                     </Button>
                   </Link>
 
-                  <Link
-                    to="/projects/$projectId/editor"
-                    params={{ projectId: project.id }}
-                    className="shrink-0"
-                  >
-                    <Button size="sm" className="h-8 px-3 text-xs">
-                      Abrir Editor
-                    </Button>
-                  </Link>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Link
+                      to="/projects/$projectId/assistant"
+                      params={{ projectId: project.id }}
+                      className="shrink-0"
+                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-1 px-2 text-xs text-primary border-primary/30 hover:bg-primary/10"
+                        title="Asistente de modelado por voz y camara optimizado para movil"
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Asistente</span>
+                        <span className="sm:hidden">IA</span>
+                      </Button>
+                    </Link>
+
+                    <Link
+                      to="/projects/$projectId/editor"
+                      params={{ projectId: project.id }}
+                      className="shrink-0"
+                    >
+                      <Button size="sm" className="h-8 px-3 text-xs">
+                        Abrir Editor
+                      </Button>
+                    </Link>
+                  </div>
                 </CardFooter>
               </Card>
             );
