@@ -16,6 +16,9 @@ import {
 import { IMAGE_ACCEPT, readImageAsBase64 } from './imageFile';
 import { useSpeechRecognition } from './useSpeechRecognition';
 
+/** Los fallos de la IA explican que hacer: se dejan a la vista mas que un aviso normal. */
+const AI_ERROR_TOAST_MS = 12000;
+
 interface AiAssistantPanelProps {
   model: UMLModel | null;
   applyOperation: (op: UmlOperationInput) => Result<UMLModel, UmlError>;
@@ -57,7 +60,7 @@ export function AiAssistantPanel({ model, applyOperation }: AiAssistantPanelProp
     if (result.ok) {
       setSuggestion(result.suggestion);
     } else {
-      toast.error(`La IA no respondio: ${result.error}`);
+      toast.error(`La IA no respondio: ${result.error}`, { duration: AI_ERROR_TOAST_MS });
     }
   }, []);
 
@@ -78,7 +81,7 @@ export function AiAssistantPanel({ model, applyOperation }: AiAssistantPanelProp
 
       const image = await readImageAsBase64(file);
       if (!image.ok) {
-        toast.error(image.error);
+        toast.error(image.error, { duration: AI_ERROR_TOAST_MS });
         return;
       }
 
@@ -94,7 +97,9 @@ export function AiAssistantPanel({ model, applyOperation }: AiAssistantPanelProp
       if (result.ok) {
         setSuggestion(result.suggestion);
       } else {
-        toast.error(`No se pudo leer el diagrama: ${result.error}`);
+        toast.error(`No se pudo leer el diagrama: ${result.error}`, {
+          duration: AI_ERROR_TOAST_MS,
+        });
       }
     },
     [prompt],

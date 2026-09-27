@@ -29,6 +29,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     } else if (exception instanceof Error) {
       message = exception.message;
+      // Los errores del lector del cuerpo (JSON mal formado, cuerpo demasiado
+      // grande) traen su propio codigo 4xx: no son fallos del servidor.
+      const clientStatus = (exception as Error & { status?: unknown }).status;
+      if (typeof clientStatus === 'number' && clientStatus >= 400 && clientStatus < 500) {
+        status = clientStatus;
+        error = clientStatus === 413 ? 'Payload Too Large' : 'Bad Request';
+        if (clientStatus === 413) {
+          message = 'La solicitud supera el tamanno maximo admitido (12 MB)';
+        }
+      }
     }
 
     response.status(status).json({

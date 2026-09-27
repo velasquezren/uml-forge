@@ -16,6 +16,8 @@ export const envSchema = z.object({
   AI_PROVIDER: z.enum(['gemini', 'ollama']).default('gemini'),
   GEMINI_API_KEY: z.string().optional().default(''),
   GEMINI_MODEL: z.string().default('gemini-flash-latest'),
+  // Modelo al que se recurre si el principal esta saturado o sin cuota; vacio lo desactiva.
+  GEMINI_FALLBACK_MODEL: z.string().default('gemini-flash-lite-latest'),
   OLLAMA_BASE_URL: z.string().default('http://localhost:11434'),
   OLLAMA_MODEL: z.string().default('qwen2.5:3b'),
   OLLAMA_VISION_MODEL: z.string().default('llava:7b'),

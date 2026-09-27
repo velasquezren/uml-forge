@@ -1,5 +1,6 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
@@ -8,8 +9,14 @@ import { AppModule } from './app.module';
 import { ApiConfigService } from './config/config.service';
 import { CollabService } from './modules/collab/collab.service';
 
+/** Limite del cuerpo JSON. Debe coincidir con `client_max_body_size` de nginx. */
+const JSON_BODY_LIMIT = '12mb';
+
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
+  // Express solo admite 100 KB de JSON por defecto, y la foto de un diagrama en
+  // base64 ocupa bastante mas: sin ampliar el limite, /api/ai/image la rechaza.
+  app.useBodyParser('json', { limit: JSON_BODY_LIMIT });
 
   const logger = app.get(Logger);
   app.useLogger(logger);

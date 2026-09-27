@@ -93,23 +93,38 @@ export class GeminiProvider implements AiProvider {
       throw new Error('GEMINI_API_KEY no esta configurada');
     }
 
-    try {
-      const response = await client.models.generateContent({
-        model: this.config.geminiModel,
-        contents: [{ role: 'user', parts }],
-        config: {
-          systemInstruction,
-          responseMimeType: 'application/json',
-          responseSchema: UML_RESPONSE_SCHEMA,
-          temperature: 0.2,
-        },
-      });
-      return this.parseAiResponse(response.text ?? '{}', currentModel);
-    } catch (error) {
-      const message = describeGeminiError(error, this.config.geminiModel);
-      this.logger.error(`Error en llamada a Gemini: ${message}`);
-      throw new Error(message);
+    const models = [this.config.geminiModel, this.config.geminiFallbackModel.trim()].filter(
+      (model, index, all) => model !== '' && all.indexOf(model) === index,
+    );
+
+    let lastError: unknown = null;
+    for (const model of models) {
+      try {
+        const response = await client.models.generateContent({
+          model,
+          contents: [{ role: 'user', parts }],
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+            responseSchema: UML_RESPONSE_SCHEMA,
+            temperature: 0.2,
+          },
+        });
+        return this.parseAiResponse(response.text ?? '{}', currentModel);
+      } catch (error) {
+        lastError = error;
+        this.logger.warn(`Gemini (${model}): ${describeGeminiError(error, model)}`);
+        // Solo la saturacion o la cuota del modelo justifican probar otro: una
+        // clave invalida o una peticion mal formada fallaria igual.
+        if (!isModelCapacityError(error)) {
+          break;
+        }
+      }
     }
+
+    const message = describeGeminiError(lastError, this.config.geminiModel);
+    this.logger.error(`Error en llamada a Gemini: ${message}`);
+    throw new Error(message);
   }
 
   private parseAiResponse(jsonText: string, currentModel?: UMLModel): AiGenerationResult {
@@ -141,6 +156,14 @@ export class GeminiProvider implements AiProvider {
 
     return { explanation: 'El modelo no retorno un JSON estructurado valido.', operations: [] };
   }
+}
+
+/** Modelo saturado, sin cuota o retirado: otro modelo de Gemini si puede responder. */
+export function isModelCapacityError(error: unknown): boolean {
+  return (
+    error instanceof ApiError &&
+    (error.status === 404 || error.status === 429 || error.status >= 500)
+  );
 }
 
 /** Traduce los errores de la API a un mensaje que la persona pueda resolver. */

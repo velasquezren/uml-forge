@@ -31,6 +31,9 @@ async function describeError(error: unknown): Promise<string> {
     if (error.response.status === 401) {
       return 'Tu sesion expiro. Vuelve a iniciar sesion y repite la solicitud.';
     }
+    if (error.response.status === 413) {
+      return 'La imagen es demasiado grande para enviarla: recortala o reduce su resolucion.';
+    }
     try {
       const body = await error.response.json<{ message?: string | string[] }>();
       const message = body.message;

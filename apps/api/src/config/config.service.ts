@@ -102,6 +102,10 @@ export class ApiConfigService {
     return this.config.GEMINI_MODEL;
   }
 
+  get geminiFallbackModel(): string {
+    return this.config.GEMINI_FALLBACK_MODEL;
+  }
+
   get ollamaBaseUrl(): string {
     return this.config.OLLAMA_BASE_URL;
   }

@@ -1,7 +1,7 @@
 import { ApiError } from '@google/genai';
 import { describe, expect, it } from 'vitest';
 import { formatModelContext } from '../ai-prompts';
-import { describeGeminiError } from './gemini.provider';
+import { describeGeminiError, isModelCapacityError } from './gemini.provider';
 
 describe('errores de Gemini', () => {
   const model = 'gemini-2.5-flash';
@@ -23,6 +23,18 @@ describe('errores de Gemini', () => {
       'no esta disponible',
     );
     expect(describeGeminiError(new Error('Request timeout'), model)).toContain('tardo demasiado');
+  });
+});
+
+describe('modelo de reserva de Gemini', () => {
+  it('solo cambia de modelo ante saturacion, cuota o modelo retirado', () => {
+    expect(isModelCapacityError(new ApiError({ status: 503, message: 'overloaded' }))).toBe(true);
+    expect(isModelCapacityError(new ApiError({ status: 429, message: 'quota' }))).toBe(true);
+    expect(isModelCapacityError(new ApiError({ status: 404, message: 'gone' }))).toBe(true);
+    expect(isModelCapacityError(new ApiError({ status: 400, message: 'API key not valid' }))).toBe(
+      false,
+    );
+    expect(isModelCapacityError(new Error('timeout'))).toBe(false);
   });
 });
 

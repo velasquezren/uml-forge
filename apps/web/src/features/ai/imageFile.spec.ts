@@ -16,12 +16,14 @@ describe('imageFile', () => {
     });
   });
 
-  it('rechaza imagenes de mas de 5 MB', async () => {
-    const file = new File([new Uint8Array(6 * 1024 * 1024)], 'grande.png', { type: 'image/png' });
+  it('rechaza imagenes de mas de 20 MB', async () => {
+    const file = new File(['x'], 'grande.png', { type: 'image/png' });
+    // No hace falta reservar 21 MB de memoria para probar el limite.
+    Object.defineProperty(file, 'size', { value: 21 * 1024 * 1024 });
 
     await expect(readImageAsBase64(file)).resolves.toEqual({
       ok: false,
-      error: 'La imagen supera los 5 MB admitidos',
+      error: 'La imagen supera los 20 MB admitidos',
     });
   });
 
