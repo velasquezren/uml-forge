@@ -106,9 +106,10 @@ export function GenerateBackendDialog({
         onClick={() => setOpen(true)}
         disabled={!hasModel}
         title="Generar el backend Spring Boot del modelo"
+        aria-label="Generar backend"
       >
         <Package className="h-4 w-4" />
-        <span className="hidden md:inline">Generar backend</span>
+        <span className="hidden xl:inline">Generar backend</span>
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>

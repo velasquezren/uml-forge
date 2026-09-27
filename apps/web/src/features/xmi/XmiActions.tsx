@@ -115,9 +115,10 @@ export function XmiActions({ model, lock, revision, onReplaceModel }: XmiActions
         onClick={handleExport}
         disabled={lock.locked}
         title={`Exportar el modelo a XMI 2.1 compatible con Enterprise Architect${lockHint}`}
+        aria-label="Exportar XMI"
       >
         <Download className="h-4 w-4" />
-        <span className="hidden md:inline">Exportar XMI</span>
+        <span className="hidden xl:inline">Exportar XMI</span>
       </Button>
 
       <Button
@@ -127,9 +128,10 @@ export function XmiActions({ model, lock, revision, onReplaceModel }: XmiActions
         onClick={() => fileInputRef.current?.click()}
         disabled={lock.locked}
         title={`Importar un fichero XMI 2.1${lockHint}`}
+        aria-label="Importar XMI"
       >
         <Upload className="h-4 w-4" />
-        <span className="hidden md:inline">Importar XMI</span>
+        <span className="hidden xl:inline">Importar XMI</span>
       </Button>
 
       <input

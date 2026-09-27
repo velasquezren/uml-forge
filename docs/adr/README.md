@@ -42,3 +42,5 @@ nuevo que sustituya al anterior y se marca el antiguo como sustituido.
 | [0033](0033-dialecto-xmi-de-enterprise-architect-con-diagrama.md)                         | Dialecto XMI de Enterprise Architect con diagrama                | Aceptado |
 | [0034](0034-bloqueo-de-exportacion-e-importacion-y-revisiones.md)                         | Bloqueo de exportar e importar y revisiones                      | Aceptado |
 | [0035](0035-normalizacion-de-propuestas-de-ia-y-salida-estructurada.md)                   | Normalizacion de propuestas de IA y salida de Gemini             | Aceptado |
+| [0036](0036-imagenes-para-la-ia-y-modelo-de-reserva-de-gemini.md)                         | Imagenes para la IA y modelo de reserva de Gemini                | Aceptado |
+| [0037](0037-editor-en-pantalla-dividida.md)                                               | Editor en pantalla dividida                                      | Aceptado |

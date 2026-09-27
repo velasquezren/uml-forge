@@ -14,6 +14,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { createId, type UMLClass, type UMLRelationship } from '@uml-forge/uml-core';
+import { useCompactEditor } from '@/hooks/useMediaQuery';
 import { RemoteCursors } from './components/RemoteCursors';
 import { UmlClassNode } from './components/UmlClassNode';
 import { UmlRelationshipEdge } from './components/UmlRelationshipEdge';
@@ -87,6 +88,8 @@ function EditorCanvasInner({
   } = useYjsModel({ projectId, projectName, accessToken, user });
 
   const { handlePointerMove, handlePointerLeave } = useCursorBroadcast(publishCursor);
+  // En una ventana estrecha el minimapa taparia buena parte del diagrama.
+  const compact = useCompactEditor();
 
   /**
    * React Flow necesita ser duenno de las posiciones mientras se arrastra: sin
@@ -264,13 +267,15 @@ function EditorCanvasInner({
         <RemoteCursors users={remoteCursors} />
         <Background gap={16} size={1} />
         <Controls className="bg-card border-border shadow-md rounded-md overflow-hidden" />
-        <MiniMap
-          nodeStrokeWidth={3}
-          className="bg-card/90 border border-border shadow-sm rounded-md"
-          maskColor="rgba(0, 0, 0, 0.6)"
-          zoomable
-          pannable
-        />
+        {!compact && (
+          <MiniMap
+            nodeStrokeWidth={3}
+            className="bg-card/90 border border-border shadow-sm rounded-md"
+            maskColor="rgba(0, 0, 0, 0.6)"
+            zoomable
+            pannable
+          />
+        )}
       </ReactFlow>
     </div>
   );

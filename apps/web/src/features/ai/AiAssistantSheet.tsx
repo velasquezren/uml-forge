@@ -31,9 +31,10 @@ export function AiAssistantSheet({ projectId, model, applyOperation }: AiAssista
         disabled={!applyOperation}
         onClick={() => setOpen(true)}
         title="Asistente de IA: dicta, escribe o sube un diagrama"
+        aria-label="Asistente IA"
       >
         <Sparkles className="h-4 w-4" />
-        <span className="hidden md:inline">Asistente IA</span>
+        <span className="hidden xl:inline">Asistente IA</span>
       </Button>
 
       <Sheet open={open} onOpenChange={setOpen}>
