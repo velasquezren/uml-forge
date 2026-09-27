@@ -15,7 +15,7 @@ export const envSchema = z.object({
   THROTTLE_LIMIT: z.coerce.number().default(100),
   AI_PROVIDER: z.enum(['gemini', 'ollama']).default('gemini'),
   GEMINI_API_KEY: z.string().optional().default(''),
-  GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
+  GEMINI_MODEL: z.string().default('gemini-flash-latest'),
   OLLAMA_BASE_URL: z.string().default('http://localhost:11434'),
   OLLAMA_MODEL: z.string().default('qwen2.5:3b'),
   OLLAMA_VISION_MODEL: z.string().default('llava:7b'),

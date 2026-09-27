@@ -22,21 +22,21 @@ Las once fases del plan estan completas. Verificado en local:
 
 ## 2. Software y versiones
 
-| Pieza                   | Version                   | Nota                                                         |
-| ----------------------- | ------------------------- | ------------------------------------------------------------ |
-| Node                    | 22 o superior             | Obligatorio: lo exige `@hocuspocus/server`                   |
-| pnpm                    | 11.24.0                   | Fijada en `packageManager`                                   |
-| Docker y Docker Compose | 2.x                       | Solo para PostgreSQL                                         |
-| PostgreSQL              | 16                        | `docker compose up -d`                                       |
-| JDK                     | Temurin 21                | Para compilar el backend generado                            |
-| Maven                   | 3.9                       | Idem                                                         |
-| Spring Boot generado    | 3.3.5                     | El stack del proyecto menciona 3.5.x; el generador usa 3.3.5 |
-| Gemini                  | modelo `gemini-2.5-flash` | Requiere `GEMINI_API_KEY` de Google AI Studio                |
-| Ollama                  | ultima estable            | No exige version concreta                                    |
-| Modelo de texto local   | `qwen2.5:3b`              | Unos 2 GB. Alternativa: `llama3.2:3b`                        |
-| Modelo de vision local  | `llava:7b`                | Unos 4,7 GB. Mas ligero: `moondream`                         |
-| Enterprise Architect    | 15, 16 o 17               | Cualquiera con "Import Package from XMI"                     |
-| Navegador               | Chrome, Edge o Brave      | Firefox no soporta la Web Speech API: el dictado cae a texto |
+| Pieza                   | Version                      | Nota                                                         |
+| ----------------------- | ---------------------------- | ------------------------------------------------------------ |
+| Node                    | 22 o superior                | Obligatorio: lo exige `@hocuspocus/server`                   |
+| pnpm                    | 11.24.0                      | Fijada en `packageManager`                                   |
+| Docker y Docker Compose | 2.x                          | Solo para PostgreSQL                                         |
+| PostgreSQL              | 16                           | `docker compose up -d`                                       |
+| JDK                     | Temurin 21                   | Para compilar el backend generado                            |
+| Maven                   | 3.9                          | Idem                                                         |
+| Spring Boot generado    | 3.3.5                        | El stack del proyecto menciona 3.5.x; el generador usa 3.3.5 |
+| Gemini                  | modelo `gemini-flash-latest` | Requiere `GEMINI_API_KEY` de Google AI Studio                |
+| Ollama                  | ultima estable               | No exige version concreta                                    |
+| Modelo de texto local   | `qwen2.5:3b`                 | Unos 2 GB. Alternativa: `llama3.2:3b`                        |
+| Modelo de vision local  | `llava:7b`                   | Unos 4,7 GB. Mas ligero: `moondream`                         |
+| Enterprise Architect    | 15, 16 o 17                  | Cualquiera con "Import Package from XMI"                     |
+| Navegador               | Chrome, Edge o Brave         | Firefox no soporta la Web Speech API: el dictado cae a texto |
 
 UML Forge no depende de una version concreta de Ollama: usa `/api/tags` y
 `/api/generate` con `format: "json"` e `images`, presentes desde hace tiempo.

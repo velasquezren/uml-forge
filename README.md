@@ -143,7 +143,7 @@ Se declaran todas en `.env.example`.
 | `THROTTLE_LIMIT`         | `100`                                                                  | Maximo de peticiones por ventana                       |
 | `AI_PROVIDER`            | `gemini`                                                               | Proveedor de IA activo: `gemini` u `ollama`            |
 | `GEMINI_API_KEY`         | vacio                                                                  | Clave de Google AI Studio; sin ella Gemini no responde |
-| `GEMINI_MODEL`           | `gemini-2.5-flash`                                                     | Modelo de la Gemini Developer API                      |
+| `GEMINI_MODEL`           | `gemini-flash-latest`                                                  | Modelo de la Gemini Developer API                      |
 | `OLLAMA_BASE_URL`        | `http://localhost:11434`                                               | Servidor de Ollama para la IA local                    |
 | `OLLAMA_MODEL`           | `qwen2.5:3b`                                                           | Modelo de texto local que genera las operaciones       |
 | `OLLAMA_VISION_MODEL`    | `llava:7b`                                                             | Modelo multimodal local que lee la foto del diagrama   |
