@@ -17,6 +17,16 @@ import {
   parseAssociation,
 } from './parser-associations.js';
 import { parseAttributes, parseInheritance, parseOperations } from './parser-classifiers.js';
+import { parseDependency } from './parser-dependencies.js';
+import {
+  dependencyKindOf,
+  flattenElements,
+  isClassifier,
+  isEnumeration,
+  isModelElement,
+  modelIdentity,
+  readEaPropertyTypes,
+} from './parser-structure.js';
 import { IdMapper, toArray } from './parser-helpers.js';
 import { readDiagramPositions } from './parser-positions.js';
 import { asNode, attr, firstAttr, type RawXmlNode } from './raw-xml.js';
@@ -65,6 +75,16 @@ export function importXmi(
     }
   }
 
+  // Los clasificadores se registran antes de leer ningun tipo: asi una
+  // referencia a una clase nunca se confunde con un primitivo por su nombre.
+  for (const element of rawElements) {
+    const kind = firstAttr(element, 'xmi:type', 'type') ?? '';
+    const rawId = attr(element, 'xmi:id');
+    if (rawId !== undefined && (isClassifier(kind) || isEnumeration(kind))) {
+      idMapper.toUuid(rawId);
+    }
+  }
+
   // Tipos de propiedades extraidos de la extension de Enterprise Architect
   const eaPropertyTypes = readEaPropertyTypes(root, modelNode);
 
@@ -80,6 +100,11 @@ export function importXmi(
   for (const element of rawElements) {
     const kind = firstAttr(element, 'xmi:type', 'type') ?? '';
     const rawId = attr(element, 'xmi:id');
+    if (!isModelElement(kind)) {
+      // Tipos primitivos, notas, perfiles: no se registran como elementos para
+      // que sus identificadores sigan resolviendose como tipos.
+      continue;
+    }
     const elementId = idMapper.toUuid(rawId);
     const name = attr(element, 'name') ?? 'Unnamed';
     const position = (rawId === undefined ? undefined : positions.get(rawId)) ?? NO_POSITION;
@@ -100,7 +125,7 @@ export function importXmi(
       continue;
     }
 
-    if (kind === 'uml:Enumeration' || kind === 'Enumeration') {
+    if (isEnumeration(kind)) {
       enums.push({
         id: elementId,
         name,
@@ -124,13 +149,23 @@ export function importXmi(
       if (association !== null) {
         relationships.push(association);
       }
+      continue;
+    }
+
+    const dependencyKind = dependencyKindOf(kind);
+    if (dependencyKind !== null) {
+      const dependency = parseDependency(element, elementId, dependencyKind, name, idMapper);
+      if (dependency !== null) {
+        relationships.push(dependency);
+      }
     }
   }
 
   const now = new Date().toISOString();
+  const identity = modelIdentity(modelNode);
   const model: UMLModel = {
-    id: idMapper.toUuid(attr(modelNode, 'xmi:id')),
-    name: attr(modelNode, 'name') ?? fallbackName,
+    id: idMapper.toUuid(identity.rawId),
+    name: identity.name ?? fallbackName,
     classes,
     enums,
     relationships,
@@ -163,78 +198,6 @@ function parseXml(xmlContent: string): Result<RawXmlNode, XmiError> {
     return err(invalidXmlError('el documento no contiene ningun elemento'));
   }
   return ok(asNode(parsedRoot['xmi:XMI'] ?? parsedRoot['XMI']) ?? parsedRoot);
-}
-
-/**
- * Extrae tipos de atributos definidos en la extension de Enterprise Architect
- * (<elements><element xmi:idref="..."><properties type="..."/>).
- */
-function readEaPropertyTypes(root: RawXmlNode, modelNode: RawXmlNode): Map<string, string> {
-  const propertyTypes = new Map<string, string>();
-  const extensions = toArray(root['xmi:Extension'] ?? modelNode['xmi:Extension']) as RawXmlNode[];
-
-  for (const extension of extensions) {
-    const elementsNode = asNode(extension['elements']);
-    if (elementsNode !== null) {
-      for (const el of toArray(elementsNode['element']) as RawXmlNode[]) {
-        const idRef = firstAttr(el, 'xmi:idref', 'idref');
-        const properties = asNode(el['properties']);
-        if (idRef !== undefined && properties !== null) {
-          const propType = attr(properties, 'type');
-          if (propType !== undefined && propType.trim() !== '') {
-            propertyTypes.set(idRef, propType.trim());
-          }
-        }
-
-        const attributesNode = asNode(el['attributes']);
-        if (attributesNode !== null) {
-          for (const attrEl of toArray(attributesNode['attribute']) as RawXmlNode[]) {
-            const attrId = firstAttr(attrEl, 'xmi:idref', 'idref');
-            const attrName = attr(attrEl, 'name');
-            const attrProps = asNode(attrEl['properties']);
-            const propType = attrProps ? attr(attrProps, 'type') : undefined;
-            if (propType !== undefined && propType.trim() !== '') {
-              if (attrId) propertyTypes.set(attrId, propType.trim());
-              if (attrName) propertyTypes.set(attrName, propType.trim());
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return propertyTypes;
-}
-
-/**
- * Aplana la jerarquia de paquetes y devuelve todos los elementos empaquetados
- * del documento, sin importar a que profundidad esten.
- */
-function flattenElements(node: RawXmlNode): RawXmlNode[] {
-  const children = toArray(node['packagedElement'] ?? node['ownedElement']) as RawXmlNode[];
-  const flattened: RawXmlNode[] = [];
-
-  for (const child of children) {
-    if (isContainer(firstAttr(child, 'xmi:type', 'type') ?? '')) {
-      flattened.push(...flattenElements(child));
-      continue;
-    }
-    flattened.push(child);
-  }
-
-  return flattened;
-}
-
-/** Paquetes y modelos anidados: contienen elementos, no son elementos del modelo. */
-function isContainer(kind: string): boolean {
-  return kind === 'uml:Package' || kind === 'Package' || kind === 'uml:Model' || kind === 'Model';
-}
-
-/** Indica si el elemento empaquetado es una clase o una interfaz. */
-function isClassifier(kind: string): boolean {
-  return (
-    kind === 'uml:Class' || kind === 'uml:Interface' || kind === 'Class' || kind === 'Interface'
-  );
 }
 
 /** Cierto cuando ningun clasificador trae coordenadas propias del documento. */

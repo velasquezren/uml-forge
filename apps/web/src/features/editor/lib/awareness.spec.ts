@@ -41,4 +41,13 @@ describe('awareness', () => {
     expect(presenceSignature([ada])).toBe(presenceSignature([{ ...ada, cursor: { x: 5, y: 5 } }]));
     expect(presenceSignature([ada])).not.toBe(presenceSignature([ada, grace]));
   });
+
+  it('lee si el participante esta editando y lo refleja en la firma', () => {
+    const ada = { user: { id: 'u1', name: 'Ada', color: '#000' } };
+    const editing = toUserAwareness({ ...ada, editing: true });
+
+    expect(editing?.editing).toBe(true);
+    expect(toUserAwareness({ ...ada, editing: 'si' })?.editing).toBeUndefined();
+    expect(presenceSignature([ada])).not.toBe(presenceSignature([{ ...ada, editing: true }]));
+  });
 });

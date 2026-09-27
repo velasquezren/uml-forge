@@ -1,4 +1,5 @@
 import { parseMultiplicity } from '@uml-forge/uml-core';
+import { eaId } from './ea-ids.js';
 
 /** Escapa los cinco caracteres que XML no admite en texto ni en atributos. */
 export function escapeXml(value: string): string {
@@ -28,11 +29,18 @@ export function multiplicityBounds(multiplicity: string): { lower: string; upper
   };
 }
 
-/** Escribe `lowerValue` y `upperValue`, que es como XMI expresa la cardinalidad. */
-export function multiplicityLines(multiplicity: string, indent: string): string[] {
+/**
+ * Escribe `lowerValue` y `upperValue`, que es como XMI expresa la cardinalidad.
+ * Cada literal lleva su propio identificador, derivado del de su propietario.
+ */
+export function multiplicityLines(
+  multiplicity: string,
+  indent: string,
+  ownerSeed: string,
+): string[] {
   const { lower, upper } = multiplicityBounds(multiplicity);
   return [
-    `${indent}<lowerValue xmi:type="uml:LiteralInteger" value="${lower}"/>`,
-    `${indent}<upperValue xmi:type="uml:LiteralUnlimitedNatural" value="${upper}"/>`,
+    `${indent}<lowerValue xmi:type="uml:LiteralInteger" xmi:id="${eaId(`${ownerSeed}-lower`)}" value="${lower}"/>`,
+    `${indent}<upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="${eaId(`${ownerSeed}-upper`)}" value="${upper}"/>`,
   ];
 }

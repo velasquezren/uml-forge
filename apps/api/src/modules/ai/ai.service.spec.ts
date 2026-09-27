@@ -119,6 +119,26 @@ describe('AiService', () => {
     expect(ollamaProvider.generateFromPrompt).toHaveBeenCalled();
   });
 
+  it('informa del motivo real cuando ningun proveedor puede responder', async () => {
+    geminiProvider.generateFromPrompt.mockRejectedValueOnce(
+      new Error('La clave GEMINI_API_KEY no es valida. Revisala en Google AI Studio.'),
+    );
+    ollamaProvider.isAvailable.mockResolvedValueOnce(false);
+
+    await expect(service.generateFromPrompt({ prompt: 'Crea un modelo' })).rejects.toThrow(
+      /GEMINI_API_KEY no es valida/u,
+    );
+  });
+
+  it('responde 503 si no hay ningun proveedor configurado', async () => {
+    geminiProvider.isAvailable.mockResolvedValue(false);
+    ollamaProvider.isAvailable.mockResolvedValue(false);
+
+    await expect(service.generateFromPrompt({ prompt: 'Crea un modelo' })).rejects.toMatchObject({
+      status: 503,
+    });
+  });
+
   it('debe interpretar imagenes correctamente', async () => {
     const result = await service.generateFromImage({
       imageBase64:

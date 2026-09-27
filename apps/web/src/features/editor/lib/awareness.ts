@@ -16,7 +16,12 @@ export function toUserAwareness(state: Record<string, unknown>): UserAwarenessSt
   }
 
   const cursor = readCursor(state.cursor);
-  return cursor === null ? { user: { id, name, color } } : { user: { id, name, color }, cursor };
+  // `editing` solo se incluye cuando es cierto: ausente equivale a no editar.
+  const base: UserAwarenessState =
+    state.editing === true
+      ? { user: { id, name, color }, editing: true }
+      : { user: { id, name, color } };
+  return cursor === null ? base : { ...base, cursor };
 }
 
 /** Posicion del cursor, solo si trae dos coordenadas numericas. */
@@ -28,7 +33,12 @@ function readCursor(raw: unknown): { x: number; y: number } | null {
   return typeof x === 'number' && typeof y === 'number' ? { x, y } : null;
 }
 
-/** Firma de los participantes: cambia solo cuando entra o sale alguien. */
+/** Firma de los participantes: cambia cuando entra o sale alguien, o empieza o deja de editar. */
 export function presenceSignature(states: readonly UserAwarenessState[]): string {
-  return states.map((state) => `${state.user.id}:${state.user.name}:${state.user.color}`).join('|');
+  return states
+    .map(
+      (state) =>
+        `${state.user.id}:${state.user.name}:${state.user.color}:${state.editing === true ? 'e' : ''}`,
+    )
+    .join('|');
 }

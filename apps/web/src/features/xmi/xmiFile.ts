@@ -1,4 +1,4 @@
-import { exportXmi, importXmi } from '@uml-forge/xmi';
+import { exportXmi, importXmi, readXmiVersion, type XmiVersionInfo } from '@uml-forge/xmi';
 import type { UMLModel } from '@uml-forge/uml-core';
 
 /** Extensiones que acepta el selector de ficheros al importar. */
@@ -7,15 +7,20 @@ export const XMI_ACCEPT = '.xmi,.xml,application/xml,text/xml';
 /** Tamanno maximo admitido, suficiente para cualquier modelo de clases realista. */
 const MAX_IMPORT_BYTES = 10 * 1024 * 1024;
 
-/** Convierte un nombre de proyecto en un nombre de fichero seguro. */
-export function xmiFileName(modelName: string): string {
+/**
+ * Convierte un nombre de proyecto en un nombre de fichero seguro. Con revision
+ * el nombre la incluye (`proyecto-v12.xmi`), de modo que dos exportaciones de
+ * versiones distintas no se pisan en la carpeta de descargas.
+ */
+export function xmiFileName(modelName: string, revision?: number): string {
   const slug = modelName
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/gu, '')
     .replace(/[^a-zA-Z0-9]+/gu, '-')
     .replace(/^-+|-+$/gu, '')
     .toLowerCase();
-  return `${slug || 'modelo'}.xmi`;
+  const version = revision === undefined ? '' : `-v${revision}`;
+  return `${slug || 'modelo'}${version}.xmi`;
 }
 
 /**
@@ -23,8 +28,11 @@ export function xmiFileName(modelName: string): string {
  * cliente porque el modelo vivo esta en el documento Yjs, no en la base de datos
  * (ADR 0024), asi que la exportacion tambien funciona sin conexion.
  */
-export function downloadModelAsXmi(model: UMLModel): { ok: true } | { ok: false; error: string } {
-  const result = exportXmi(model, { exporter: 'UML Forge', exporterVersion: '1.0.0' });
+export function downloadModelAsXmi(
+  model: UMLModel,
+  revision: number,
+): { ok: true; fileName: string } | { ok: false; error: string } {
+  const result = exportXmi(model, { exporter: 'UML Forge', exporterVersion: '1.0.0', revision });
   if (!result.ok) {
     return { ok: false, error: result.error.message };
   }
@@ -33,13 +41,14 @@ export function downloadModelAsXmi(model: UMLModel): { ok: true } | { ok: false;
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url;
-  anchor.download = xmiFileName(model.name);
+  const fileName = xmiFileName(model.name, revision);
+  anchor.download = fileName;
   document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();
   URL.revokeObjectURL(url);
 
-  return { ok: true };
+  return { ok: true, fileName };
 }
 
 /**
@@ -67,7 +76,9 @@ export function decodeXmlBuffer(buffer: ArrayBuffer): string {
 export async function readXmiFile(
   file: File,
   fallbackName: string,
-): Promise<{ ok: true; model: UMLModel } | { ok: false; error: string }> {
+): Promise<
+  { ok: true; model: UMLModel; version: XmiVersionInfo | null } | { ok: false; error: string }
+> {
   if (file.size > MAX_IMPORT_BYTES) {
     return { ok: false, error: 'El fichero supera los 10 MB admitidos' };
   }
@@ -80,7 +91,9 @@ export async function readXmiFile(
   }
 
   const result = importXmi(content, { fallbackName });
-  return result.ok ? { ok: true, model: result.value } : { ok: false, error: result.error.message };
+  return result.ok
+    ? { ok: true, model: result.value, version: readXmiVersion(content) }
+    : { ok: false, error: result.error.message };
 }
 
 /** Lectura binaria con `FileReader`, soportada por todos los navegadores. */

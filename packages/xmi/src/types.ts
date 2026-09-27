@@ -6,6 +6,8 @@ export interface XmiExportOptions {
   readonly exporter: string;
   readonly exporterVersion: string;
   readonly encoding: 'UTF-8';
+  /** Revision del modelo que se exporta, para el control de versiones. */
+  readonly revision: number;
 }
 
 /** Opciones para importar un documento XMI 2.1. */

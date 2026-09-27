@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { importXmi } from '../src/parser.js';
+import { eaId } from '../src/ea-ids.js';
 import { exportXmi } from '../src/serializer.js';
 import { enterpriseArchitectXmi } from './ea-fixture.js';
 import { sampleModel } from './fixtures.js';
@@ -80,12 +81,16 @@ describe('Interoperabilidad con Enterprise Architect', () => {
     it('declara los tipos primitivos y los referencia por identificador', () => {
       if (!exported.ok) return;
 
+      // Como los escribe Enterprise Architect: en su extension, no como
+      // elementos sueltos del paquete.
       expect(exported.value).toContain(
-        '<packagedElement xmi:type="uml:PrimitiveType" xmi:id="umlforge-primitive-String" name="String"/>',
+        '<packagedElement xmi:type="uml:PrimitiveType" xmi:id="EAJava_String" name="String" visibility="public"/>',
       );
-      expect(exported.value).toContain('type="umlforge-primitive-String"');
+      expect(exported.value).toContain('type="EAJava_String"');
       // Nunca el nombre del tipo en crudo, que es lo que ignora la herramienta.
-      expect(exported.value).not.toContain('type="String"');
+      // La extension si lleva el nombre legible (`<properties type="String">`),
+      // igual que los ficheros de la herramienta; la parte UML nunca.
+      expect(exported.value).not.toMatch(/<owned\w+ [^>]*type="String"/);
     });
 
     it('declara los dos extremos de cada asociacion en memberEnd', () => {
@@ -95,9 +100,13 @@ describe('Interoperabilidad con Enterprise Architect', () => {
         (r) => r.kind !== 'generalization' && r.kind !== 'realization',
       );
       expect(association).toBeDefined();
-      expect(exported.value).toContain(`<memberEnd xmi:idref="${association!.id}-src"/>`);
-      expect(exported.value).toContain(`<memberEnd xmi:idref="${association!.id}-tgt"/>`);
-      expect(exported.value).toContain(`association="${association!.id}"`);
+      expect(exported.value).toContain(
+        `<memberEnd xmi:idref="${eaId(`${association!.id}-src`)}"/>`,
+      );
+      expect(exported.value).toContain(
+        `<memberEnd xmi:idref="${eaId(`${association!.id}-tgt`)}"/>`,
+      );
+      expect(exported.value).toContain(`association="${eaId(association!.id)}"`);
     });
 
     it('conserva los limites exactos de una cardinalidad n..m', () => {
@@ -117,9 +126,11 @@ describe('Interoperabilidad con Enterprise Architect', () => {
       expect(result.ok).toBe(true);
       if (!result.ok) return;
 
-      expect(result.value).toContain('<lowerValue xmi:type="uml:LiteralInteger" value="2"/>');
-      expect(result.value).toContain(
-        '<upperValue xmi:type="uml:LiteralUnlimitedNatural" value="5"/>',
+      expect(result.value).toMatch(
+        /<lowerValue xmi:type="uml:LiteralInteger" xmi:id="EAID_\w+" value="2"\/>/,
+      );
+      expect(result.value).toMatch(
+        /<upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="EAID_\w+" value="5"\/>/,
       );
     });
 
@@ -148,8 +159,8 @@ describe('Interoperabilidad con Enterprise Architect', () => {
       );
       expect(exported.value).toContain('<diagrams>');
       expect(exported.value).toContain('<properties name="Hospital Management" type="Logical"/>');
-      expect(exported.value).toContain(`subject="${sampleModel.classes[0]?.id}"`);
-      expect(exported.value).toMatch(/geometry="Left=-?\d+;Top=-?\d+;Right=-?\d+;Bottom=-?\d+;"/);
+      expect(exported.value).toContain(`subject="${eaId(sampleModel.classes[0]!.id)}"`);
+      expect(exported.value).toMatch(/geometry="Left=\d+;Top=\d+;Right=\d+;Bottom=\d+;"/);
     });
 
     it('importa diagramas y tipos nativos de Enterprise Architect 15 sin generar UUIDs raros', () => {

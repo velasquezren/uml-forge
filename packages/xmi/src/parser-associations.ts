@@ -133,11 +133,24 @@ function resolveEnds(
   associationRawId: string | undefined,
   classOwned: ClassOwnedEnds,
 ): AssociationEnd[] {
+  // En UML 2 `navigableOwnedEnd` es una referencia a un `ownedEnd`; versiones
+  // antiguas de UML Forge lo escribian como contenedor del extremo.
+  const navigableNodes = toArray(element['navigableOwnedEnd']) as RawXmlNode[];
+  const navigableRefs = new Set(
+    navigableNodes
+      .filter((node) => attr(node, 'xmi:id') === undefined)
+      .map((node) => firstAttr(node, 'xmi:idref', 'idref'))
+      .filter((ref): ref is string => ref !== undefined),
+  );
+  const navigability: Navigability = { refs: navigableRefs, declared: navigableNodes.length > 0 };
+
   const owned = [
-    ...(toArray(element['ownedEnd']) as RawXmlNode[]).map((node) => readOwnedEnd(node, false)),
-    ...(toArray(element['navigableOwnedEnd']) as RawXmlNode[]).map((node) =>
-      readOwnedEnd(node, true),
+    ...(toArray(element['ownedEnd']) as RawXmlNode[]).map((node) =>
+      readOwnedEnd(node, false, navigability),
     ),
+    ...navigableNodes
+      .filter((node) => attr(node, 'xmi:id') !== undefined)
+      .map((node) => readOwnedEnd(node, true, navigability)),
   ];
 
   const memberRefs = (toArray(element['memberEnd']) as RawXmlNode[])
@@ -160,34 +173,71 @@ function resolveEnds(
   return [...owned, ...fromClasses.filter((end) => !owned.some((o) => o.endId === end.endId))];
 }
 
+/** Extremos que la asociacion declara navegables. */
+interface Navigability {
+  readonly refs: ReadonlySet<string>;
+  /** Cierto si la asociacion enumera sus extremos navegables. */
+  readonly declared: boolean;
+}
+
 /** Lee un extremo declarado dentro de la asociacion. */
-function readOwnedEnd(node: RawXmlNode, navigableByTag: boolean): AssociationEnd {
+function readOwnedEnd(
+  node: RawXmlNode,
+  navigableByTag: boolean,
+  navigability: Navigability,
+): AssociationEnd {
+  const endId = attr(node, 'xmi:id');
+  const explicit = firstAttr(node, 'navigable', 'isNavigable');
+  const navigable =
+    navigableByTag ||
+    (endId !== undefined && navigability.refs.has(endId)) ||
+    explicit === 'true' ||
+    // Sin ninguna declaracion de navegabilidad se asume navegable, que es lo
+    // que hacen las herramientas que no la exportan.
+    (!navigability.declared && explicit !== 'false');
+
   return {
-    endId: attr(node, 'xmi:id'),
+    endId,
     typeId: typeReference(node),
     role: firstAttr(node, 'name', 'role') ?? '',
     multiplicity: normalizeMultiplicity(
       childValue(node, 'lowerValue') ?? '1',
       childValue(node, 'upperValue') ?? '1',
     ),
-    navigable: navigableByTag || firstAttr(node, 'navigable', 'isNavigable') !== 'false',
+    navigable,
     aggregation: attr(node, 'aggregation') ?? 'none',
   };
 }
 
-/**
- * Decide que extremo es el origen. Un extremo poseido por una clase describe
- * "esta clase ve a la del otro lado", de modo que su duenno es el origen y su
- * tipo el destino. Cuando la asociacion posee los dos, manda el orden.
- */
-function orientEnds(ends: readonly AssociationEnd[]): {
+/** Orientacion ya decidida: que clase es el origen y que extremo va con cada una. */
+interface Orientation {
   sourceRawId: string | undefined;
   targetRawId: string | undefined;
   sourceEnd: AssociationEnd;
   targetEnd: AssociationEnd;
-} {
-  const classOwnedEnd = ends.find((end) => end.ownerClassId !== undefined);
+}
 
+/**
+ * Decide que extremo es el origen, por este orden:
+ * 1. Enterprise Architect nombra sus extremos `EAID_src...` y `EAID_dst...`.
+ * 2. Si una sola clase posee un extremo, describe "esta clase ve a la del otro
+ *    lado": su duenno es el origen y su tipo el destino.
+ * 3. En cualquier otro caso manda el orden de `memberEnd`.
+ */
+function orientEnds(ends: readonly AssociationEnd[]): Orientation {
+  const eaSource = ends.find((end) => end.endId?.startsWith('EAID_src') === true);
+  const eaTarget = ends.find((end) => end.endId?.startsWith('EAID_dst') === true);
+  if (eaSource !== undefined && eaTarget !== undefined) {
+    return {
+      sourceRawId: eaSource.typeId,
+      targetRawId: eaTarget.typeId,
+      sourceEnd: eaSource,
+      targetEnd: eaTarget,
+    };
+  }
+
+  const classOwnedEnds = ends.filter((end) => end.ownerClassId !== undefined);
+  const classOwnedEnd = classOwnedEnds.length === 1 ? classOwnedEnds[0] : undefined;
   if (classOwnedEnd !== undefined) {
     const other = ends.find((end) => end !== classOwnedEnd) ?? NEUTRAL_END;
     return {

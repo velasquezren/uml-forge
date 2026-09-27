@@ -52,19 +52,26 @@ Debes responder ÚNICAMENTE con un objeto JSON válido (sin comentarios ni forma
 }
 
 Reglas estrictas de modelado:
-1. Toda clase debe contar con un identificador primario (ej: 'id' de tipo Long o UUID con isIdentifier: true).
-2. Nombres de clases en PascalCase (ej: OrderItem, Customer), atributos y métodos en camelCase (ej: createdAt, totalAmount).
-3. Tipos de datos primitivos válidos: String, Long, Integer, Double, Boolean, Date, DateTime, UUID, BigDecimal, Text.
-4. Tipos de relaciones válidos:
-   - association: Asociación estándar (1:N, N:M o 1:1).
-   - generalization: Herencia entre clases ('is-a', subclase -> superclase).
-   - realization: Implementación de interfaces (clase -> interfaz).
-   - composition: Composición fuerte con borrado en cascada (ej: Order -> OrderItem).
-   - aggregation: Agregación débil (todo / parte separable).
-5. Multiplicidades válidas: 1, 0..1, 0..*, 1..* (o *).
+1. Toda clase concreta debe contar con un identificador primario ('id' de tipo Long o UUID con isIdentifier: true). Las subclases lo heredan y no lo repiten; las interfaces no llevan atributos.
+2. Nombres de clases en PascalCase y atributos y métodos en camelCase, en el mismo idioma en que escribe el usuario.
+3. Tipos válidos para atributos y parámetros: String, Long, Integer, Double, Boolean, Date, DateTime, UUID, BigDecimal, Text, o el nombre exacto de una clase o enumeración (existente o que declares en la misma respuesta). Para colecciones usa multiplicity "0..*".
+4. Tipos de relaciones y su sentido (source -> target):
+   - association: asociación estándar. En 1:N el source es el lado "1" y el target el lado "N".
+   - composition: el source es el TODO y el target la PARTE, que no existe sin el todo (Order -> OrderItem).
+   - aggregation: como composition, pero la parte puede existir por separado (Department -> Employee).
+   - generalization: el source es la SUBCLASE y el target la SUPERCLASE.
+   - realization: el source es la clase y el target la INTERFAZ que implementa.
+   - dependency: el source usa temporalmente al target (parámetro, variable local).
+5. Multiplicidades válidas: 1, 0..1, 0..*, 1..*.
    - Uno a muchos: sourceMultiplicity '1', targetMultiplicity '0..*'.
    - Muchos a muchos: sourceMultiplicity '0..*', targetMultiplicity '0..*'.
-6. Responde ÚNICAMENTE con el objeto JSON. No agregues texto antes ni después.`;
+6. Una enumeración nunca participa en relaciones: se usa como tipo de un atributo (estado: EstadoPedido).
+7. Si el modelo actual no está vacío, trabaja SOBRE él:
+   - Reutiliza los nombres exactos de las clases y enumeraciones existentes; nunca las declares con otro nombre.
+   - Para añadir miembros a una clase existente, inclúyela en "classes" solo con los atributos o métodos NUEVOS.
+   - No repitas atributos, métodos ni relaciones que ya existen.
+8. Si la solicitud ya está cubierta por el modelo o no tiene sentido, devuelve las listas vacías y explícalo en "explanation".
+9. Responde ÚNICAMENTE con el objeto JSON. No agregues texto antes ni después.`;
 
 /** Prompt especializado para modelos de visión multimodal locales (Llava 7B, Moondream) y remotos (Gemini). */
 export const UML_VISION_PROMPT = `Eres un sistema experto en visión por computadora e ingeniería de software especializado en reconocimiento y digitalización de diagramas UML.
@@ -118,24 +125,60 @@ Devuelve ÚNICAMENTE un objeto JSON válido con la siguiente estructura:
 
 Responde exclusivamente con el JSON. Sin explicaciones adicionales fuera de la estructura.`;
 
-/** Construye el contexto del modelo existente en formato legible para el LLM. */
+/** Instruccion para auditar un modelo existente y proponer solo lo que falta. */
+export const UML_REFINE_INSTRUCTION = `Audita el modelo actual como arquitecto de software y propone SOLO mejoras aditivas:
+- identificadores que falten en clases concretas,
+- enumeraciones para atributos que representan estados o categorias fijas (y el atributo tipado con ellas),
+- relaciones que el dominio exige y no estan (con sus multiplicidades y roles),
+- atributos o metodos imprescindibles para que el modelo sea util en un backend Spring Boot.
+No propongas renombrar ni borrar nada. Explica en "explanation", en pocas lineas, que problemas has encontrado y que anades.`;
+
+/** Nombre legible de un tipo: primitivo, clase o enumeracion del modelo. */
+function typeName(model: UMLModel, type: string | null): string {
+  if (type === null) return 'void';
+  return (
+    model.classes.find((c) => c.id === type)?.name ??
+    model.enums.find((e) => e.id === type)?.name ??
+    type
+  );
+}
+
+/**
+ * Construye el contexto del modelo existente en un formato compacto parecido a
+ * la notacion UML, con los tipos por nombre (nunca por identificador) para que
+ * el modelo de lenguaje pueda reutilizarlos tal cual.
+ */
 export function formatModelContext(model?: UMLModel): string {
   if (!model || (model.classes.length === 0 && model.enums.length === 0)) {
     return 'Modelo actual: [Vacío - Diagrama nuevo]';
   }
 
-  const classList = model.classes.map(
-    (c) =>
-      `- ${c.isInterface ? 'Interfaz' : c.isAbstract ? 'Clase Abstracta' : 'Clase'} '${c.name}' con atributos [${c.attributes.map((a) => `${a.name}: ${a.type}${a.isIdentifier ? ' (PK)' : ''}`).join(', ')}]`,
-  );
-  const enumList = model.enums.map(
-    (e) => `- Enum '${e.name}' con literales [${e.literals.join(', ')}]`,
-  );
+  const classList = model.classes.map((c) => {
+    const kind = c.isInterface ? 'Interfaz' : c.isAbstract ? 'Clase abstracta' : 'Clase';
+    const attributes = c.attributes.map(
+      (a) =>
+        `${a.name}: ${typeName(model, a.type)}${a.multiplicity === '1' ? '' : ` [${a.multiplicity}]`}${a.isIdentifier ? ' {id}' : ''}`,
+    );
+    const methods = c.operations.map(
+      (o) =>
+        `${o.name}(${o.parameters.map((p) => `${p.name}: ${typeName(model, p.type)}`).join(', ')}): ${typeName(model, o.returnType)}`,
+    );
+    return `- ${kind} ${c.name} { ${[...attributes, ...methods].join('; ')} }`;
+  });
+  const enumList = model.enums.map((e) => `- Enum ${e.name} { ${e.literals.join(', ')} }`);
   const relList = model.relationships.map((r) => {
-    const src = model.classes.find((c) => c.id === r.sourceId)?.name ?? r.sourceId;
-    const tgt = model.classes.find((c) => c.id === r.targetId)?.name ?? r.targetId;
-    return `- Relación ${r.kind}: '${src}' (${r.sourceEnd.multiplicity}) -> '${tgt}' (${r.targetEnd.multiplicity})`;
+    const src = typeName(model, r.sourceId);
+    const tgt = typeName(model, r.targetId);
+    const roles = [r.sourceEnd.role, r.targetEnd.role].some(Boolean)
+      ? ` roles ${r.sourceEnd.role || '-'} / ${r.targetEnd.role || '-'}`
+      : '';
+    return `- ${r.kind}: ${src} [${r.sourceEnd.multiplicity}] -> ${tgt} [${r.targetEnd.multiplicity}]${roles}`;
   });
 
-  return `Modelo actual en el lienzo:\n${classList.join('\n')}\n${enumList.join('\n')}\n${relList.length > 0 ? `Relaciones:\n${relList.join('\n')}` : ''}`;
+  return [
+    'Modelo actual en el lienzo:',
+    ...classList,
+    ...enumList,
+    ...(relList.length > 0 ? ['Relaciones:', ...relList] : []),
+  ].join('\n');
 }

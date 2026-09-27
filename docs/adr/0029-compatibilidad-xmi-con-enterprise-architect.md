@@ -1,7 +1,7 @@
 # 0029. Compatibilidad real del XMI 2.1 con Enterprise Architect
 
 Fecha: 2026-09-01
-Estado: Aceptado
+Estado: Aceptado. Ampliado por el ADR 0033 (diagrama nativo y dialecto de la herramienta).
 
 ## Contexto
 

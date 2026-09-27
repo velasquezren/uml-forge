@@ -33,8 +33,11 @@ export function normalizeMultiplicity(raw: unknown, fallback: string): string {
 /** Normaliza tipos de relaciones UML. */
 export function normalizeRelationshipKind(
   raw: unknown,
-): 'association' | 'generalization' | 'realization' | 'aggregation' | 'composition' {
+): 'association' | 'generalization' | 'realization' | 'aggregation' | 'composition' | 'dependency' {
   const str = asString(raw).toLowerCase();
+  if (str.includes('depend') || str === 'uses' || str === 'usage' || str === 'usa') {
+    return 'dependency';
+  }
   if (
     str.includes('generaliz') ||
     str.includes('inherit') ||

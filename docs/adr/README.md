@@ -38,3 +38,7 @@ nuevo que sustituya al anterior y se marca el antiguo como sustituido.
 | [0029](0029-compatibilidad-xmi-con-enterprise-architect.md)                               | Compatibilidad real del XMI 2.1 con Enterprise Architect         | Aceptado |
 | [0030](0030-puesta-a-punto-del-respaldo-local-con-ollama.md)                              | Puesta a punto del respaldo local con Ollama                     | Aceptado |
 | [0031](0031-sesion-en-docker-local-y-espera-de-ia.md)                                     | Sesion en Docker local y espera de IA                            | Aceptado |
+| [0032](0032-experiencia-pwa-movil-y-guia-interactiva.md)                                  | Experiencia PWA movil y guia interactiva                         | Aceptado |
+| [0033](0033-dialecto-xmi-de-enterprise-architect-con-diagrama.md)                         | Dialecto XMI de Enterprise Architect con diagrama                | Aceptado |
+| [0034](0034-bloqueo-de-exportacion-e-importacion-y-revisiones.md)                         | Bloqueo de exportar e importar y revisiones                      | Aceptado |
+| [0035](0035-normalizacion-de-propuestas-de-ia-y-salida-estructurada.md)                   | Normalizacion de propuestas de IA y salida de Gemini             | Aceptado |

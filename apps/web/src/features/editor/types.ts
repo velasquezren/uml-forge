@@ -60,6 +60,8 @@ export interface UserAwarenessState {
     y: number;
   };
   selectedElementId?: string | null;
+  /** Cierto mientras la persona esta cambiando el modelo (bloquea exportar e importar). */
+  editing?: boolean;
 }
 
 export interface SelectedElement {

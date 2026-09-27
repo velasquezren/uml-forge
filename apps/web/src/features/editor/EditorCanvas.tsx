@@ -40,6 +40,10 @@ export interface EditorCanvasHandlers {
   canRedo: boolean;
   model: ReturnType<typeof useYjsModel>['model'];
   remoteUsers: ReturnType<typeof useYjsModel>['remoteUsers'];
+  /** Cierto mientras la persona local esta cambiando el modelo. */
+  isEditing: boolean;
+  /** Revision compartida del modelo, para el control de versiones. */
+  revision: number;
 }
 
 interface EditorCanvasProps {
@@ -77,6 +81,9 @@ function EditorCanvasInner({
     redo,
     canUndo,
     canRedo,
+    isEditing,
+    markEditing,
+    revision,
   } = useYjsModel({ projectId, projectName, accessToken, user });
 
   const { handlePointerMove, handlePointerLeave } = useCursorBroadcast(publishCursor);
@@ -110,6 +117,8 @@ function EditorCanvasInner({
       canRedo,
       model,
       remoteUsers,
+      isEditing,
+      revision,
     });
   }, [
     onInitModelHandler,
@@ -121,6 +130,8 @@ function EditorCanvasInner({
     canRedo,
     model,
     remoteUsers,
+    isEditing,
+    revision,
   ]);
 
   const handleNodesChange = useCallback((changes: NodeChange<UmlNode>[]) => {
@@ -130,6 +141,12 @@ function EditorCanvasInner({
   const handleEdgesChange = useCallback((changes: EdgeChange<UmlEdge>[]) => {
     setFlowEdges((current) => applyEdgeChanges(changes, current));
   }, []);
+
+  // Arrastrar ya es editar: bloquea exportar e importar desde que se coge el
+  // nodo y mientras se mueve, aunque el arrastre dure mas que la espera.
+  const handleNodeDragging: OnNodeDrag<UmlNode> = useCallback(() => {
+    markEditing();
+  }, [markEditing]);
 
   // La posicion solo se escribe en el CRDT al soltar: emitir en cada pixel del
   // arrastre inundaria la red y el historial de deshacer.
@@ -228,6 +245,8 @@ function EditorCanvasInner({
         colorMode="dark"
         onNodesChange={handleNodesChange}
         onEdgesChange={handleEdgesChange}
+        onNodeDragStart={handleNodeDragging}
+        onNodeDrag={handleNodeDragging}
         onNodeDragStop={handleNodeDragStop}
         onNodesDelete={handleNodesDelete}
         onEdgesDelete={handleEdgesDelete}

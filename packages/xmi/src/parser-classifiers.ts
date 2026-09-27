@@ -1,5 +1,4 @@
 import {
-  createId,
   type UMLOperation,
   type UMLParameter,
   type UMLProperty,
@@ -123,7 +122,7 @@ export function parseInheritance(
     const target = firstAttr(node, 'general', 'generalization');
     if (target !== undefined) {
       relationships.push({
-        id: createId(),
+        id: idMapper.toUuid(attr(node, 'xmi:id')),
         kind: 'generalization',
         name: '',
         sourceId,
@@ -138,7 +137,7 @@ export function parseInheritance(
     const supplier = firstAttr(node, 'supplier', 'contract');
     if (supplier !== undefined) {
       relationships.push({
-        id: createId(),
+        id: idMapper.toUuid(attr(node, 'xmi:id')),
         kind: 'realization',
         name: '',
         sourceId,

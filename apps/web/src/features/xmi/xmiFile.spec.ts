@@ -61,6 +61,10 @@ describe('xmiFileName', () => {
     expect(xmiFileName('Gestión de Envíos 2026')).toBe('gestion-de-envios-2026.xmi');
     expect(xmiFileName('***')).toBe('modelo.xmi');
   });
+
+  it('incluye la version cuando se conoce', () => {
+    expect(xmiFileName('Clinica Veterinaria', 12)).toBe('clinica-veterinaria-v12.xmi');
+  });
 });
 
 describe('readXmiFile', () => {

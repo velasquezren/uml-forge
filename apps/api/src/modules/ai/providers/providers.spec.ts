@@ -45,12 +45,17 @@ describe('AI Providers & Operation Mapper', () => {
     ];
 
     const mapped = mapAiOperationsToUmlOperations(rawOps);
-    expect(mapped).toHaveLength(5);
-    expect(mapped[0]?.type).toBe('addClass');
-    expect(mapped[1]?.type).toBe('addEnum');
-    expect(mapped[2]?.type).toBe('addAttribute');
-    expect(mapped[3]?.type).toBe('addOperation');
-    expect(mapped[4]?.type).toBe('addRelationship');
+    // La clase concreta sin identificador recibe `id: Long` antes que el resto.
+    expect(mapped.map((op) => op.type)).toEqual([
+      'addClass',
+      'addEnum',
+      'addAttribute',
+      'addAttribute',
+      'addOperation',
+      'addRelationship',
+    ]);
+    const identifier = mapped[2];
+    expect(identifier?.type === 'addAttribute' && identifier.attribute.isIdentifier).toBe(true);
   });
 
   it('comprueba disponibilidad de Gemini segun GEMINI_API_KEY', async () => {
@@ -130,8 +135,7 @@ describe('AI Providers & Operation Mapper', () => {
       const result = await new OllamaProvider(configMock).generateFromPrompt('una veterinaria');
 
       expect(result.explanation).toBe('Dos clases');
-      expect(result.operations).toHaveLength(1);
-      expect(result.operations[0]?.type).toBe('addClass');
+      expect(result.operations.map((op) => op.type)).toEqual(['addClass', 'addAttribute']);
     });
 
     it('explica el fallo cuando falta el modelo en tiempo de generacion', async () => {

@@ -30,7 +30,8 @@ test.describe('Entregables del modelo', () => {
     await page.getByRole('button', { name: 'Exportar XMI' }).click();
 
     const file = await download;
-    expect(file.suggestedFilename()).toBe('xmi-e2e.xmi');
+    // El nombre lleva la revision del modelo: cada edicion es una version nueva.
+    expect(file.suggestedFilename()).toMatch(/^xmi-e2e-v\d+\.xmi$/u);
   });
 
   test('ofrece el asistente de IA e informa del proveedor activo', async ({ page, request }) => {

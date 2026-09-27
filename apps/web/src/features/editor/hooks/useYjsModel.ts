@@ -19,6 +19,9 @@ import { presenceSignature, toUserAwareness } from '../lib/awareness';
 import { modelToEdges, modelToNodes } from '../lib/flowMapper';
 import { collabWebSocketUrl, colorForUser } from '../lib/collab';
 import type { UmlEdge, UmlNode, UserAwarenessState } from '../types';
+import { useEditActivity } from './useEditActivity';
+import { useModelRevision } from './useModelRevision';
+import { useUndoHistory } from './useUndoHistory';
 
 interface UseYjsModelOptions {
   projectId: string;
@@ -48,10 +51,16 @@ export function useYjsModel({
   // Firma de los participantes: evita rehacer la presencia en cada movimiento
   // del raton ajeno, que llega hasta dieciseis veces por segundo y usuario.
   const remoteSignatureRef = useRef('');
-  const [canUndo, setCanUndo] = useState(false);
-  const [canRedo, setCanRedo] = useState(false);
   const providerRef = useRef<HocuspocusProvider | null>(null);
-  const undoManagerRef = useRef<Y.UndoManager | null>(null);
+  const { isEditing, markEditing } = useEditActivity((editing) => {
+    providerRef.current?.setAwarenessField('editing', editing);
+  });
+  const { revision, bumpRevision } = useModelRevision(ydoc);
+  // Deshacer y rehacer tambien son cambios: nueva revision y actividad de edicion.
+  const { canUndo, canRedo, undo, redo } = useUndoHistory(ydoc, () => {
+    bumpRevision();
+    markEditing();
+  });
 
   const projectNameRef = useRef(projectName);
   projectNameRef.current = projectName;
@@ -75,36 +84,6 @@ export function useYjsModel({
       writeModel(ydoc, createEmptyModel(projectNameRef.current, { id: projectId }));
     }
   }, [ydoc, projectId]);
-
-  // Historial local de deshacer y rehacer sobre las cuatro raices del documento.
-  useEffect(() => {
-    const undoManager = new Y.UndoManager(
-      [
-        ydoc.getMap(ROOT_CLASSES),
-        ydoc.getMap(ROOT_ENUMS),
-        ydoc.getMap(ROOT_RELATIONSHIPS),
-        ydoc.getMap(ROOT_META),
-      ],
-      { captureTimeout: 400 },
-    );
-    undoManagerRef.current = undoManager;
-
-    const refreshHistory = () => {
-      setCanUndo(undoManager.canUndo());
-      setCanRedo(undoManager.canRedo());
-    };
-
-    undoManager.on('stack-item-added', refreshHistory);
-    undoManager.on('stack-item-popped', refreshHistory);
-    undoManager.on('stack-cleared', refreshHistory);
-
-    return () => {
-      undoManager.destroy();
-      undoManagerRef.current = null;
-      setCanUndo(false);
-      setCanRedo(false);
-    };
-  }, [ydoc]);
 
   useEffect(() => {
     // 1. Persistencia local con IndexeddbPersistence (y-indexeddb)
@@ -163,7 +142,11 @@ export function useYjsModel({
       const signature = presenceSignature(others);
       if (signature !== remoteSignatureRef.current) {
         remoteSignatureRef.current = signature;
-        setRemoteUsers(others.map((state) => ({ user: state.user })));
+        setRemoteUsers(
+          others.map(({ user: remoteUser, editing }) =>
+            editing === true ? { user: remoteUser, editing } : { user: remoteUser },
+          ),
+        );
       }
     };
 
@@ -219,10 +202,12 @@ export function useYjsModel({
       const result = applyOperationToYDoc(ydoc, op);
       if (result.ok) {
         setModel(result.value);
+        bumpRevision();
+        markEditing();
       }
       return result;
     },
-    [ydoc, ensureModel],
+    [ydoc, ensureModel, bumpRevision, markEditing],
   );
 
   const updatePosition = useCallback(
@@ -247,9 +232,10 @@ export function useYjsModel({
         createdAt: current.ok ? current.value.createdAt : imported.createdAt,
         updatedAt: new Date().toISOString(),
       });
+      bumpRevision();
       syncFromYDoc();
     },
-    [ydoc, syncFromYDoc],
+    [ydoc, syncFromYDoc, bumpRevision],
   );
 
   /**
@@ -260,9 +246,6 @@ export function useYjsModel({
   const publishCursor = useCallback((position: { x: number; y: number } | null) => {
     providerRef.current?.setAwarenessField('cursor', position ?? undefined);
   }, []);
-
-  const undo = useCallback(() => undoManagerRef.current?.undo(), []);
-  const redo = useCallback(() => undoManagerRef.current?.redo(), []);
 
   const nodes: UmlNode[] = useMemo(() => (model ? modelToNodes(model) : []), [model]);
   const edges: UmlEdge[] = useMemo(() => (model ? modelToEdges(model) : []), [model]);
@@ -283,5 +266,8 @@ export function useYjsModel({
     redo,
     canUndo,
     canRedo,
+    isEditing,
+    markEditing,
+    revision,
   };
 }

@@ -171,9 +171,24 @@ esta en [CLAUDE.md](CLAUDE.md) y en
 - Toda decision de diseno no especificada se documenta en `docs/adr/`.
 - Sin emojis en codigo, commits ni documentacion.
 
-## IA local con Ollama
+## IA en la nube con Gemini
 
-La aplicacion incluye soporte nativo y listo para usar con Ollama (configurado por defecto en `.env.example` y `docker-compose.yml`):
+El proveedor por defecto es la Gemini Developer API (`AI_PROVIDER=gemini`):
+
+1. Crear una clave en <https://aistudio.google.com/apikey>.
+2. Ponerla en `.env` como `GEMINI_API_KEY` y reiniciar la API (`docker compose up -d` o `pnpm dev`).
+
+Gemini responde con salida JSON estructurada (`responseSchema`), reintenta solo ante
+errores transitorios (408, 429 y 5xx) y, si la clave no es valida o se agota la cuota,
+el asistente muestra el motivo exacto. Antes de proponer nada, la API depura la
+respuesta contra el modelo abierto: reutiliza las clases y enumeraciones existentes,
+traduce los tipos al metamodelo, no repite atributos ni relaciones y coloca lo nuevo
+debajo del diagrama (ADR 0035). La propuesta nunca se aplica sola: se revisa y confirma.
+
+## IA local con Ollama (respaldo)
+
+Ollama actua como respaldo automatico si Gemini falla, o como proveedor principal
+sin internet con `AI_PROVIDER=ollama`:
 
 1. **Instalar Ollama**: descargar desde <https://ollama.com/>.
 2. **Descargar los modelos**:

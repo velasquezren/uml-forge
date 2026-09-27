@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { ApiConfigService } from '../../config/config.service';
 import type { AiResponseDto, AiStatusDto } from './dto/ai-response.dto';
 import type { GenerateImageDto } from './dto/generate-image.dto';
 import type { GeneratePromptDto } from './dto/generate-prompt.dto';
 import type { RefineModelDto } from './dto/refine-model.dto';
-import type { AiProvider } from './interfaces/ai-provider.interface';
+import type { AiGenerationResult, AiProvider } from './interfaces/ai-provider.interface';
 import { GeminiProvider } from './providers/gemini.provider';
 import { OllamaProvider } from './providers/ollama.provider';
 
@@ -29,148 +29,90 @@ export class AiService {
   }
 
   async getStatus(): Promise<AiStatusDto> {
-    const primary = this.getActiveProvider();
-    if (await primary.isAvailable()) {
-      const isOllama = primary.providerName === 'ollama';
-      const model = isOllama ? this.config.ollamaModel : this.config.geminiModel;
-      const visionModel = isOllama ? this.config.ollamaVisionModel : this.config.geminiModel;
-      const visionAvailable = isOllama ? await this.ollamaProvider.isVisionAvailable() : true;
-
-      return {
-        provider: primary.providerName,
-        available: true,
-        model,
-        visionModel,
-        visionAvailable,
-      };
-    }
-
-    const secondary = this.getSecondaryProvider();
-    if (await secondary.isAvailable()) {
-      const isOllama = secondary.providerName === 'ollama';
-      const model = isOllama ? this.config.ollamaModel : this.config.geminiModel;
-      const visionModel = isOllama ? this.config.ollamaVisionModel : this.config.geminiModel;
-      const visionAvailable = isOllama ? await this.ollamaProvider.isVisionAvailable() : true;
-
-      return {
-        provider: secondary.providerName,
-        available: true,
-        model,
-        visionModel,
-        visionAvailable,
-      };
-    }
-
-    const isOllama = this.config.aiProvider === 'ollama';
-    const model = isOllama ? this.config.ollamaModel : this.config.geminiModel;
-    const visionModel = isOllama ? this.config.ollamaVisionModel : this.config.geminiModel;
-
-    return {
-      provider: primary.providerName,
-      available: false,
-      model,
-      visionModel,
-      visionAvailable: false,
-    };
-  }
-
-  async generateFromPrompt(dto: GeneratePromptDto): Promise<AiResponseDto> {
-    const primary = this.getActiveProvider();
-    const secondary = this.getSecondaryProvider();
-
-    try {
-      if (await primary.isAvailable()) {
-        const result = await primary.generateFromPrompt(dto.prompt, dto.currentModel);
-        return {
-          explanation: result.explanation,
-          operations: [...result.operations],
-        };
+    for (const provider of [this.getActiveProvider(), this.getSecondaryProvider()]) {
+      if (await provider.isAvailable()) {
+        return this.describe(provider, true);
       }
-    } catch (primaryError) {
-      this.logger.warn(
-        `Fallo el proveedor primario ${primary.providerName}, intentando respaldo con ${secondary.providerName}: ${String(primaryError)}`,
-      );
     }
+    return this.describe(this.getActiveProvider(), false);
+  }
 
-    if (await secondary.isAvailable()) {
-      const result = await secondary.generateFromPrompt(dto.prompt, dto.currentModel);
-      return {
-        explanation: `[Respaldo ${secondary.providerName}] ${result.explanation}`,
-        operations: [...result.operations],
-      };
-    }
-
-    // Si ningun proveedor esta configurado, devolver respuesta vacia con mensaje informativo
+  private async describe(provider: AiProvider, available: boolean): Promise<AiStatusDto> {
+    const isOllama = provider.providerName === 'ollama';
+    const visionAvailable =
+      available && (isOllama ? await this.ollamaProvider.isVisionAvailable() : true);
     return {
-      explanation:
-        'No hay ningun proveedor de IA disponible (verifique GEMINI_API_KEY o el servicio Ollama).',
-      operations: [],
+      provider: provider.providerName,
+      available,
+      model: isOllama ? this.config.ollamaModel : this.config.geminiModel,
+      visionModel: isOllama ? this.config.ollamaVisionModel : this.config.geminiModel,
+      visionAvailable,
     };
   }
 
-  async generateFromImage(dto: GenerateImageDto): Promise<AiResponseDto> {
-    const primary = this.getActiveProvider();
-    const secondary = this.getSecondaryProvider();
+  generateFromPrompt(dto: GeneratePromptDto): Promise<AiResponseDto> {
+    return this.withFallback('texto', (provider) =>
+      provider.generateFromPrompt(dto.prompt, dto.currentModel),
+    );
+  }
+
+  generateFromImage(dto: GenerateImageDto): Promise<AiResponseDto> {
     const buffer = Buffer.from(dto.imageBase64, 'base64');
     const mime = dto.mimeType || 'image/png';
-
-    try {
-      if (await primary.isAvailable()) {
-        const result = await primary.generateFromImage(buffer, mime, dto.prompt, dto.currentModel);
-        return {
-          explanation: result.explanation,
-          operations: [...result.operations],
-        };
-      }
-    } catch (primaryError) {
-      this.logger.warn(
-        `Fallo el proveedor primario ${primary.providerName} en imagen, intentando respaldo con ${secondary.providerName}: ${String(primaryError)}`,
-      );
-    }
-
-    if (await secondary.isAvailable()) {
-      const result = await secondary.generateFromImage(buffer, mime, dto.prompt, dto.currentModel);
-      return {
-        explanation: `[Respaldo ${secondary.providerName}] ${result.explanation}`,
-        operations: [...result.operations],
-      };
-    }
-
-    return {
-      explanation: 'No hay ningun proveedor de IA disponible para vision multimodal.',
-      operations: [],
-    };
+    return this.withFallback('imagen', (provider) =>
+      provider.generateFromImage(buffer, mime, dto.prompt, dto.currentModel),
+    );
   }
 
-  async refineModel(dto: RefineModelDto): Promise<AiResponseDto> {
+  refineModel(dto: RefineModelDto): Promise<AiResponseDto> {
+    return this.withFallback('refinamiento', (provider) =>
+      provider.suggestRefinements(dto.model, dto.context),
+    );
+  }
+
+  /**
+   * Intenta el proveedor configurado y, si falla o no esta disponible, el de
+   * respaldo. Si ninguno responde se devuelve un 503 con el motivo real del
+   * primero (clave invalida, cuota agotada...), que es lo que la persona
+   * necesita saber para arreglarlo; antes se perdia tras un mensaje generico.
+   */
+  private async withFallback(
+    task: string,
+    run: (provider: AiProvider) => Promise<AiGenerationResult>,
+  ): Promise<AiResponseDto> {
     const primary = this.getActiveProvider();
     const secondary = this.getSecondaryProvider();
+    let primaryError: string | null = null;
 
-    try {
-      if (await primary.isAvailable()) {
-        const result = await primary.suggestRefinements(dto.model, dto.context);
-        return {
-          explanation: result.explanation,
-          operations: [...result.operations],
-        };
+    if (await primary.isAvailable()) {
+      try {
+        const result = await run(primary);
+        return { explanation: result.explanation, operations: [...result.operations] };
+      } catch (error) {
+        primaryError = error instanceof Error ? error.message : String(error);
+        this.logger.warn(
+          `Fallo ${primary.providerName} (${task}); se intenta ${secondary.providerName}: ${primaryError}`,
+        );
       }
-    } catch (primaryError) {
-      this.logger.warn(
-        `Fallo el proveedor primario ${primary.providerName} en refinamiento: ${String(primaryError)}`,
-      );
     }
 
     if (await secondary.isAvailable()) {
-      const result = await secondary.suggestRefinements(dto.model, dto.context);
-      return {
-        explanation: `[Respaldo ${secondary.providerName}] ${result.explanation}`,
-        operations: [...result.operations],
-      };
+      try {
+        const result = await run(secondary);
+        return {
+          explanation: `[Respaldo ${secondary.providerName}] ${result.explanation}`,
+          operations: [...result.operations],
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.warn(`Fallo tambien ${secondary.providerName} (${task}): ${message}`);
+        primaryError ??= message;
+      }
     }
 
-    return {
-      explanation: 'No hay proveedor de IA disponible para auditar el modelo.',
-      operations: [],
-    };
+    throw new ServiceUnavailableException(
+      primaryError ??
+        'No hay ningun proveedor de IA disponible: configura GEMINI_API_KEY o arranca Ollama.',
+    );
   }
 }

@@ -1,6 +1,12 @@
-import { createId, type Visibility } from '@uml-forge/uml-core';
+import { createId, isId, type Visibility } from '@uml-forge/uml-core';
+import { uuidFromEaId } from './ea-ids.js';
 
-/** Mapa para traducir IDs de origen (enteros, cadenas arbitrarias) a UUIDs validos. */
+/**
+ * Traduce los identificadores del documento (enteros, cadenas arbitrarias,
+ * `EAID_` de Enterprise Architect) a UUID validos para el metamodelo. Un UUID
+ * o un `EAID_` que envuelve un UUID se conserva, de modo que exportar e
+ * importar el mismo modelo mantiene sus identificadores.
+ */
 export class IdMapper {
   private readonly map = new Map<string, string>();
 
@@ -8,12 +14,14 @@ export class IdMapper {
     if (!originalId) return createId();
     const existing = this.map.get(originalId);
     if (existing) return existing;
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-      originalId,
-    );
-    const newId = isUuid ? originalId : createId();
+    const newId = isId(originalId) ? originalId : (uuidFromEaId(originalId) ?? createId());
     this.map.set(originalId, newId);
     return newId;
+  }
+
+  /** Indica si el identificador ya se registro, por ejemplo como clasificador. */
+  has(originalId: string): boolean {
+    return this.map.has(originalId);
   }
 }
 
@@ -57,7 +65,7 @@ function matchPrimitive(rawStr: string): string | null {
   if (clean.includes('#')) {
     clean = clean.split('#').pop()!.trim();
   }
-  clean = clean.replace(/^(EAJava_|EAC_|EACsharp_|EAVB_|EA_|umlforge-primitive-)/i, '');
+  clean = clean.replace(/^(EAJava_|EAnone_|EAC_|EACsharp_|EAVB_|EA_|umlforge-primitive-)/i, '');
   const lower = clean.toLowerCase();
 
   // 1. Cadenas / Caracteres (string, str, char, varchar)
@@ -120,19 +128,19 @@ function matchPrimitive(rawStr: string): string | null {
     return 'Boolean';
   }
 
-  // 7. Fechas (date)
-  if (lower === 'date' || (lower.includes('date') && !lower.includes('time'))) {
-    return 'Date';
-  }
-
-  // 8. Fecha y hora / Timestamp (datetime, timestamp, time)
+  // 7. Fecha y hora / Timestamp (datetime, LocalDateTime, timestamp, time, Instant)
   if (
-    lower === 'datetime' ||
-    lower === 'timestamp' ||
     lower === 'time' ||
+    lower === 'instant' ||
+    lower.includes('datetime') ||
     lower.includes('timestamp')
   ) {
     return 'DateTime';
+  }
+
+  // 8. Fechas (date, LocalDate, java.util.Date)
+  if (lower === 'date' || (lower.includes('date') && !lower.includes('time'))) {
+    return 'Date';
   }
 
   // 9. UUID (uuid, guid)
@@ -161,6 +169,12 @@ export function normalizeType(
   if (!typeStr || typeStr.trim() === '') return 'String';
   const raw = typeStr.trim();
 
+  // 0. Referencia a un clasificador del propio documento. Va primero: una clase
+  // llamada `Candidate` o `Point` no debe confundirse con `Date` o `int`.
+  if (idMapper.has(raw)) {
+    return idMapper.toUuid(raw);
+  }
+
   // 1. Coincidencia directa con tipo primitivo
   const directMatch = matchPrimitive(raw);
   if (directMatch !== null) {
@@ -177,7 +191,10 @@ export function normalizeType(
   }
 
   // 3. Si tiene prefijos de dialectos como Enterprise Architect:
-  const withoutPrefix = raw.replace(/^(EAJava_|EAC_|EACsharp_|EAVB_|EA_|umlforge-primitive-)/i, '');
+  const withoutPrefix = raw.replace(
+    /^(EAJava_|EAnone_|EAC_|EACsharp_|EAVB_|EA_|umlforge-primitive-)/i,
+    '',
+  );
   if (withoutPrefix !== raw) {
     const prefixMatch = matchPrimitive(withoutPrefix);
     if (prefixMatch !== null) {
@@ -191,8 +208,10 @@ export function normalizeType(
     }
   }
 
-  // 4. Si no es primitivo, es una referencia a otro Clasificador (Class, Enum, etc.) por su ID
-  return idMapper.toUuid(raw);
+  // 4. Referencia que no es ni primitivo conocido ni clasificador del documento
+  // (un tipo de biblioteca como `Money`): se degrada a texto en lugar de dejar
+  // un identificador colgando que el generador no podria resolver.
+  return 'String';
 }
 
 /** Extrae un array independientemente de si fast-xml-parser devuelve un objeto o un array. */

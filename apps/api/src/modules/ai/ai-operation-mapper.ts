@@ -9,6 +9,7 @@ import {
 } from './ai-mapper-helpers';
 import { processRelationshipItem } from './ai-relationship-mapper';
 import { processClassItem } from './ai-class-mapper';
+import { normalizeAiOperations } from './ai-operation-normalizer';
 import { parseTextToRawAiItems } from './ai-text-parser';
 
 export {
@@ -241,14 +242,18 @@ export function mapAiOperationsToUmlOperations(
     }
   }
 
-  // Retornar en estricto orden topológico
-  return [
-    ...classOperations,
-    ...enumOperations,
-    ...attributeOperations,
-    ...operationOperations,
-    ...relationshipOperations,
-  ];
+  // Orden topologico y depuracion contra el modelo existente: sin duplicados,
+  // con tipos validos y con lo nuevo colocado bajo el diagrama actual.
+  return normalizeAiOperations(
+    [
+      ...classOperations,
+      ...enumOperations,
+      ...attributeOperations,
+      ...operationOperations,
+      ...relationshipOperations,
+    ],
+    existingModel,
+  );
 }
 
 /** Parser de rescate para texto libre o markdown generado por modelos locales/visión. */

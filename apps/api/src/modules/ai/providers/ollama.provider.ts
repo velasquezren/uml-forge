@@ -1,7 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { UMLModel } from '@uml-forge/uml-core';
 import { ApiConfigService } from '../../../config/config.service';
-import { formatModelContext, UML_SYSTEM_PROMPT, UML_VISION_PROMPT } from '../ai-prompts';
+import {
+  formatModelContext,
+  UML_REFINE_INSTRUCTION,
+  UML_SYSTEM_PROMPT,
+  UML_VISION_PROMPT,
+} from '../ai-prompts';
 import { mapAiOperationsToUmlOperations, parseUmlFromFreeformText } from '../ai-operation-mapper';
 import { extractJsonObject } from './json-extraction';
 import type { AiGenerationResult, AiProvider } from '../interfaces/ai-provider.interface';
@@ -103,9 +108,7 @@ export class OllamaProvider implements AiProvider {
   }
 
   async suggestRefinements(model: UMLModel, context?: string): Promise<AiGenerationResult> {
-    const prompt =
-      'Analiza el modelo UML adjunto y sugiere refinamientos arquitectonicos y buenas practicas.\n' +
-      `Contexto: ${context ?? 'Mejora general'}`;
+    const prompt = `${UML_REFINE_INSTRUCTION}\nContexto adicional: ${context ?? 'Mejora general'}`;
     return this.generateFromPrompt(prompt, model);
   }
 

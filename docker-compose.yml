@@ -47,7 +47,7 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       # Datos de demostracion en el primer arranque; ponlo a false para conservar lo tuyo.
       SEED_ON_START: ${SEED_ON_START:-true}
-      AI_PROVIDER: ${AI_PROVIDER:-ollama}
+      AI_PROVIDER: ${AI_PROVIDER:-gemini}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
       # Ollama corre en la maquina anfitriona, no en la red del contenedor.

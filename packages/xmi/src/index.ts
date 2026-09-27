@@ -4,3 +4,4 @@ export * from './serializer.js';
 export * from './parser.js';
 export * from './autolayout.js';
 export * from './parser-helpers.js';
+export * from './metadata.js';

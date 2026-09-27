@@ -14,6 +14,7 @@ import { XmiActions } from '@/features/xmi/XmiActions';
 import { GenerateBackendDialog } from '@/features/codegen/GenerateBackendDialog';
 import { AiAssistantSheet } from '@/features/ai/AiAssistantSheet';
 import { resolveSelection } from '@/features/editor/lib/selection';
+import { computeEditLock } from '@/features/editor/lib/editLock';
 import type { SelectedElement } from '@/features/editor/types';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { apiClient, type ProjectDto } from '@/lib/api';
@@ -73,6 +74,12 @@ function ProjectEditorPage() {
   // copia congelada en el momento de seleccionarlo.
   const selectedElement = useMemo(() => resolveSelection(model, selectedRef), [model, selectedRef]);
 
+  // Nadie exporta ni importa mientras alguien, local o remoto, esta editando.
+  const editLock = useMemo(
+    () => computeEditLock(canvas?.isEditing ?? false, canvas?.remoteUsers ?? []),
+    [canvas?.isEditing, canvas?.remoteUsers],
+  );
+
   if (isInitializing) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
@@ -99,7 +106,12 @@ function ProjectEditorPage() {
       }
       actionsContent={
         <>
-          <XmiActions model={model} onReplaceModel={(imported) => canvas?.replaceModel(imported)} />
+          <XmiActions
+            model={model}
+            lock={editLock}
+            revision={canvas?.revision ?? 0}
+            onReplaceModel={(imported) => canvas?.replaceModel(imported)}
+          />
           <GenerateBackendDialog
             projectId={projectId}
             projectName={project?.name}
