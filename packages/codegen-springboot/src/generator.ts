@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { ok, err, type Result, validateModel } from '@uml-forge/uml-core';
 import { analyzeModel } from './analyzer.js';
@@ -10,6 +10,9 @@ import { generateJavaEnum } from './generators/enum.js';
 import { generateJavaInterface } from './generators/interface.js';
 import { generateMainApplicationClass } from './generators/main-class.js';
 import { generatePomXml } from './generators/pom.js';
+import { generatePostmanFiles } from './generators/postman.js';
+import { generatePostmanGuide } from './generators/postman-guide.js';
+import { generateProjectFiles } from './generators/project-files.js';
 import { generateApplicationProperties } from './generators/properties.js';
 import { generateReadme } from './generators/readme.js';
 import { generateJavaRepository } from './generators/repository.js';
@@ -32,7 +35,7 @@ export function resolveDefaultOptions(
     groupId,
     artifactId,
     packageName,
-    javaVersion: '21',
+    javaVersion: '17',
     springBootVersion: overrides?.springBootVersion || '3.3.5',
     database: overrides?.database || 'postgresql',
     serverPort: overrides?.serverPort || 8080,
@@ -60,6 +63,7 @@ export function generateSpringBootProject(
   files.push(generateReadme(resolvedOptions, analyzed));
   files.push(...generateApplicationProperties(resolvedOptions));
   files.push(generateMainApplicationClass(resolvedOptions));
+  files.push(...generateProjectFiles());
 
   // 2. Enumeraciones
   for (const umlEnum of analyzed.enums.values()) {
@@ -86,6 +90,10 @@ export function generateSpringBootProject(
     files.push(...generateJavaDtos(entity, analyzed, resolvedOptions));
   }
 
+  // 5. Coleccion, entorno y guia de Postman (ADR 0043)
+  files.push(...generatePostmanFiles(resolvedOptions, analyzed));
+  files.push(generatePostmanGuide(resolvedOptions, analyzed));
+
   return ok(files);
 }
 
@@ -98,5 +106,8 @@ export async function writeProjectToDisk(
     const fullPath = path.join(targetDir, file.path);
     await mkdir(path.dirname(fullPath), { recursive: true });
     await writeFile(fullPath, file.content, 'utf8');
+    if (file.executable === true) {
+      await chmod(fullPath, 0o755);
+    }
   }
 }

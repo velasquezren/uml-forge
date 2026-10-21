@@ -33,7 +33,9 @@ export function defaultBackendOptions(projectName: string | undefined): BackendO
     groupId,
     artifactId,
     packageName: toPackageName(groupId, artifactId),
-    database: 'postgresql',
+    // H2 arranca en cualquier equipo sin instalar nada; PostgreSQL exige tener
+    // el servidor y la base de datos creados (ADR 0038).
+    database: 'h2',
     serverPort: 8080,
   };
 }

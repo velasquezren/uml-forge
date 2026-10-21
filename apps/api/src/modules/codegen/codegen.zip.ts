@@ -20,7 +20,11 @@ export function createZipArchive(
     archive.on('end', () => resolve(Buffer.concat(chunks)));
 
     for (const file of files) {
-      archive.append(file.content, { name: `${rootFolder}/${file.path}` });
+      // `mvnw` sin permiso de ejecucion obliga a hacer chmod tras descomprimir.
+      archive.append(file.content, {
+        name: `${rootFolder}/${file.path}`,
+        mode: file.executable === true ? 0o755 : 0o644,
+      });
     }
 
     void archive.finalize();

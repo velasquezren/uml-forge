@@ -32,7 +32,7 @@ describe('Opciones de generacion del backend', () => {
       groupId: 'com.umlforge',
       artifactId: 'clinica-veterinaria',
       packageName: 'com.umlforge.clinica_veterinaria',
-      database: 'postgresql',
+      database: 'h2',
       serverPort: 8080,
     });
   });

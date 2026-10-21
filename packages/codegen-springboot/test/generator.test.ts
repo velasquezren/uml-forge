@@ -183,7 +183,7 @@ describe('Spring Boot Codegen Generator', () => {
 
     const fileMap = new Map(result.value.map((f) => [f.path, f.content]));
     const props = fileMap.get('src/main/resources/application.properties');
-    expect(props).toContain('server.port=9090');
+    expect(props).toContain('server.port=${PORT:9090}');
     expect(props).toContain('jdbc:h2:mem');
   });
 

@@ -20,7 +20,7 @@ export function BackendSuccessGuide({
 }: BackendSuccessGuideProps) {
   const [copied, setCopied] = useState(false);
 
-  const fullUnzipAndRun = `unzip ${successInfo.fileName} && cd ${options.artifactId} && mvn spring-boot:run`;
+  const fullUnzipAndRun = `unzip ${successInfo.fileName} && cd ${options.artifactId} && ./mvnw spring-boot:run`;
 
   const handleCopyCommand = (textToCopy: string) => {
     void navigator.clipboard.writeText(textToCopy);
@@ -65,8 +65,12 @@ export function BackendSuccessGuide({
           <div className="text-foreground font-medium">unzip {successInfo.fileName}</div>
           <div className="text-muted-foreground mt-1"># 2. Ingresar a la carpeta</div>
           <div className="text-foreground font-medium">cd {options.artifactId}</div>
-          <div className="text-muted-foreground mt-1"># 3. Compilar y correr Spring Boot</div>
-          <div className="text-primary font-bold">mvn spring-boot:run</div>
+          <div className="text-muted-foreground mt-1">
+            # 3. Compilar y arrancar (Maven Wrapper incluido, basta JDK 17+)
+          </div>
+          <div className="text-primary font-bold">mvnw.cmd spring-boot:run</div>
+          <div className="text-muted-foreground"># en Linux o macOS:</div>
+          <div className="text-primary font-bold">./mvnw spring-boot:run</div>
         </div>
 
         <div className="space-y-1.5 text-[11px] text-muted-foreground pt-1 border-t border-border/60">

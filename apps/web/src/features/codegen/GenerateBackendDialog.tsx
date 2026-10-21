@@ -28,6 +28,8 @@ interface GenerateBackendDialogProps {
   projectName?: string;
   /** Sin modelo cargado no hay nada que generar y el boton queda inhabilitado. */
   hasModel: boolean;
+  /** Espera a que el servidor tenga los ultimos cambios del lienzo. */
+  beforeGenerate?: () => Promise<boolean>;
 }
 
 interface SuccessInfo {
@@ -43,6 +45,7 @@ export function GenerateBackendDialog({
   projectId,
   projectName,
   hasModel,
+  beforeGenerate,
 }: GenerateBackendDialogProps) {
   const [open, setOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -84,6 +87,9 @@ export function GenerateBackendDialog({
 
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true);
+    // El backend se genera con el modelo del servidor: primero tienen que
+    // llegarle los cambios recien hechos en el lienzo.
+    await beforeGenerate?.();
     const result = await downloadSpringBootZip(projectId, options);
     setIsGenerating(false);
 
@@ -93,9 +99,10 @@ export function GenerateBackendDialog({
       return;
     }
     toast.error(`No se pudo generar el backend: ${result.error}`);
-  }, [projectId, options]);
+  }, [projectId, options, beforeGenerate]);
 
-  const runCommand = `mvn spring-boot:run`;
+  // El proyecto trae Maven Wrapper (ADR 0038): no hace falta tener Maven.
+  const runCommand = `mvnw.cmd spring-boot:run`;
 
   return (
     <>
@@ -232,7 +239,8 @@ export function GenerateBackendDialog({
                       </span>
                     </p>
                     <p className="text-[10px] text-muted-foreground/80">
-                      Requisitos: Java 21 LTS y Maven 3.9+ instalados.
+                      Windows: mvnw.cmd spring-boot:run. Linux o macOS: ./mvnw spring-boot:run.
+                      Requisito: JDK 17 o superior; Maven no hace falta.
                     </p>
                   </div>
                 </div>

@@ -59,12 +59,18 @@ const JAVA_KEYWORDS = new Set([
 
 /** Divide una cadena en palabras respetando camelCase, guiones y espacios. */
 function splitWords(str: string): string[] {
-  return str
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .replace(/[^a-zA-Z0-9]+/g, ' ')
-    .trim()
-    .split(/\s+/)
-    .filter((w) => w.length > 0);
+  return (
+    str
+      // Se quitan las tildes antes de filtrar: sin esto `Categoría` se partia en
+      // `Categor` y `a`, y la clase Java acababa llamandose `CategorA`.
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/[^a-zA-Z0-9]+/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .filter((w) => w.length > 0)
+  );
 }
 
 /** Convierte a PascalCase (ej. NombreDeClase). */

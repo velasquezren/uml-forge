@@ -13,7 +13,8 @@ export interface CodegenOptions {
   readonly groupId: string;
   readonly artifactId: string;
   readonly packageName: string;
-  readonly javaVersion: '21';
+  /** Java 17 es el minimo de Spring Boot 3 y lo que mas se encuentra instalado. */
+  readonly javaVersion: '17';
   readonly springBootVersion: string;
   readonly database: 'postgresql' | 'h2';
   readonly serverPort: number;
@@ -25,6 +26,8 @@ export interface CodegenOptions {
 export interface GeneratedFile {
   readonly path: string;
   readonly content: string;
+  /** Script que debe conservar el permiso de ejecucion (`mvnw`). */
+  readonly executable?: boolean;
 }
 
 /** Cardinalidad y rol de un extremo en el analisis de relaciones. */

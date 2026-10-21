@@ -45,10 +45,20 @@ export function generateAttributeField(prop: UMLProperty, model: AnalyzedModel):
   return { declaration, getterSetter, imports };
 }
 
-/** Genera la declaracion y accesores para un campo de relacion JPA. */
-export function generateRelationshipField(rel: EntityRelationshipField): FieldGenResult {
-  const imports: string[] = [];
-  const annotations: string[] = [];
+/**
+ * Genera la declaracion y accesores para un campo de relacion JPA.
+ *
+ * `ignoredTargetFields` son las propiedades de la entidad destino que no se
+ * escriben en el JSON anidado; sin ellas, una relacion bidireccional entra en
+ * un ciclo infinito al serializar la respuesta.
+ */
+export function generateRelationshipField(
+  rel: EntityRelationshipField,
+  ignoredTargetFields: readonly string[],
+): FieldGenResult {
+  const imports: string[] = ['com.fasterxml.jackson.annotation.JsonIgnoreProperties'];
+  const ignoredList = ignoredTargetFields.map((field) => `"${field}"`).join(', ');
+  const annotations: string[] = [`    @JsonIgnoreProperties({${ignoredList}})`];
   const fieldName = rel.fieldName;
   const targetType = rel.targetClassName;
   const pascalName = toPascalCase(fieldName);

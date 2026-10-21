@@ -1,6 +1,7 @@
 import type { AnalyzedEntity, AnalyzedModel, CodegenOptions, GeneratedFile } from '../types.js';
 import { sanitizeJavaIdentifier, toCamelCase, toPascalCase } from '../naming.js';
 import { generateAttributeField, generateRelationshipField } from './entity-helpers.js';
+import { jsonIgnoredFieldsFor } from './hierarchy.js';
 import { mapUmlTypeToJava } from './type-helper.js';
 
 /** Genera el fichero Java @Entity para un clasificador UML. */
@@ -57,7 +58,7 @@ export function generateJavaEntity(
 
   // Relaciones
   for (const rel of entity.relationships) {
-    const res = generateRelationshipField(rel);
+    const res = generateRelationshipField(rel, jsonIgnoredFieldsFor(rel.targetClassName, model));
     fieldDeclarations.push(res.declaration);
     getterSetters.push(res.getterSetter);
     res.imports.forEach((imp) => importSet.add(imp));

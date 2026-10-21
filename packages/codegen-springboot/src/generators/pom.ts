@@ -1,6 +1,21 @@
 import type { CodegenOptions, GeneratedFile } from '../types.js';
 
-/** Genera el archivo pom.xml para Maven con Spring Boot 3 y Java 21. */
+/**
+ * springdoc 2.6 es la linea compatible con Spring Boot 3.3: publica la
+ * documentacion OpenAPI en /v3/api-docs y la interfaz en /swagger-ui.html.
+ */
+const SPRINGDOC_VERSION = '2.6.0';
+
+/** Escapa el texto libre (nombre y descripcion del modelo) dentro del XML. */
+function xml(value: string): string {
+  return value
+    .replace(/&/gu, '&amp;')
+    .replace(/</gu, '&lt;')
+    .replace(/>/gu, '&gt;')
+    .replace(/"/gu, '&quot;');
+}
+
+/** Genera el archivo pom.xml para Maven con Spring Boot 3 y Java 17 o superior. */
 export function generatePomXml(options: CodegenOptions): GeneratedFile {
   const content = `<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -18,8 +33,8 @@ export function generatePomXml(options: CodegenOptions): GeneratedFile {
     <groupId>${options.groupId}</groupId>
     <artifactId>${options.artifactId}</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>${options.applicationName}</name>
-    <description>${options.description}</description>
+    <name>${xml(options.applicationName)}</name>
+    <description>${xml(options.description)}</description>
 
     <properties>
         <java.version>${options.javaVersion}</java.version>
@@ -39,6 +54,11 @@ export function generatePomXml(options: CodegenOptions): GeneratedFile {
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${SPRINGDOC_VERSION}</version>
         </dependency>
 
         <dependency>
@@ -61,14 +81,6 @@ export function generatePomXml(options: CodegenOptions): GeneratedFile {
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>${options.javaVersion}</source>
-                    <target>${options.javaVersion}</target>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

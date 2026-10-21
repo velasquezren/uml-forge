@@ -13,3 +13,5 @@ export { generateJavaRepository } from './generators/repository.js';
 export { generateJavaService } from './generators/service.js';
 export { generateJavaController } from './generators/controller.js';
 export { generateJavaDtos } from './generators/dto.js';
+export { generatePostmanFiles } from './generators/postman.js';
+export { generatePostmanGuide } from './generators/postman-guide.js';

@@ -1,95 +1,131 @@
 import type { AnalyzedModel, CodegenOptions, GeneratedFile } from '../types.js';
-import { pluralize, toKebabCase } from '../naming.js';
+import { entityBasePath } from './controller.js';
 
-/** Genera un archivo README.md con la guia de instalacion, ejecucion y endpoints del backend. */
+/** Instrucciones de base de datos segun la opcion elegida al generar. */
+function databaseSection(options: CodegenOptions): string {
+  if (options.database === 'h2') {
+    return `La aplicacion usa **H2 en memoria**: no hace falta instalar ninguna base de
+datos. Las tablas se crean al arrancar y se borran al parar.
+
+- Consola de H2: <http://localhost:${options.serverPort}/h2-console>
+- URL JDBC: \`jdbc:h2:mem:${options.artifactId}\`, usuario \`sa\`, sin contrasena.
+
+Para usar PostgreSQL, crea la base de datos \`${options.artifactId}\` y arranca con el
+perfil \`postgres\` (ver mas abajo).`;
+  }
+
+  return `La aplicacion usa **PostgreSQL**. Antes de arrancar:
+
+1. Instala PostgreSQL (o arrancalo con Docker:
+   \`docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=${options.artifactId} postgres:16\`).
+2. Crea la base de datos \`${options.artifactId}\` si no existe.
+3. Si tu usuario o contrasena no son \`postgres\`/\`postgres\`, indicalos con las
+   variables de entorno \`DB_URL\`, \`DB_USERNAME\` y \`DB_PASSWORD\`.
+
+Las tablas se crean y actualizan solas al arrancar.
+
+**Sin PostgreSQL** puedes arrancar igualmente con H2 en memoria usando el perfil \`h2\`.`;
+}
+
+/** Ordenes de arranque para Windows y para Linux o macOS. */
+function runSection(options: CodegenOptions): string {
+  const profile = options.database === 'postgresql' ? 'h2' : 'postgres';
+  return `El proyecto incluye **Maven Wrapper**: no hace falta instalar Maven, se descarga
+solo la primera vez.
+
+Windows (PowerShell o CMD):
+
+\`\`\`
+mvnw.cmd spring-boot:run
+\`\`\`
+
+Linux o macOS:
+
+\`\`\`
+./mvnw spring-boot:run
+\`\`\`
+
+Con el perfil \`${profile}\`:
+
+\`\`\`
+mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=${profile}"
+./mvnw spring-boot:run -Dspring-boot.run.profiles=${profile}
+\`\`\`
+
+En PowerShell las comillas alrededor de \`-D...\` son obligatorias.`;
+}
+
+/** Problemas habituales y su solucion. */
+const TROUBLESHOOTING = `- **"JAVA_HOME is not set" o "java no se reconoce"**: instala un JDK 17 o
+  superior (por ejemplo Eclipse Temurin) y abre una terminal nueva.
+- **"release version 17 not supported"**: el JDK es anterior a 17; actualizalo.
+- **"Connection to localhost:5432 refused"**: PostgreSQL no esta arrancado.
+  Arrancalo o usa el perfil \`h2\`.
+- **"Port 8080 was already in use"**: otro programa usa el puerto. Arranca con
+  otro: \`mvnw.cmd spring-boot:run "-Dspring-boot.run.arguments=--server.port=8081"\`.
+- **mvnw.cmd no hace nada o falla al descargar Maven**: revisa el proxy o el
+  antivirus; la descarga va a \`repo.maven.apache.org\`.`;
+
+/** Genera un README.md con la guia de instalacion, ejecucion y endpoints del backend. */
 export function generateReadme(options: CodegenOptions, analyzed: AnalyzedModel): GeneratedFile {
-  const isPostgres = options.database === 'postgresql';
-
   const entitySections = Array.from(analyzed.entities.values())
     .filter((e) => !e.isAbstract && !e.isInterface)
     .map((e) => {
-      const path = toKebabCase(pluralize(e.javaClassName));
-      return `- **${e.javaClassName}**: \`/api/${path}\` (CRUD completo: GET, POST, PUT, DELETE)`;
+      return `- **${e.javaClassName}**: \`${entityBasePath(e)}\` (GET, POST, PUT, DELETE)`;
     })
     .join('\n');
 
   const content = `# ${options.applicationName}
 
-Backend Spring Boot 3 con Java 21 generado automáticamente por **UML Forge** a partir del diagrama de clases UML.
+Backend Spring Boot 3 generado por **UML Forge** a partir del diagrama de clases.
 
----
+## Requisitos
 
-## 📋 Requisitos Previos
+- **JDK 17 o superior** (\`java -version\`). Maven no es necesario.
 
-- **Java**: Versión 21 LTS o superior (\`java -version\`)
-- **Maven**: Versión 3.9 o superior (\`mvn -version\`)
+## Arranque
 
----
+${runSection(options)}
 
-## 🚀 Guía de Ejecución Rápida
+La API queda en <http://localhost:${options.serverPort}> y la documentacion
+interactiva (Swagger UI) en <http://localhost:${options.serverPort}/swagger-ui.html>.
 
-Para compilar y arrancar la aplicación, ejecuta el siguiente comando en la raíz del proyecto:
+## Base de datos
 
-\`\`\`bash
-mvn spring-boot:run
-\`\`\`
+${databaseSection(options)}
 
-Spring Boot compilará las fuentes Java, levantará el servidor embebido Tomcat en el puerto **${options.serverPort}** y creará automáticamente todas las tablas en la base de datos a partir de las entidades JPA.
-
----
-
-## 🗄️ Base de Datos y Creación Automática de Tablas
-
-${
-  isPostgres
-    ? `### PostgreSQL
-- **URL**: \`jdbc:postgresql://localhost:5432/${options.artifactId}\`
-- **Usuario**: \`postgres\`
-- **Contraseña**: \`postgres\`
-- **Estrategia DDL**: \`spring.jpa.hibernate.ddl-auto=update\`
-  *(Hibernate creará y actualizará automáticamente las tablas en la base de datos al arrancar).*`
-    : `### H2 Database (En memoria)
-- **Modo**: 100% en memoria, no requiere instalar ningún motor de base de datos en tu equipo.
-- **URL JDBC**: \`jdbc:h2:mem:${options.artifactId};DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE\`
-- **Usuario**: \`sa\`
-- **Contraseña**: *(dejar en blanco)*
-- **Consola Web H2**: [http://localhost:${options.serverPort}/h2-console](http://localhost:${options.serverPort}/h2-console)
-- **Estrategia DDL**: \`spring.jpa.hibernate.ddl-auto=create-drop\`
-  *(Las tablas, relaciones y restricciones se crean automáticamente al iniciar la aplicación).*`
-}
-
----
-
-## 📡 Endpoints REST Generados
-
-La aplicación expone una API REST organizada en controladores, servicios y DTOs:
+## Endpoints REST
 
 ${entitySections || '- No se definieron entidades concretas en el modelo.'}
 
----
+## Probar con Postman
 
-## 🏗️ Arquitectura del Proyecto Generado
+La carpeta \`postman/\` trae una coleccion con todas las peticiones del CRUD y un
+entorno con la URL local. Importa los dos ficheros en Postman y sigue
+\`postman/README.md\`.
+
+## Estructura
 
 \`\`\`
 ${options.artifactId}/
-├── pom.xml
-├── README.md
-└── src/
-    └── main/
-        ├── java/${options.packageName.replace(/\./g, '/')}/
-        │   ├── ${options.applicationName}Application.java
-        │   ├── model/         # Entidades JPA (@Entity, @Table, @Id)
-        │   ├── repository/    # Repositorios Spring Data JPA (JpaRepository)
-        │   ├── service/       # Servicios de logica de negocio (@Service)
-        │   ├── controller/    # Controladores REST (@RestController)
-        │   └── dto/           # Data Transfer Objects (Request / Response)
-        └── resources/
-            └── application.properties
+  mvnw, mvnw.cmd, .mvn/      Maven Wrapper
+  pom.xml
+  src/main/java/${options.packageName.replace(/\./g, '/')}/
+    ${options.applicationName}Application.java
+    model/        Entidades JPA
+    repository/   Repositorios Spring Data JPA
+    service/      Logica de negocio
+    controller/   Controladores REST
+    dto/          Objetos de peticion y respuesta
+  postman/        Coleccion, entorno y guia de Postman
+  src/main/resources/
+    application.properties
 \`\`\`
+
+## Problemas frecuentes
+
+${TROUBLESHOOTING}
 `;
 
-  return {
-    path: 'README.md',
-    content,
-  };
+  return { path: 'README.md', content };
 }

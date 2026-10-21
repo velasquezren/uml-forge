@@ -1,6 +1,11 @@
 import type { AnalyzedEntity, CodegenOptions, GeneratedFile } from '../types.js';
 import { toKebabCase } from '../naming.js';
 
+/** Ruta base REST de una entidad (`/api/order-items`). */
+export function entityBasePath(entity: AnalyzedEntity): string {
+  return `/api/${toKebabCase(entity.tableName)}`;
+}
+
 /** Genera el controlador REST para una entidad. */
 export function generateJavaController(
   entity: AnalyzedEntity,
@@ -14,7 +19,7 @@ export function generateJavaController(
   const entityName = entity.javaClassName;
   const controllerName = `${entityName}Controller`;
   const serviceName = `${entityName}Service`;
-  const routePath = `/api/${toKebabCase(entity.tableName)}`;
+  const routePath = entityBasePath(entity);
 
   const content = `package ${options.packageName}.controller;
 
