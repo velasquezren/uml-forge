@@ -7,6 +7,8 @@ import type { UMLModel } from '@uml-forge/uml-core';
 import { AppModule } from '../src/app.module';
 import { mapAiOperationsToUmlOperations } from '../src/modules/ai/ai-operation-mapper';
 import type {
+  AiChatReply,
+  AiChatRequest,
   AiGenerationResult,
   AiProvider,
 } from '../src/modules/ai/interfaces/ai-provider.interface';
@@ -57,6 +59,11 @@ class FakeProvider implements AiProvider {
 
   suggestRefinements(model: UMLModel): Promise<AiGenerationResult> {
     return this.answer(model);
+  }
+
+  async converse(request: AiChatRequest): Promise<AiChatReply> {
+    const proposal = await this.answer(request.model);
+    return { reply: `${request.askedBy}, propongo una clase Student.`, proposal };
   }
 }
 

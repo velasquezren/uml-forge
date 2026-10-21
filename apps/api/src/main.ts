@@ -17,6 +17,10 @@ async function bootstrap(): Promise<void> {
   // Express solo admite 100 KB de JSON por defecto, y la foto de un diagrama en
   // base64 ocupa bastante mas: sin ampliar el limite, /api/ai/image la rechaza.
   app.useBodyParser('json', { limit: JSON_BODY_LIMIT });
+  // La API siempre va detras de un proxy (nginx en Docker; nginx y el balanceador
+  // de Google en Cloud Run). Sin esto `req.ip` es la del proxy y el limitador de
+  // peticiones metia a todos los usuarios en el mismo cupo (ADR 0041).
+  app.set('trust proxy', true);
 
   const logger = app.get(Logger);
   app.useLogger(logger);

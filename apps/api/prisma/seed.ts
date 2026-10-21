@@ -50,6 +50,14 @@ async function main() {
   const prisma = new PrismaClient({ adapter });
 
   try {
+    // Al arrancar el contenedor solo se siembra una base de datos vacia: la
+    // siembra borra todo, y un reinicio (o un arranque en frio de Cloud Run)
+    // no puede llevarse por delante el trabajo de los usuarios (ADR 0039).
+    if (process.env['SEED_ONLY_IF_EMPTY'] === 'true' && (await prisma.user.count()) > 0) {
+      process.stdout.write('La base de datos ya tiene usuarios: se omite el seed.\n');
+      return;
+    }
+
     process.stdout.write('Iniciando seed de la base de datos UML Forge...\n');
 
     // 1. Limpiar registros previos

@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { UMLModel } from '@uml-forge/uml-core';
 import { ApiConfigService } from '../../../config/config.service';
+import { CHAT_SYSTEM_PROMPT, formatChatRequest } from '../ai-chat-prompt';
+import { parseChatReply } from '../ai-chat-reply';
 import {
   formatModelContext,
   UML_REFINE_INSTRUCTION,
@@ -9,7 +11,12 @@ import {
 } from '../ai-prompts';
 import { mapAiOperationsToUmlOperations, parseUmlFromFreeformText } from '../ai-operation-mapper';
 import { extractJsonObject } from './json-extraction';
-import type { AiGenerationResult, AiProvider } from '../interfaces/ai-provider.interface';
+import type {
+  AiChatReply,
+  AiChatRequest,
+  AiGenerationResult,
+  AiProvider,
+} from '../interfaces/ai-provider.interface';
 
 /** Un modelo local en CPU tarda mucho mas que una API remota. */
 const GENERATION_TIMEOUT_MS = 180000;
@@ -105,6 +112,18 @@ export class OllamaProvider implements AiProvider {
     });
 
     return this.parseAiResponse(rawText, currentModel, true);
+  }
+
+  async converse(request: AiChatRequest): Promise<AiChatReply> {
+    const rawText = await this.generate({
+      model: this.config.ollamaModel,
+      system: CHAT_SYSTEM_PROMPT,
+      prompt: formatChatRequest(request),
+      format: 'json',
+      stream: false,
+      options: { num_ctx: 8192, temperature: 0.3, top_p: 0.9, num_predict: 2048 },
+    });
+    return parseChatReply(rawText, request.model);
   }
 
   async suggestRefinements(model: UMLModel, context?: string): Promise<AiGenerationResult> {

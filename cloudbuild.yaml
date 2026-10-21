@@ -1,0 +1,40 @@
+# Construye las imagenes de la API y de la PWA y las publica en Artifact
+# Registry. Uso (ADR 0041):
+#   gcloud builds submit --project=<proyecto> --config=cloudbuild.yaml \
+#     --service-account=projects/<proyecto>/serviceAccounts/uml-forge-build@<proyecto>.iam.gserviceaccount.com \
+#     --substitutions=_REGION=us-central1,_TAG=<etiqueta>
+substitutions:
+  _REGION: us-central1
+  _REPOSITORY: uml-forge
+  _TAG: latest
+
+steps:
+  - id: api
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - apps/api/Dockerfile
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/api:${_TAG}
+      - .
+  - id: web
+    name: gcr.io/cloud-builders/docker
+    waitFor: ['-']
+    args:
+      - build
+      - -f
+      - apps/web/Dockerfile
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/web:${_TAG}
+      - .
+
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/api:${_TAG}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/web:${_TAG}
+
+options:
+  machineType: E2_HIGHCPU_8
+  # Con una cuenta de servicio propia los registros van a Cloud Logging.
+  logging: CLOUD_LOGGING_ONLY
+timeout: 1800s

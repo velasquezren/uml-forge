@@ -13,6 +13,7 @@ import { useOutboxSync } from '@/features/sync/useOutboxSync';
 import { XmiActions } from '@/features/xmi/XmiActions';
 import { GenerateBackendDialog } from '@/features/codegen/GenerateBackendDialog';
 import { AiAssistantSheet } from '@/features/ai/AiAssistantSheet';
+import { ChatSheet } from '@/features/chat/ChatSheet';
 import { resolveSelection } from '@/features/editor/lib/selection';
 import { computeEditLock } from '@/features/editor/lib/editLock';
 import type { SelectedElement } from '@/features/editor/types';
@@ -116,11 +117,18 @@ function ProjectEditorPage() {
             projectId={projectId}
             projectName={project?.name}
             hasModel={(model?.classes.length ?? 0) > 0}
+            beforeGenerate={canvas?.flushToServer}
           />
           <AiAssistantSheet
             projectId={projectId}
             model={model}
             applyOperation={canvas?.applyOperation}
+          />
+          <ChatSheet
+            projectId={projectId}
+            currentUser={user ? { id: user.id, name: user.name } : null}
+            canEdit={project?.currentUserRole !== 'VIEWER'}
+            beforeAsk={canvas?.flushToServer}
           />
         </>
       }

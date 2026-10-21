@@ -12,6 +12,10 @@ RUN pnpm install --frozen-lockfile
 RUN pnpm exec turbo run build --filter=@uml-forge/web
 
 FROM nginx:1.27-alpine AS runtime
-COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
+# La configuracion es una plantilla: la imagen la rellena al arrancar con estas
+# variables, que Cloud Run sustituye por la URL de su servicio de API.
+ENV API_UPSTREAM=http://api:3000
+ENV API_HOST=api:3000
+COPY apps/web/nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=build /app/apps/web/dist /usr/share/nginx/html
 EXPOSE 80

@@ -45,6 +45,7 @@ export interface EditorCanvasHandlers {
   isEditing: boolean;
   /** Revision compartida del modelo, para el control de versiones. */
   revision: number;
+  flushToServer: () => Promise<boolean>;
 }
 
 interface EditorCanvasProps {
@@ -85,6 +86,7 @@ function EditorCanvasInner({
     isEditing,
     markEditing,
     revision,
+    flushToServer,
   } = useYjsModel({ projectId, projectName, accessToken, user });
 
   const { handlePointerMove, handlePointerLeave } = useCursorBroadcast(publishCursor);
@@ -122,6 +124,7 @@ function EditorCanvasInner({
       remoteUsers,
       isEditing,
       revision,
+      flushToServer,
     });
   }, [
     onInitModelHandler,
@@ -135,6 +138,7 @@ function EditorCanvasInner({
     remoteUsers,
     isEditing,
     revision,
+    flushToServer,
   ]);
 
   const handleNodesChange = useCallback((changes: NodeChange<UmlNode>[]) => {

@@ -106,6 +106,22 @@ export class ApiConfigService {
     return this.config.GEMINI_FALLBACK_MODEL;
   }
 
+  get geminiUseVertexAi(): boolean {
+    return this.config.GEMINI_USE_VERTEXAI === 'true';
+  }
+
+  get googleCloudProject(): string {
+    return this.config.GOOGLE_CLOUD_PROJECT;
+  }
+
+  get googleCloudLocation(): string {
+    return this.config.GOOGLE_CLOUD_LOCATION;
+  }
+
+  get chatEventBus(): 'memory' | 'postgres' {
+    return this.config.CHAT_EVENT_BUS;
+  }
+
   get ollamaBaseUrl(): string {
     return this.config.OLLAMA_BASE_URL;
   }

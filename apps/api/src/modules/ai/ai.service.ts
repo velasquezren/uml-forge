@@ -4,7 +4,12 @@ import type { AiResponseDto, AiStatusDto } from './dto/ai-response.dto';
 import type { GenerateImageDto } from './dto/generate-image.dto';
 import type { GeneratePromptDto } from './dto/generate-prompt.dto';
 import type { RefineModelDto } from './dto/refine-model.dto';
-import type { AiGenerationResult, AiProvider } from './interfaces/ai-provider.interface';
+import type {
+  AiChatReply,
+  AiChatRequest,
+  AiGenerationResult,
+  AiProvider,
+} from './interfaces/ai-provider.interface';
 import { GeminiProvider } from './providers/gemini.provider';
 import { OllamaProvider } from './providers/ollama.provider';
 
@@ -56,6 +61,12 @@ export class AiService {
     );
   }
 
+  /** Respuesta del chat de grupo, con el mismo respaldo entre proveedores (ADR 0042). */
+  async converse(request: AiChatRequest): Promise<AiChatReply> {
+    const { result } = await this.runWithFallback('chat', (provider) => provider.converse(request));
+    return result;
+  }
+
   generateFromImage(dto: GenerateImageDto): Promise<AiResponseDto> {
     const buffer = Buffer.from(dto.imageBase64, 'base64');
     const mime = dto.mimeType || 'image/png';
@@ -80,14 +91,30 @@ export class AiService {
     task: string,
     run: (provider: AiProvider) => Promise<AiGenerationResult>,
   ): Promise<AiResponseDto> {
+    const { result, provider, isFallback } = await this.runWithFallback(task, run);
+    return {
+      explanation: isFallback ? `[Respaldo ${provider}] ${result.explanation}` : result.explanation,
+      operations: [...result.operations],
+    };
+  }
+
+  /**
+   * Intenta el proveedor configurado y, si falla o no esta disponible, el de
+   * respaldo. Si ninguno responde se devuelve un 503 con el motivo real del
+   * primero (clave invalida, cuota agotada...), que es lo que la persona
+   * necesita saber para arreglarlo.
+   */
+  private async runWithFallback<T>(
+    task: string,
+    run: (provider: AiProvider) => Promise<T>,
+  ): Promise<{ result: T; provider: string; isFallback: boolean }> {
     const primary = this.getActiveProvider();
     const secondary = this.getSecondaryProvider();
     let primaryError: string | null = null;
 
     if (await primary.isAvailable()) {
       try {
-        const result = await run(primary);
-        return { explanation: result.explanation, operations: [...result.operations] };
+        return { result: await run(primary), provider: primary.providerName, isFallback: false };
       } catch (error) {
         primaryError = error instanceof Error ? error.message : String(error);
         this.logger.warn(
@@ -98,11 +125,7 @@ export class AiService {
 
     if (await secondary.isAvailable()) {
       try {
-        const result = await run(secondary);
-        return {
-          explanation: `[Respaldo ${secondary.providerName}] ${result.explanation}`,
-          operations: [...result.operations],
-        };
+        return { result: await run(secondary), provider: secondary.providerName, isFallback: true };
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         this.logger.warn(`Fallo tambien ${secondary.providerName} (${task}): ${message}`);

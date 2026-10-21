@@ -7,8 +7,9 @@ echo "Aplicando migraciones de Prisma..."
 pnpm exec prisma migrate deploy
 
 if [ "${SEED_ON_START}" = "true" ]; then
-  echo "Sembrando datos de demostracion..."
-  pnpm run seed
+  # Solo si la base de datos esta vacia: la siembra borra todo lo que haya.
+  echo "Sembrando datos de demostracion si la base de datos esta vacia..."
+  SEED_ONLY_IF_EMPTY=true pnpm run seed
 fi
 
 echo "Arrancando la API de UML Forge..."

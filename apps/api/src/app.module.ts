@@ -16,6 +16,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 import { CodegenModule } from './modules/codegen/codegen.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { CodegenModule } from './modules/codegen/codegen.module';
     SyncModule,
     AiModule,
     CodegenModule,
+    ChatModule,
   ],
   providers: [
     {

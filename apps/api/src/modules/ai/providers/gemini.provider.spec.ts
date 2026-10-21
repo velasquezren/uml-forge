@@ -1,7 +1,8 @@
 import { ApiError } from '@google/genai';
 import { describe, expect, it } from 'vitest';
 import { formatModelContext } from '../ai-prompts';
-import { describeGeminiError, isModelCapacityError } from './gemini.provider';
+import type { ApiConfigService } from '../../../config/config.service';
+import { describeGeminiError, GeminiProvider, isModelCapacityError } from './gemini.provider';
 
 describe('errores de Gemini', () => {
   const model = 'gemini-2.5-flash';
@@ -23,6 +24,33 @@ describe('errores de Gemini', () => {
       'no esta disponible',
     );
     expect(describeGeminiError(new Error('Request timeout'), model)).toContain('tardo demasiado');
+  });
+});
+
+describe('Gemini por Vertex AI', () => {
+  function provider(overrides: Partial<Record<string, unknown>>): GeminiProvider {
+    const config = {
+      geminiApiKey: '',
+      geminiModel: 'gemini-2.5-flash',
+      geminiFallbackModel: '',
+      geminiUseVertexAi: true,
+      googleCloudProject: 'software-2-2026',
+      googleCloudLocation: 'global',
+      ...overrides,
+    } as unknown as ApiConfigService;
+    return new GeminiProvider(config);
+  }
+
+  it('esta disponible sin clave cuando hay proyecto de Google Cloud', async () => {
+    await expect(provider({}).isAvailable()).resolves.toBe(true);
+  });
+
+  it('no esta disponible en modo Vertex sin proyecto', async () => {
+    await expect(provider({ googleCloudProject: '' }).isAvailable()).resolves.toBe(false);
+  });
+
+  it('sin Vertex vuelve a exigir la clave de la Gemini API', async () => {
+    await expect(provider({ geminiUseVertexAi: false }).isAvailable()).resolves.toBe(false);
   });
 });
 

@@ -1,4 +1,4 @@
-import { ApiError, GoogleGenAI, type Part } from '@google/genai';
+import { ApiError, GoogleGenAI, type Part, type Schema } from '@google/genai';
 import { Injectable, Logger } from '@nestjs/common';
 import type { UMLModel } from '@uml-forge/uml-core';
 import { ApiConfigService } from '../../../config/config.service';
@@ -8,9 +8,16 @@ import {
   UML_SYSTEM_PROMPT,
   UML_VISION_PROMPT,
 } from '../ai-prompts';
+import { CHAT_SYSTEM_PROMPT, formatChatRequest } from '../ai-chat-prompt';
+import { parseChatReply } from '../ai-chat-reply';
 import { mapAiOperationsToUmlOperations, parseUmlFromFreeformText } from '../ai-operation-mapper';
-import type { AiGenerationResult, AiProvider } from '../interfaces/ai-provider.interface';
-import { UML_RESPONSE_SCHEMA } from './gemini-schema';
+import type {
+  AiChatReply,
+  AiChatRequest,
+  AiGenerationResult,
+  AiProvider,
+} from '../interfaces/ai-provider.interface';
+import { CHAT_RESPONSE_SCHEMA, UML_RESPONSE_SCHEMA } from './gemini-schema';
 import { extractJsonObject } from './json-extraction';
 
 /** Limite por peticion: una imagen grande con un modelo con razonamiento tarda. */
@@ -30,22 +37,40 @@ export class GeminiProvider implements AiProvider {
 
   constructor(private readonly config: ApiConfigService) {}
 
+  /**
+   * Cliente del SDK. Con `GEMINI_USE_VERTEXAI=true` se usa Vertex AI con las
+   * credenciales de Google Cloud (la cuenta de servicio en Cloud Run, o
+   * `gcloud auth application-default login` en local) y no hace falta clave;
+   * si no, la Gemini Developer API con `GEMINI_API_KEY` (ADR 0040).
+   */
   private getClient(): GoogleGenAI | null {
+    const httpOptions = {
+      timeout: REQUEST_TIMEOUT_MS,
+      retryOptions: { attempts: 3, initialDelay: 1, maxDelay: 8 },
+    };
+
+    if (this.config.geminiUseVertexAi) {
+      const project = this.config.googleCloudProject.trim();
+      const location = this.config.googleCloudLocation.trim() || 'global';
+      if (!project) {
+        return null;
+      }
+      const key = `vertex:${project}:${location}`;
+      if (this.client?.key !== key) {
+        this.client = {
+          key,
+          instance: new GoogleGenAI({ vertexai: true, project, location, httpOptions }),
+        };
+      }
+      return this.client.instance;
+    }
+
     const apiKey = this.config.geminiApiKey.trim();
     if (!apiKey || apiKey === 'tu_api_key_de_google_ai_studio') {
       return null;
     }
     if (this.client?.key !== apiKey) {
-      this.client = {
-        key: apiKey,
-        instance: new GoogleGenAI({
-          apiKey,
-          httpOptions: {
-            timeout: REQUEST_TIMEOUT_MS,
-            retryOptions: { attempts: 3, initialDelay: 1, maxDelay: 8 },
-          },
-        }),
-      };
+      this.client = { key: apiKey, instance: new GoogleGenAI({ apiKey, httpOptions }) };
     }
     return this.client.instance;
   }
@@ -83,14 +108,43 @@ export class GeminiProvider implements AiProvider {
     return this.generateFromPrompt(prompt, model);
   }
 
+  async converse(request: AiChatRequest): Promise<AiChatReply> {
+    // Algo mas de temperatura que al generar modelos: la respuesta es texto.
+    const text = await this.requestJson(
+      CHAT_SYSTEM_PROMPT,
+      [{ text: formatChatRequest(request) }],
+      CHAT_RESPONSE_SCHEMA,
+      0.4,
+    );
+    return parseChatReply(text, request.model);
+  }
+
   private async generate(
     systemInstruction: string,
     parts: Part[],
     currentModel?: UMLModel,
   ): Promise<AiGenerationResult> {
+    const text = await this.requestJson(systemInstruction, parts, UML_RESPONSE_SCHEMA, 0.2);
+    return this.parseAiResponse(text, currentModel);
+  }
+
+  /**
+   * Una llamada con salida JSON y esquema. Prueba el modelo principal y, si esta
+   * saturado o sin cuota, el de reserva; devuelve el texto JSON de la respuesta.
+   */
+  private async requestJson(
+    systemInstruction: string,
+    parts: Part[],
+    responseSchema: Schema,
+    temperature: number,
+  ): Promise<string> {
     const client = this.getClient();
     if (!client) {
-      throw new Error('GEMINI_API_KEY no esta configurada');
+      throw new Error(
+        this.config.geminiUseVertexAi
+          ? 'GOOGLE_CLOUD_PROJECT no esta configurado para Vertex AI'
+          : 'GEMINI_API_KEY no esta configurada',
+      );
     }
 
     const models = [this.config.geminiModel, this.config.geminiFallbackModel.trim()].filter(
@@ -106,11 +160,11 @@ export class GeminiProvider implements AiProvider {
           config: {
             systemInstruction,
             responseMimeType: 'application/json',
-            responseSchema: UML_RESPONSE_SCHEMA,
-            temperature: 0.2,
+            responseSchema,
+            temperature,
           },
         });
-        return this.parseAiResponse(response.text ?? '{}', currentModel);
+        return response.text ?? '{}';
       } catch (error) {
         lastError = error;
         this.logger.warn(`Gemini (${model}): ${describeGeminiError(error, model)}`);
@@ -174,7 +228,9 @@ export function describeGeminiError(error: unknown, model: string): string {
       return 'La clave GEMINI_API_KEY no es valida. Revisala en Google AI Studio.';
     }
     if (error.status === 401 || error.status === 403) {
-      return 'La clave GEMINI_API_KEY no tiene permiso para usar la Gemini API.';
+      return detail.includes('aiplatform')
+        ? 'La cuenta de servicio no tiene permiso para Vertex AI (rol roles/aiplatform.user).'
+        : 'La clave GEMINI_API_KEY no tiene permiso para usar la Gemini API.';
     }
     if (error.status === 404) {
       return `El modelo "${model}" no existe o no esta disponible. Revisa GEMINI_MODEL.`;

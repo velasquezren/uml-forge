@@ -45,12 +45,16 @@ services:
       COOKIE_SECRET: ${COOKIE_SECRET:-umlforge_dev_cookie_secret_key_32bytes_min_super_secure!}
       # Esta pila local sirve HTTP; al publicar con HTTPS usa COOKIE_SECURE=true.
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
-      # Datos de demostracion en el primer arranque; ponlo a false para conservar lo tuyo.
+      # Datos de demostracion solo si la base de datos esta vacia: un reinicio no borra nada.
       SEED_ON_START: ${SEED_ON_START:-true}
       AI_PROVIDER: ${AI_PROVIDER:-gemini}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-flash-latest}
       GEMINI_FALLBACK_MODEL: ${GEMINI_FALLBACK_MODEL:-gemini-flash-lite-latest}
+      GEMINI_USE_VERTEXAI: ${GEMINI_USE_VERTEXAI:-false}
+      GOOGLE_CLOUD_PROJECT: ${GOOGLE_CLOUD_PROJECT:-}
+      GOOGLE_CLOUD_LOCATION: ${GOOGLE_CLOUD_LOCATION:-global}
+      CHAT_EVENT_BUS: ${CHAT_EVENT_BUS:-memory}
       # Ollama corre en la maquina anfitriona, no en la red del contenedor.
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL_DOCKER:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:3b}

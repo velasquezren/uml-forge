@@ -1,5 +1,28 @@
 import type { UMLModel } from '@uml-forge/uml-core';
 
+/**
+ * Reglas de modelado compartidas por el asistente, la lectura de imagenes y el
+ * chat de grupo: los tres deben proponer el mismo tipo de modelo (ADR 0042).
+ */
+export const UML_MODELING_RULES = `1. Toda clase concreta debe contar con un identificador primario ('id' de tipo Long o UUID con isIdentifier: true). Las subclases lo heredan y no lo repiten; las interfaces no llevan atributos.
+2. Nombres de clases en PascalCase y atributos y métodos en camelCase, en el mismo idioma en que escribe el usuario.
+3. Tipos válidos para atributos y parámetros: String, Long, Integer, Double, Boolean, Date, DateTime, UUID, BigDecimal, Text, o el nombre exacto de una clase o enumeración (existente o que declares en la misma respuesta). Para colecciones usa multiplicity "0..*".
+4. Tipos de relaciones y su sentido (source -> target):
+   - association: asociación estándar. En 1:N el source es el lado "1" y el target el lado "N".
+   - composition: el source es el TODO y el target la PARTE, que no existe sin el todo (Order -> OrderItem).
+   - aggregation: como composition, pero la parte puede existir por separado (Department -> Employee).
+   - generalization: el source es la SUBCLASE y el target la SUPERCLASE.
+   - realization: el source es la clase y el target la INTERFAZ que implementa.
+   - dependency: el source usa temporalmente al target (parámetro, variable local).
+5. Multiplicidades válidas: 1, 0..1, 0..*, 1..*.
+   - Uno a muchos: sourceMultiplicity '1', targetMultiplicity '0..*'.
+   - Muchos a muchos: sourceMultiplicity '0..*', targetMultiplicity '0..*'.
+6. Una enumeración nunca participa en relaciones: se usa como tipo de un atributo (estado: EstadoPedido).
+7. Si el modelo actual no está vacío, trabaja SOBRE él:
+   - Reutiliza los nombres exactos de las clases y enumeraciones existentes; nunca las declares con otro nombre.
+   - Para añadir miembros a una clase existente, inclúyela en "classes" solo con los atributos o métodos NUEVOS.
+   - No repitas atributos, métodos ni relaciones que ya existen.`;
+
 /** Prompt de sistema base optimizado para modelos de texto locales (Qwen 2.5, Llama 3.2) y remotos (Gemini). */
 export const UML_SYSTEM_PROMPT = `Eres un arquitecto de software experto en diseño de diagramas de clases UML 2.5 y modelos de datos empresariales para Spring Boot 3 y JPA.
 
@@ -52,24 +75,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido (sin comentarios ni forma
 }
 
 Reglas estrictas de modelado:
-1. Toda clase concreta debe contar con un identificador primario ('id' de tipo Long o UUID con isIdentifier: true). Las subclases lo heredan y no lo repiten; las interfaces no llevan atributos.
-2. Nombres de clases en PascalCase y atributos y métodos en camelCase, en el mismo idioma en que escribe el usuario.
-3. Tipos válidos para atributos y parámetros: String, Long, Integer, Double, Boolean, Date, DateTime, UUID, BigDecimal, Text, o el nombre exacto de una clase o enumeración (existente o que declares en la misma respuesta). Para colecciones usa multiplicity "0..*".
-4. Tipos de relaciones y su sentido (source -> target):
-   - association: asociación estándar. En 1:N el source es el lado "1" y el target el lado "N".
-   - composition: el source es el TODO y el target la PARTE, que no existe sin el todo (Order -> OrderItem).
-   - aggregation: como composition, pero la parte puede existir por separado (Department -> Employee).
-   - generalization: el source es la SUBCLASE y el target la SUPERCLASE.
-   - realization: el source es la clase y el target la INTERFAZ que implementa.
-   - dependency: el source usa temporalmente al target (parámetro, variable local).
-5. Multiplicidades válidas: 1, 0..1, 0..*, 1..*.
-   - Uno a muchos: sourceMultiplicity '1', targetMultiplicity '0..*'.
-   - Muchos a muchos: sourceMultiplicity '0..*', targetMultiplicity '0..*'.
-6. Una enumeración nunca participa en relaciones: se usa como tipo de un atributo (estado: EstadoPedido).
-7. Si el modelo actual no está vacío, trabaja SOBRE él:
-   - Reutiliza los nombres exactos de las clases y enumeraciones existentes; nunca las declares con otro nombre.
-   - Para añadir miembros a una clase existente, inclúyela en "classes" solo con los atributos o métodos NUEVOS.
-   - No repitas atributos, métodos ni relaciones que ya existen.
+${UML_MODELING_RULES}
 8. Si la solicitud ya está cubierta por el modelo o no tiene sentido, devuelve las listas vacías y explícalo en "explanation".
 9. Responde ÚNICAMENTE con el objeto JSON. No agregues texto antes ni después.`;
 

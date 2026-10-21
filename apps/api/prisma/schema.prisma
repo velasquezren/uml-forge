@@ -12,6 +12,19 @@ enum ProjectRole {
   VIEWER
 }
 
+/// Quien escribe un mensaje del chat del proyecto.
+enum ChatAuthorKind {
+  USER
+  ASSISTANT
+}
+
+/// Estado de una propuesta de cambios hecha por la IA en el chat.
+enum ChatProposalStatus {
+  PENDING
+  APPLIED
+  DISMISSED
+}
+
 enum GenerationJobStatus {
   PENDING
   PROCESSING
@@ -20,12 +33,12 @@ enum GenerationJobStatus {
 }
 
 model User {
-  id           String          @id @default(uuid())
-  email        String          @unique
+  id           String   @id @default(uuid())
+  email        String   @unique
   passwordHash String
   name         String
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   refreshTokens  RefreshToken[]
   ownedProjects  Project[]       @relation("ProjectOwner")
@@ -33,6 +46,8 @@ model User {
   operationLogs  OperationLog[]
   snapshots      ModelSnapshot[]
   generationJobs GenerationJob[]
+  chatMessages   ChatMessage[]   @relation("ChatAuthor")
+  chatResolved   ChatMessage[]   @relation("ChatProposalResolver")
 
   @@map("users")
 }
@@ -66,6 +81,7 @@ model Project {
   snapshots      ModelSnapshot[]
   operationLogs  OperationLog[]
   generationJobs GenerationJob[]
+  chatMessages   ChatMessage[]
 
   @@index([ownerId])
   @@map("projects")
@@ -145,4 +161,32 @@ model GenerationJob {
 
   @@index([projectId])
   @@map("generation_jobs")
+}
+
+/// Mensaje del chat de grupo de un proyecto (ADR 0042). Lo escribe una persona
+/// o la IA; las respuestas de la IA pueden llevar una propuesta de cambios del
+/// modelo que un editor aplica o descarta.
+model ChatMessage {
+  id                   String              @id @default(uuid())
+  projectId            String
+  project              Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  kind                 ChatAuthorKind
+  authorId             String?
+  author               User?               @relation("ChatAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  content              String
+  mentionsAi           Boolean             @default(false)
+  isError              Boolean             @default(false)
+  replyToId            String?
+  replyTo              ChatMessage?        @relation("ChatReply", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies              ChatMessage[]       @relation("ChatReply")
+  /// Operaciones del lenguaje de uml-core, ya normalizadas, y su resumen.
+  proposal             Json?
+  proposalStatus       ChatProposalStatus?
+  proposalResolvedById String?
+  proposalResolvedBy   User?               @relation("ChatProposalResolver", fields: [proposalResolvedById], references: [id], onDelete: SetNull)
+  proposalResolvedAt   DateTime?
+  createdAt            DateTime            @default(now())
+
+  @@index([projectId, createdAt])
+  @@map("chat_messages")
 }

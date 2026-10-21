@@ -1,0 +1,21 @@
+# Lo que no se sube a Cloud Build. Mismo criterio que .dockerignore: nada de
+# dependencias instaladas, compilados ni secretos (el .env jamas sale del equipo).
+#!include:.gitignore
+**/node_modules
+**/dist
+**/dev-dist
+**/build
+**/coverage
+**/.turbo
+**/*.tsbuildinfo
+**/test-results
+**/playwright-report
+.git
+.github
+.env
+.env.*
+!.env.example
+docs
+diagramas_puds
+*.pdf
+*.docx

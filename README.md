@@ -46,8 +46,9 @@ docker compose up --build
 
 Nginx sirve la PWA compilada y hace de pasarela hacia `/api`, `/health` y el
 canal de colaboracion `/collab`, de modo que el navegador ve un unico origen.
-Pon `SEED_ON_START=false` en el `.env` cuando no quieras que cada arranque
-reponga los datos de demostracion.
+Con `SEED_ON_START=true` los datos de demostracion solo se crean si la base de
+datos esta vacia; un reinicio nunca borra lo que hayas hecho. `pnpm seed`, en
+cambio, siempre reinicia los datos de demostracion.
 
 ### Con las herramientas de desarrollo
 
@@ -145,12 +146,16 @@ Se declaran todas en `.env.example`.
 | `GEMINI_API_KEY`         | vacio                                                                  | Clave de Google AI Studio; sin ella Gemini no responde |
 | `GEMINI_MODEL`           | `gemini-flash-latest`                                                  | Modelo de la Gemini Developer API                      |
 | `GEMINI_FALLBACK_MODEL`  | `gemini-flash-lite-latest`                                             | Modelo de reserva si el principal esta saturado        |
+| `GEMINI_USE_VERTEXAI`    | `false`                                                                | Gemini por Vertex AI, sin clave                        |
+| `GOOGLE_CLOUD_PROJECT`   | vacio                                                                  | Proyecto de Google Cloud para Vertex AI                |
+| `GOOGLE_CLOUD_LOCATION`  | `global`                                                               | Region de Vertex AI                                    |
+| `CHAT_EVENT_BUS`         | `memory`                                                               | Chat: `memory` o `postgres` (varias instancias)        |
 | `OLLAMA_BASE_URL`        | `http://localhost:11434`                                               | Servidor de Ollama para la IA local                    |
 | `OLLAMA_MODEL`           | `qwen2.5:3b`                                                           | Modelo de texto local que genera las operaciones       |
 | `OLLAMA_VISION_MODEL`    | `llava:7b`                                                             | Modelo multimodal local que lee la foto del diagrama   |
 | `API_PORT`               | `3000`                                                                 | Puerto de la API publicado por Docker Compose          |
 | `WEB_PORT`               | `8080`                                                                 | Puerto de la PWA publicado por Docker Compose          |
-| `SEED_ON_START`          | `true`                                                                 | Siembra los datos de demostracion al arrancar la API   |
+| `SEED_ON_START`          | `true`                                                                 | Siembra la demo al arrancar, solo con la BD vacia      |
 | `OLLAMA_BASE_URL_DOCKER` | `http://host.docker.internal:11434`                                    | Ollama visto desde dentro del contenedor               |
 | `VITE_COLLAB_URL`        | vacio                                                                  | Canal de colaboracion, si no vive en el mismo origen   |
 
@@ -171,6 +176,28 @@ esta en [CLAUDE.md](CLAUDE.md) y en
 - Ningun fichero supera las 300 lineas.
 - Toda decision de diseno no especificada se documenta en `docs/adr/`.
 - Sin emojis en codigo, commits ni documentacion.
+
+## Chat del equipo con IA
+
+Cada proyecto tiene un chat de grupo (boton **Chat** del editor) que ven todos sus
+miembros en tiempo real. Escribiendo `@ia`, o con el boton "Preguntar a la IA",
+responde la IA de Vertex dirigiendose a quien pregunto: conoce el diagrama tal
+como esta en ese momento y la conversacion reciente, responde dudas, hace
+preguntas cuando algo es ambiguo y propone cambios del modelo. Las propuestas no
+se aplican solas: un editor pulsa "Aplicar al modelo" y el servidor las aplica
+sobre el documento compartido, de modo que todos las ven a la vez (ADR 0042).
+
+## Despliegue en Google Cloud Run
+
+UML Forge esta publicado en Cloud Run con Cloud SQL y la IA por Vertex AI.
+Para volver a desplegar tras cambiar el codigo:
+
+```bash
+./scripts/deploy-cloudrun.sh software-2-2026 us-central1
+```
+
+Detalles y preparacion de un proyecto nuevo en
+[docs/despliegue-cloud-run.md](docs/despliegue-cloud-run.md) (ADR 0041).
 
 ## IA en la nube con Gemini
 

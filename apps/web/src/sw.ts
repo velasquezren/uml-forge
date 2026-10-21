@@ -31,10 +31,22 @@ registerRoute(
   }),
 );
 
+/**
+ * Flujos en tiempo real (Server-Sent Events del chat): nunca deben pasar por la
+ * cache. Una respuesta que no termina no se puede guardar, y el limite de 3 s de
+ * NetworkFirst la cortaria; sin ruta, el navegador la sirve directamente.
+ */
+function isEventStream(url: URL, request: Request): boolean {
+  return (
+    url.pathname.endsWith('/stream') ||
+    (request.headers.get('Accept') ?? '').includes('text/event-stream')
+  );
+}
+
 // NetworkFirst para peticiones GET a la API REST (/api/*) con fallback a cache
 registerRoute(
   ({ url, request }: { url: URL; request: Request }) =>
-    url.pathname.startsWith('/api/') && request.method === 'GET',
+    url.pathname.startsWith('/api/') && request.method === 'GET' && !isEventStream(url, request),
   new NetworkFirst({
     cacheName: 'uml-forge-api-cache',
     networkTimeoutSeconds: 3,

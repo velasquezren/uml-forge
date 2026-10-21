@@ -5,9 +5,9 @@ import {
   resolveDefaultOptions,
   type CodegenOptions,
 } from '@uml-forge/codegen-springboot';
-import { fromYDoc, type UMLModel } from '@uml-forge/uml-core';
-import * as Y from 'yjs';
+import type { UMLModel } from '@uml-forge/uml-core';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CollabService } from '../collab/collab.service';
 import { createZipArchive } from './codegen.zip';
 import type { GenerateBackendDto } from './dto/generate-backend.dto';
 
@@ -28,7 +28,10 @@ export interface GeneratedArchive {
 export class CodegenService {
   private readonly logger = new Logger(CodegenService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly collab: CollabService,
+  ) {}
 
   async generateSpringBoot(
     projectId: string,
@@ -72,29 +75,26 @@ export class CodegenService {
     }
   }
 
-  /** Reconstruye el modelo UML desde el estado binario del documento Yjs. */
+  /**
+   * Modelo del proyecto tal como esta ahora. Se lee del documento vivo de la
+   * colaboracion y solo si nadie lo tiene abierto del estado guardado: la base
+   * de datos va unos segundos por detras, y quien anadia una clase y generaba
+   * enseguida recibia "el proyecto todavia no tiene modelo" (ADR 0042).
+   */
   private async loadModel(projectId: string): Promise<UMLModel> {
-    const record = await this.prisma.yDocState.findUnique({ where: { projectId } });
+    const model = await this.collab.currentModel(projectId);
 
-    if (!record?.state || record.state.length === 0) {
+    if (model === null) {
       throw new BadRequestException(
         'El proyecto todavia no tiene modelo guardado: abre el editor y anade al menos una clase',
       );
     }
 
-    const ydoc = new Y.Doc();
-    Y.applyUpdate(ydoc, new Uint8Array(record.state));
-
-    const result = fromYDoc(ydoc);
-    if (!result.ok) {
-      throw new BadRequestException(`El modelo guardado no es legible: ${result.error.message}`);
-    }
-
-    if (result.value.classes.length === 0) {
+    if (model.classes.length === 0) {
       throw new BadRequestException('El modelo no contiene ninguna clase, no hay nada que generar');
     }
 
-    return result.value;
+    return model;
   }
 
   /** Ejecuta el generador y comprime su salida. */

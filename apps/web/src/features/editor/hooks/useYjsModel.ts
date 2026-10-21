@@ -10,6 +10,7 @@ import {
   writeModel,
   ROOT_CLASSES,
   ROOT_ENUMS,
+  META_NAME,
   ROOT_META,
   ROOT_RELATIONSHIPS,
   type UMLModel,
@@ -18,6 +19,7 @@ import {
 import { presenceSignature, toUserAwareness } from '../lib/awareness';
 import { modelToEdges, modelToNodes } from '../lib/flowMapper';
 import { collabWebSocketUrl, colorForUser } from '../lib/collab';
+import { waitForSync } from '../lib/waitForSync';
 import type { UmlEdge, UmlNode, UserAwarenessState } from '../types';
 import { useEditActivity } from './useEditActivity';
 import { useModelRevision } from './useModelRevision';
@@ -35,12 +37,7 @@ interface UseYjsModelOptions {
  * el estado de React se deriva de el mediante `observeDeep` y toda edicion pasa
  * por `applyOperationToYDoc`, nunca por mutacion directa desde los componentes.
  */
-export function useYjsModel({
-  projectId,
-  projectName = 'Proyecto UML',
-  accessToken,
-  user,
-}: UseYjsModelOptions) {
+export function useYjsModel({ projectId, projectName, accessToken, user }: UseYjsModelOptions) {
   // Un documento por montaje. Cambiar de proyecto remonta el lienzo (lleva
   // `key={projectId}`), asi que aqui no hace falta reaccionar al identificador.
   const ydoc = useMemo(() => new Y.Doc(), []);
@@ -81,7 +78,10 @@ export function useYjsModel({
   /** Crea el modelo vacio la primera vez que se abre un proyecto sin contenido. */
   const ensureModel = useCallback(() => {
     if (!hasModel(ydoc)) {
-      writeModel(ydoc, createEmptyModel(projectNameRef.current, { id: projectId }));
+      writeModel(
+        ydoc,
+        createEmptyModel(projectNameRef.current ?? 'Proyecto UML', { id: projectId }),
+      );
     }
   }, [ydoc, projectId]);
 
@@ -185,6 +185,22 @@ export function useYjsModel({
     };
   }, [projectId, accessToken, ydoc, syncFromYDoc, ensureModel]);
 
+  /**
+   * El modelo lleva el nombre del proyecto. Puede crearse antes de que llegue
+   * ese nombre (con una red lenta el lienzo sincroniza primero) o el proyecto
+   * puede renombrarse despues: en ambos casos se corrige aqui. Sin esto el XMI
+   * y el backend generado salian como "Proyecto UML". El origen propio deja el
+   * cambio fuera del historial de deshacer.
+   */
+  useEffect(() => {
+    if (!projectName || !model || model.name === projectName) {
+      return;
+    }
+    ydoc.transact(() => {
+      ydoc.getMap<unknown>(ROOT_META).set(META_NAME, projectName);
+    }, 'project-name');
+  }, [projectName, model, ydoc]);
+
   // Si cambian los datos del usuario con el proveedor activo, reanuncia la identidad
   useEffect(() => {
     if (providerRef.current && user) {
@@ -247,6 +263,9 @@ export function useYjsModel({
     providerRef.current?.setAwarenessField('cursor', position ?? undefined);
   }, []);
 
+  /** Espera a que el servidor tenga los cambios locales antes de pedirle algo. */
+  const flushToServer = useCallback(() => waitForSync(providerRef.current), []);
+
   const nodes: UmlNode[] = useMemo(() => (model ? modelToNodes(model) : []), [model]);
   const edges: UmlEdge[] = useMemo(() => (model ? modelToEdges(model) : []), [model]);
 
@@ -269,5 +288,6 @@ export function useYjsModel({
     isEditing,
     markEditing,
     revision,
+    flushToServer,
   };
 }

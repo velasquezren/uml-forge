@@ -44,3 +44,9 @@ nuevo que sustituya al anterior y se marca el antiguo como sustituido.
 | [0035](0035-normalizacion-de-propuestas-de-ia-y-salida-estructurada.md)                   | Normalizacion de propuestas de IA y salida de Gemini             | Aceptado |
 | [0036](0036-imagenes-para-la-ia-y-modelo-de-reserva-de-gemini.md)                         | Imagenes para la IA y modelo de reserva de Gemini                | Aceptado |
 | [0037](0037-editor-en-pantalla-dividida.md)                                               | Editor en pantalla dividida                                      | Aceptado |
+| [0038](0038-backend-generado-listo-para-windows.md)                                       | Backend generado listo para Windows                              | Aceptado |
+| [0039](0039-siembra-solo-con-la-base-de-datos-vacia.md)                                   | Siembra solo con la base de datos vacia                          | Aceptado |
+| [0040](0040-gemini-por-vertex-ai.md)                                                      | Gemini por Vertex AI                                             | Aceptado |
+| [0041](0041-despliegue-en-cloud-run.md)                                                   | Despliegue en Google Cloud Run                                   | Aceptado |
+| [0042](0042-chat-de-grupo-con-ia.md)                                                      | Chat de grupo con IA                                             | Aceptado |
+| [0043](0043-coleccion-postman-del-backend-generado.md)                                    | Coleccion de Postman del backend generado                        | Aceptado |

@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as Y from 'yjs';
 import { applyOperationToYDoc, createEmptyModel, createId, writeModel } from '@uml-forge/uml-core';
 import type { PrismaService } from '../../prisma/prisma.service';
+import type { CollabService } from '../collab/collab.service';
+import { modelOf } from '../collab/live-document';
 import { CodegenService } from './codegen.service';
 
 /** Construye el estado binario de un documento Yjs con una clase generable. */
@@ -41,7 +43,23 @@ describe('CodegenService', () => {
         update: vi.fn().mockResolvedValue({ id: 'job-1' }),
       },
     };
-    service = new CodegenService(prismaMock as unknown as PrismaService);
+    // Sin documento vivo, la colaboracion recurre al estado guardado.
+    const collab = {
+      currentModel: vi.fn(async () => {
+        const findUnique = prismaMock.yDocState.findUnique as unknown as () => Promise<{
+          state: Buffer;
+        } | null>;
+        const record = await findUnique();
+        if (record === null) return null;
+        const doc = new Y.Doc();
+        Y.applyUpdate(doc, new Uint8Array(record.state));
+        return modelOf(doc);
+      }),
+    };
+    service = new CodegenService(
+      prismaMock as unknown as PrismaService,
+      collab as unknown as CollabService,
+    );
   });
 
   it('lanza NotFoundException si el proyecto no existe', async () => {

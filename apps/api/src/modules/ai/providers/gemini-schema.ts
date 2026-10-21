@@ -117,3 +117,17 @@ export const UML_RESPONSE_SCHEMA: Schema = {
   required: ['explanation', 'classes', 'enums', 'relationships'],
   propertyOrdering: ['explanation', 'classes', 'enums', 'relationships'],
 };
+
+/**
+ * Esquema de la respuesta del chat de grupo: el texto para todos y, solo si se
+ * pidio un cambio, una propuesta con la misma forma que el asistente.
+ */
+export const CHAT_RESPONSE_SCHEMA: Schema = {
+  type: Type.OBJECT,
+  properties: {
+    reply: { type: Type.STRING, description: 'Respuesta para el chat, dirigida a quien pregunto' },
+    proposal: UML_RESPONSE_SCHEMA,
+  },
+  required: ['reply'],
+  propertyOrdering: ['reply', 'proposal'],
+};

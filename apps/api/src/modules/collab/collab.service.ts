@@ -14,9 +14,11 @@ import {
   type onLoadDocumentPayload,
   type onStoreDocumentPayload,
 } from '@hocuspocus/server';
+import type { UMLModel, UmlOperation } from '@uml-forge/uml-core';
 import * as Y from 'yjs';
 import { ApiConfigService } from '../../config/config.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { applyOperationsToDoc, modelOf, participantNames, type ApplyReport } from './live-document';
 
 export interface CollabUserContext {
   id: string;
@@ -52,6 +54,54 @@ export class CollabService implements OnModuleInit, OnModuleDestroy {
     if (this.server) {
       await this.server.destroy();
     }
+  }
+
+  /**
+   * Modelo tal como esta ahora mismo en memoria. Hocuspocus guarda en la base de
+   * datos con unos segundos de retraso: quien necesite el estado actual (la IA
+   * del chat) debe leerlo de aqui y solo recurrir a la base de datos si nadie
+   * tiene abierto el proyecto.
+   */
+  async currentModel(projectId: string): Promise<UMLModel | null> {
+    const live = this.server.hocuspocus.documents.get(projectId);
+    if (live !== undefined) {
+      return modelOf(live);
+    }
+    const record = await this.prisma.yDocState.findUnique({ where: { projectId } });
+    if (!record?.state || record.state.length === 0) {
+      return null;
+    }
+    const doc = new Y.Doc();
+    Y.applyUpdate(doc, new Uint8Array(record.state));
+    return modelOf(doc);
+  }
+
+  /** Personas con el proyecto abierto en este momento. */
+  participants(projectId: string): string[] {
+    const live = this.server.hocuspocus.documents.get(projectId);
+    return live === undefined ? [] : participantNames(live.awareness.getStates().values());
+  }
+
+  /**
+   * Aplica operaciones sobre el documento compartido desde el propio servidor,
+   * con una conexion directa de Hocuspocus: el cambio llega por el CRDT a todos
+   * los que tienen el lienzo abierto y se guarda aunque no haya nadie (ADR 0042).
+   */
+  async applyOperations(
+    projectId: string,
+    operations: readonly UmlOperation[],
+    projectName: string,
+  ): Promise<ApplyReport> {
+    const connection = await this.server.hocuspocus.openDirectConnection(projectId, {});
+    let report: ApplyReport = { applied: 0, failed: 0, firstError: null };
+    try {
+      await connection.transact((doc) => {
+        report = applyOperationsToDoc(doc, operations, projectName, projectId);
+      });
+    } finally {
+      await connection.disconnect();
+    }
+    return report;
   }
 
   attach(httpServer: unknown) {
