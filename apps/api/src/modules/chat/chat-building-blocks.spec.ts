@@ -68,6 +68,7 @@ describe('bus de eventos del chat', () => {
       projectId: 'p',
       state: 'thinking',
       askedBy: null,
+      draft: null,
     });
     expect(parseChatBusEvent('{"type":"otro","projectId":"p"}')).toBeNull();
     expect(parseChatBusEvent('no es json')).toBeNull();

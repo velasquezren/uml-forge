@@ -34,6 +34,8 @@ function message(id: string, createdAt: string, content = id): ChatMessage {
     isError: false,
     replyTo: null,
     proposal: null,
+    attachment: null,
+    transcript: null,
     createdAt,
   };
 }

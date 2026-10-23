@@ -17,6 +17,15 @@ export interface ChatProposalDto {
   readonly result: { readonly applied: number; readonly failed: number } | null;
 }
 
+/** Datos de un adjunto; el contenido se descarga aparte, por su identificador. */
+export interface ChatAttachmentDto {
+  readonly id: string;
+  readonly kind: 'IMAGE' | 'AUDIO';
+  readonly mimeType: string;
+  readonly sizeBytes: number;
+  readonly durationMs: number | null;
+}
+
 /** Mensaje del chat de grupo tal como lo recibe la PWA. */
 export interface ChatMessageDto {
   readonly id: string;
@@ -28,6 +37,9 @@ export interface ChatMessageDto {
   readonly isError: boolean;
   readonly replyTo: { readonly id: string; readonly authorName: string } | null;
   readonly proposal: ChatProposalDto | null;
+  readonly attachment: ChatAttachmentDto | null;
+  /** Transcripcion de la nota de voz: null mientras se hace, '' si no se pudo. */
+  readonly transcript: string | null;
   readonly createdAt: string;
 }
 
@@ -42,5 +54,10 @@ export type ChatStreamEvent =
   | { readonly type: 'message'; readonly data: ChatMessageDto }
   | {
       readonly type: 'assistant';
-      readonly data: { readonly state: 'thinking' | 'idle'; readonly askedBy: string | null };
+      readonly data: {
+        readonly state: 'thinking' | 'idle';
+        readonly askedBy: string | null;
+        /** Lo que la IA lleva escrito, mientras escribe. */
+        readonly draft: string | null;
+      };
     };

@@ -10,11 +10,14 @@ import {
   ParseUUIDPipe,
   Post,
   Query,
+  Res,
   Sse,
+  StreamableFile,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProjectRole } from '@prisma/client';
+import type { Response } from 'express';
 import { Observable } from 'rxjs';
 import {
   CurrentUser,
@@ -67,6 +70,32 @@ export class ChatController {
     @Body() dto: SendChatMessageDto,
   ): Promise<ChatMessageDto> {
     return this.chat.send(projectId, { id: user.id, name: user.name }, dto);
+  }
+
+  @Post('messages/:messageId/ask-again')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @RequireProjectRoles(ProjectRole.VIEWER)
+  @ApiOperation({ summary: 'Pedir a la IA que vuelva a responder a un mensaje' })
+  async askAgain(
+    @Param('id', ParseUUIDPipe) projectId: string,
+    @Param('messageId', ParseUUIDPipe) messageId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<void> {
+    await this.chat.askAgain(projectId, messageId, user.name);
+  }
+
+  @Get('attachments/:attachmentId')
+  @RequireProjectRoles(ProjectRole.VIEWER)
+  @ApiOperation({ summary: 'Contenido de una imagen o nota de voz del chat' })
+  async attachment(
+    @Param('id', ParseUUIDPipe) projectId: string,
+    @Param('attachmentId', ParseUUIDPipe) attachmentId: string,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<StreamableFile> {
+    const file = await this.chat.attachment(projectId, attachmentId);
+    // Un adjunto no cambia nunca: el navegador puede guardarlo indefinidamente.
+    response.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
+    return new StreamableFile(file.data, { type: file.mimeType, length: file.data.length });
   }
 
   @Post('messages/:messageId/proposal/apply')

@@ -15,6 +15,25 @@ export interface ChatProposal {
   result: { applied: number; failed: number } | null;
 }
 
+/** Datos de un adjunto; el contenido se descarga aparte por su identificador. */
+export interface ChatAttachment {
+  id: string;
+  kind: 'IMAGE' | 'AUDIO';
+  mimeType: string;
+  sizeBytes: number;
+  durationMs: number | null;
+}
+
+/** Adjunto preparado para enviar, en base64. */
+export interface OutgoingAttachment {
+  kind: 'image' | 'audio';
+  mimeType: string;
+  dataBase64: string;
+  durationMs?: number;
+  /** Solo para la vista previa local, no se envia. */
+  previewUrl: string;
+}
+
 /** Mensaje del chat de grupo; mismo contrato que `ChatMessageDto` de la API. */
 export interface ChatMessage {
   id: string;
@@ -26,6 +45,9 @@ export interface ChatMessage {
   isError: boolean;
   replyTo: { id: string; authorName: string } | null;
   proposal: ChatProposal | null;
+  attachment: ChatAttachment | null;
+  /** Transcripcion de la nota de voz: null mientras se hace, '' si no se pudo. */
+  transcript: string | null;
   createdAt: string;
 }
 
@@ -38,4 +60,6 @@ export interface ChatPage {
 export interface AssistantStatus {
   state: 'thinking' | 'idle';
   askedBy: string | null;
+  /** Lo que la IA lleva escrito mientras responde. */
+  draft?: string | null;
 }

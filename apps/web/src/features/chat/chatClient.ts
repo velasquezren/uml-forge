@@ -1,7 +1,7 @@
 import { HTTPError } from 'ky';
 import { apiClient } from '@/lib/api';
 import { SseParser } from './sse';
-import type { AssistantStatus, ChatMessage, ChatPage } from './chatTypes';
+import type { AssistantStatus, ChatMessage, ChatPage, OutgoingAttachment } from './chatTypes';
 
 /** Mensaje de error legible a partir de la respuesta de la API. */
 export async function describeChatError(error: unknown): Promise<string> {
@@ -30,10 +30,42 @@ export function postChatMessage(
   projectId: string,
   content: string,
   askAi: boolean,
+  attachment?: OutgoingAttachment,
 ): Promise<ChatMessage> {
+  const json: Record<string, unknown> = { content, askAi };
+  if (attachment) {
+    const { previewUrl: _preview, ...payload } = attachment;
+    json.attachment = payload;
+  }
   return apiClient
-    .post(`${base(projectId)}/messages`, { json: { content, askAi } })
+    .post(`${base(projectId)}/messages`, { json, timeout: 60000 })
     .json<ChatMessage>();
+}
+
+/** Pide a la IA que vuelva a responder a un mensaje (por ejemplo tras un error). */
+export async function askAgain(projectId: string, messageId: string): Promise<void> {
+  await apiClient.post(`${base(projectId)}/messages/${messageId}/ask-again`);
+}
+
+/**
+ * URL local de un adjunto. Se descarga con la cabecera de autenticacion (una
+ * etiqueta <img> o <audio> no puede enviarla) y se guarda para toda la sesion:
+ * un adjunto no cambia nunca.
+ */
+const attachmentUrls = new Map<string, Promise<string>>();
+
+export function attachmentUrl(projectId: string, attachmentId: string): Promise<string> {
+  let url = attachmentUrls.get(attachmentId);
+  if (url === undefined) {
+    url = apiClient
+      .get(`${base(projectId)}/attachments/${attachmentId}`, { timeout: 60000 })
+      .blob()
+      .then((blob) => URL.createObjectURL(blob));
+    // Si falla, se olvida para poder reintentarlo.
+    url.catch(() => attachmentUrls.delete(attachmentId));
+    attachmentUrls.set(attachmentId, url);
+  }
+  return url;
 }
 
 export function resolveProposal(

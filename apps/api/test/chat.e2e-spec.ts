@@ -47,6 +47,10 @@ class ChatFakeProvider implements AiProvider {
   generateFromImage(): Promise<AiGenerationResult> {
     return this.empty();
   }
+  transcribe(): Promise<string> {
+    return Promise.resolve('transcripcion de prueba');
+  }
+
   suggestRefinements(): Promise<AiGenerationResult> {
     return this.empty();
   }

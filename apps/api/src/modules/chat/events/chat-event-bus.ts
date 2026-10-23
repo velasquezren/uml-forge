@@ -11,6 +11,8 @@ export type ChatBusEvent =
       readonly projectId: string;
       readonly state: 'thinking' | 'idle';
       readonly askedBy: string | null;
+      /** Respuesta parcial; acotada porque NOTIFY admite 8000 bytes. */
+      readonly draft?: string | null;
     };
 
 export type ChatBusListener = (event: ChatBusEvent) => void;
@@ -46,6 +48,7 @@ export function parseChatBusEvent(raw: string): ChatBusEvent | null {
       projectId: event.projectId,
       state: event.state,
       askedBy: typeof event.askedBy === 'string' ? event.askedBy : null,
+      draft: typeof event.draft === 'string' ? event.draft : null,
     };
   }
   return null;

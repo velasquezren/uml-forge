@@ -47,7 +47,9 @@ describe('ChatService', () => {
     const create = vi.fn((args: { data: { content: string; mentionsAi: boolean } }) =>
       Promise.resolve(record({ content: args.data.content, mentionsAi: args.data.mentionsAi })),
     );
-    const { service, enqueue } = chatService({ chatMessage: { create } });
+    const { service, enqueue } = chatService({
+      chatMessage: { create, findFirst: vi.fn().mockResolvedValue(null) },
+    });
     const author = { id: 'u1', name: 'Ana' };
 
     await service.send(PROJECT, author, { content: 'Luis, revisas tu la clase Pedido?' });
@@ -57,7 +59,10 @@ describe('ChatService', () => {
     await service.send(PROJECT, author, { content: 'oye (@ia) ayuda' });
     await service.send(PROJECT, author, { content: 'sin mencion', askAi: true });
     expect(enqueue).toHaveBeenCalledTimes(3);
-    expect(enqueue).toHaveBeenCalledWith(PROJECT, 'm1', 'Ana');
+    expect(enqueue).toHaveBeenCalledWith(PROJECT, 'm1', 'Ana', {
+      transcribe: false,
+      answer: true,
+    });
 
     // Un correo no es una mencion.
     await service.send(PROJECT, author, { content: 'escribe a soporte@ia.com' });
@@ -93,8 +98,11 @@ describe('ChatAssistantService', () => {
     const prisma = {
       chatMessage: {
         findUnique: vi.fn(({ where }: { where: { id: string } }) =>
-          Promise.resolve(record({ id: where.id, content: `pregunta ${where.id}` })),
+          Promise.resolve(
+            record({ id: where.id, content: `pregunta ${where.id}`, attachment: null }),
+          ),
         ),
+        update: vi.fn().mockResolvedValue({}),
         findMany: vi.fn().mockResolvedValue([]),
         create: vi.fn(
           ({ data }: { data: { content: string; isError: boolean; replyToId: string } }) => {
@@ -146,5 +154,55 @@ describe('ChatAssistantService', () => {
 
     expect(created[0]).toMatchObject({ isError: true, replyToId: 'q1' });
     expect(created[0]?.content).toBe('Ana, no he podido responder: Cuota agotada');
+  });
+
+  it('transcribe la nota de voz antes de responderla y pasa el audio a la IA', async () => {
+    const converse = vi.fn().mockResolvedValue({ reply: 'Luis, entendido.', proposal: null });
+    const transcribe = vi.fn().mockResolvedValue('anade una clase factura');
+    const updates: unknown[] = [];
+    const prisma = {
+      chatAttachment: {
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ data: Buffer.from('audio'), mimeType: 'audio/webm' }),
+      },
+      chatMessage: {
+        update: vi.fn((args: unknown) => {
+          updates.push(args);
+          return Promise.resolve({});
+        }),
+        findUnique: vi.fn().mockResolvedValue(
+          record({
+            id: 'q1',
+            content: '',
+            attachment: { kind: 'AUDIO', mimeType: 'audio/webm', data: Buffer.from('audio') },
+          }),
+        ),
+        findMany: vi.fn().mockResolvedValue([]),
+        create: vi.fn().mockResolvedValue({ id: 'r1' }),
+      },
+    };
+    const assistant = new ChatAssistantService(
+      prisma as unknown as PrismaService,
+      { converse, transcribe } as unknown as AiService,
+      {
+        currentModel: vi.fn().mockResolvedValue(null),
+        participants: vi.fn().mockReturnValue([]),
+      } as unknown as CollabService,
+      new InMemoryChatEventBus(),
+    );
+
+    assistant.enqueue(PROJECT, 'q1', 'Luis', { transcribe: true, answer: true });
+    await assistant.drain(PROJECT);
+
+    expect(updates).toEqual([
+      { where: { id: 'q1' }, data: { transcript: 'anade una clase factura' } },
+    ]);
+    const request = converse.mock.calls[0]?.[0] as {
+      transcript: string;
+      attachment: { kind: string };
+    };
+    expect(request.transcript).toBe('anade una clase factura');
+    expect(request.attachment.kind).toBe('audio');
   });
 });

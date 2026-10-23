@@ -114,16 +114,27 @@ export class OllamaProvider implements AiProvider {
     return this.parseAiResponse(rawText, currentModel, true);
   }
 
+  /**
+   * Respuesta del chat en local. Con una imagen se usa el modelo de vision; el
+   * audio no lo entiende ningun modelo local, asi que solo cuenta su
+   * transcripcion si la hubo. No escribe en directo: no hay borrador.
+   */
   async converse(request: AiChatRequest): Promise<AiChatReply> {
+    const image = request.attachment?.kind === 'image' ? request.attachment : undefined;
     const rawText = await this.generate({
-      model: this.config.ollamaModel,
+      model: image ? this.config.ollamaVisionModel : this.config.ollamaModel,
       system: CHAT_SYSTEM_PROMPT,
       prompt: formatChatRequest(request),
+      ...(image ? { images: [image.data.toString('base64')] } : {}),
       format: 'json',
       stream: false,
       options: { num_ctx: 8192, temperature: 0.3, top_p: 0.9, num_predict: 2048 },
     });
     return parseChatReply(rawText, request.model);
+  }
+
+  transcribe(): Promise<string> {
+    return Promise.reject(new Error('El respaldo local (Ollama) no transcribe notas de voz'));
   }
 
   async suggestRefinements(model: UMLModel, context?: string): Promise<AiGenerationResult> {

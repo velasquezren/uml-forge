@@ -1,6 +1,8 @@
-import { Sparkles } from 'lucide-react';
+import { RotateCcw, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { colorForUser } from '@/features/editor/lib/collab';
+import { ChatAttachmentView } from './ChatAttachmentView';
 import { ChatProposalCard } from './ChatProposalCard';
 import type { ChatMessage } from './chatTypes';
 
@@ -11,10 +13,18 @@ interface ChatMessageItemProps {
   isOwn: boolean;
   canEdit: boolean;
   onResolve: (messageId: string, action: 'apply' | 'dismiss') => Promise<void>;
+  /** Vuelve a preguntar a la IA tras una respuesta fallida. */
+  onAskAgain?: (questionId: string) => void;
 }
 
 /** Un mensaje del chat: propio a la derecha, ajeno a la izquierda y la IA destacada. */
-export function ChatMessageItem({ message, isOwn, canEdit, onResolve }: ChatMessageItemProps) {
+export function ChatMessageItem({
+  message,
+  isOwn,
+  canEdit,
+  onResolve,
+  onAskAgain,
+}: ChatMessageItemProps) {
   const isAssistant = message.kind === 'ASSISTANT';
   const authorName = isAssistant ? 'IA' : (message.author?.name ?? 'Usuario eliminado');
   const color = message.author ? colorForUser(message.author.id) : undefined;
@@ -44,6 +54,15 @@ export function ChatMessageItem({ message, isOwn, canEdit, onResolve }: ChatMess
           message.isError && 'border border-destructive/40 bg-destructive/10',
         )}
       >
+        {message.attachment && (
+          <div className={message.content ? 'mb-1.5' : undefined}>
+            <ChatAttachmentView
+              projectId={message.projectId}
+              attachment={message.attachment}
+              transcript={message.transcript}
+            />
+          </div>
+        )}
         {message.content}
         {message.proposal && (
           <ChatProposalCard
@@ -53,6 +72,16 @@ export function ChatMessageItem({ message, isOwn, canEdit, onResolve }: ChatMess
           />
         )}
       </div>
+      {message.isError && message.replyTo && onAskAgain && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 gap-1 px-2 text-[11px]"
+          onClick={() => onAskAgain(message.replyTo?.id ?? '')}
+        >
+          <RotateCcw className="h-3 w-3" /> Volver a preguntar
+        </Button>
+      )}
     </li>
   );
 }

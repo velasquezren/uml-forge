@@ -57,6 +57,10 @@ class FakeProvider implements AiProvider {
     return this.answer(currentModel);
   }
 
+  transcribe(): Promise<string> {
+    return Promise.resolve('transcripcion de prueba');
+  }
+
   suggestRefinements(model: UMLModel): Promise<AiGenerationResult> {
     return this.answer(model);
   }

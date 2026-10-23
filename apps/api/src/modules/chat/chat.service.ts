@@ -5,27 +5,22 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { ChatAuthorKind, ChatProposalStatus, Prisma } from '@prisma/client';
+import { ChatAttachmentKind, ChatAuthorKind, ChatProposalStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CollabService } from '../collab/collab.service';
 import { ChatAssistantService } from './chat-assistant.service';
+import { validateAttachment } from './chat-attachments';
+import { isFollowUpToAssistant, mentionsAi as hasAiMention } from './chat-mentions';
 import { readStoredProposal } from './chat-proposal';
+import {
+  CHAT_MESSAGE_INCLUDE,
+  toChatMessageDto,
+  type ChatMessageRecord,
+} from './chat-message.mapper';
 import type { ChatMessageDto, ChatPageDto } from './chat.types';
 import { CHAT_EVENT_BUS, type ChatEventBus } from './events/chat-event-bus';
 import type { ListChatMessagesDto } from './dto/list-chat-messages.dto';
 import type { SendChatMessageDto } from './dto/send-chat-message.dto';
-
-/** Relaciones necesarias para convertir un mensaje en su DTO. */
-export const CHAT_MESSAGE_INCLUDE = {
-  author: { select: { id: true, name: true } },
-  proposalResolvedBy: { select: { id: true, name: true } },
-  replyTo: { select: { id: true, author: { select: { name: true } } } },
-} satisfies Prisma.ChatMessageInclude;
-
-type ChatMessageRecord = Prisma.ChatMessageGetPayload<{ include: typeof CHAT_MESSAGE_INCLUDE }>;
-
-/** Menciona a la IA: "@ia" como palabra, en cualquier posicion y sin distinguir mayusculas. */
-const AI_MENTION = /(^|[\s(¿¡])@ia\b/iu;
 
 /**
  * Mensajes del chat de grupo de un proyecto (ADR 0042): historial, envio y
@@ -71,22 +66,97 @@ export class ChatService {
     author: { id: string; name: string },
     dto: SendChatMessageDto,
   ): Promise<ChatMessageDto> {
-    const content = dto.content.trim();
-    if (content === '') {
+    const content = (dto.content ?? '').trim();
+    const attachment = dto.attachment ? validateAttachment(dto.attachment) : null;
+    if (content === '' && attachment === null) {
       throw new UnprocessableEntityException('El mensaje esta vacio');
     }
-    const mentionsAi = dto.askAi === true || AI_MENTION.test(content);
+    const mentionsAi =
+      dto.askAi === true ||
+      hasAiMention(content) ||
+      isFollowUpToAssistant(await this.lastMessage(projectId), author.id, new Date());
 
     const record = await this.prisma.chatMessage.create({
-      data: { projectId, kind: ChatAuthorKind.USER, authorId: author.id, content, mentionsAi },
+      data: {
+        projectId,
+        kind: ChatAuthorKind.USER,
+        authorId: author.id,
+        content,
+        mentionsAi,
+        ...(attachment === null
+          ? {}
+          : {
+              attachment: {
+                create: {
+                  kind:
+                    attachment.kind === 'image'
+                      ? ChatAttachmentKind.IMAGE
+                      : ChatAttachmentKind.AUDIO,
+                  mimeType: attachment.mimeType,
+                  sizeBytes: attachment.data.length,
+                  durationMs: attachment.durationMs,
+                  data: Uint8Array.from(attachment.data),
+                },
+              },
+            }),
+      },
       include: CHAT_MESSAGE_INCLUDE,
     });
     await this.bus.publish({ type: 'message', projectId, messageId: record.id });
 
-    if (mentionsAi) {
-      this.assistant.enqueue(projectId, record.id, author.name);
+    // Las notas de voz se transcriben siempre, para leerlas sin escucharlas;
+    // la IA solo responde si se le pregunta (ADR 0044).
+    const transcribe = attachment?.kind === 'audio';
+    if (transcribe || mentionsAi) {
+      this.assistant.enqueue(projectId, record.id, author.name, { transcribe, answer: mentionsAi });
     }
     return toChatMessageDto(record);
+  }
+
+  /**
+   * Vuelve a pedir a la IA que responda a un mensaje, por ejemplo tras un error
+   * pasajero. Se responde al mensaje original, con su adjunto, sin duplicarlo.
+   */
+  async askAgain(projectId: string, messageId: string, askedBy: string): Promise<void> {
+    const message = await this.prisma.chatMessage.findFirst({
+      where: { id: messageId, projectId, kind: ChatAuthorKind.USER },
+      select: { id: true, transcript: true, attachment: { select: { kind: true } } },
+    });
+    if (message === null) {
+      throw new NotFoundException('Ese mensaje no existe en el chat del proyecto');
+    }
+    const transcribe = message.attachment?.kind === ChatAttachmentKind.AUDIO && !message.transcript;
+    this.assistant.enqueue(projectId, message.id, askedBy, { transcribe, answer: true });
+  }
+
+  /** Ultimo mensaje del proyecto, para saber si la IA espera una respuesta. */
+  private async lastMessage(projectId: string) {
+    return this.prisma.chatMessage.findFirst({
+      where: { projectId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        kind: true,
+        content: true,
+        isError: true,
+        createdAt: true,
+        replyTo: { select: { authorId: true } },
+      },
+    });
+  }
+
+  /** Contenido de un adjunto, solo si pertenece a un mensaje de este proyecto. */
+  async attachment(
+    projectId: string,
+    attachmentId: string,
+  ): Promise<{ data: Buffer; mimeType: string }> {
+    const record = await this.prisma.chatAttachment.findFirst({
+      where: { id: attachmentId, message: { projectId } },
+      select: { data: true, mimeType: true },
+    });
+    if (record === null) {
+      throw new NotFoundException('El adjunto no existe');
+    }
+    return { data: Buffer.from(record.data), mimeType: record.mimeType };
   }
 
   /**
@@ -201,35 +271,4 @@ export class ChatService {
     }
     return dto;
   }
-}
-
-/** Convierte el registro de Prisma en lo que ve la PWA. */
-export function toChatMessageDto(record: ChatMessageRecord): ChatMessageDto {
-  const proposal = record.proposalStatus === null ? null : readStoredProposal(record.proposal);
-  return {
-    id: record.id,
-    projectId: record.projectId,
-    kind: record.kind,
-    author: record.author,
-    content: record.content,
-    mentionsAi: record.mentionsAi,
-    isError: record.isError,
-    replyTo:
-      record.replyTo === null
-        ? null
-        : { id: record.replyTo.id, authorName: record.replyTo.author?.name ?? 'Alguien' },
-    proposal:
-      proposal === null || record.proposalStatus === null
-        ? null
-        : {
-            explanation: proposal.explanation,
-            summary: proposal.summary,
-            operationCount: proposal.operations.length,
-            status: record.proposalStatus,
-            resolvedBy: record.proposalResolvedBy,
-            resolvedAt: record.proposalResolvedAt?.toISOString() ?? null,
-            result: proposal.result,
-          },
-    createdAt: record.createdAt.toISOString(),
-  };
 }

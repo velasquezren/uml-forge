@@ -7,6 +7,7 @@ import type { RefineModelDto } from './dto/refine-model.dto';
 import type {
   AiChatReply,
   AiChatRequest,
+  AiDraftListener,
   AiGenerationResult,
   AiProvider,
 } from './interfaces/ai-provider.interface';
@@ -62,8 +63,18 @@ export class AiService {
   }
 
   /** Respuesta del chat de grupo, con el mismo respaldo entre proveedores (ADR 0042). */
-  async converse(request: AiChatRequest): Promise<AiChatReply> {
-    const { result } = await this.runWithFallback('chat', (provider) => provider.converse(request));
+  async converse(request: AiChatRequest, onDraft?: AiDraftListener): Promise<AiChatReply> {
+    const { result } = await this.runWithFallback('chat', (provider) =>
+      provider.converse(request, onDraft),
+    );
+    return result;
+  }
+
+  /** Transcripcion de una nota de voz del chat (ADR 0044). */
+  async transcribe(audio: Buffer, mimeType: string): Promise<string> {
+    const { result } = await this.runWithFallback('transcripcion', (provider) =>
+      provider.transcribe(audio, mimeType),
+    );
     return result;
   }
 

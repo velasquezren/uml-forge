@@ -42,7 +42,12 @@ historial se pagina hacia atras de 50 en 50.
 ### IA
 
 - Responde si el mensaje menciona `@ia` o si se marca "Preguntar a la IA"; el
-  resto es conversacion entre personas.
+  resto es conversacion entre personas. Tambien responde, sin `@ia`, cuando
+  alguien contesta a una pregunta que la IA le acaba de hacer a esa misma
+  persona (ultimo mensaje del chat, con "?", hace menos de 10 minutos): tras
+  "¿Deseas anadir algo mas?", la respuesta "pon mas atributos a Student" iba al
+  grupo y la IA no la atendia. El boton "Preguntar a la IA" se queda activado
+  mientras se conversa con ella.
 - Contexto: el modelo vivo leido de la memoria de Hocuspocus (la base de datos
   va unos segundos por detras), quien esta conectado y los 20 ultimos mensajes.
 - `AiProvider.converse` en Gemini (esquema estructurado `reply` + `proposal`

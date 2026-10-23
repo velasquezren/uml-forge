@@ -63,7 +63,10 @@ export class ChatStreamHub implements OnModuleInit, OnModuleDestroy {
 
     let streamEvent: ChatStreamEvent;
     if (event.type === 'assistant') {
-      streamEvent = { type: 'assistant', data: { state: event.state, askedBy: event.askedBy } };
+      streamEvent = {
+        type: 'assistant',
+        data: { state: event.state, askedBy: event.askedBy, draft: event.draft ?? null },
+      };
     } else {
       const message = await this.chat.get(event.messageId);
       if (message === null) return;

@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  askAgain as requestAskAgain,
   describeChatError,
   fetchChatPage,
   postChatMessage,
   readChatStream,
   resolveProposal,
 } from './chatClient';
-import type { AssistantStatus, ChatMessage } from './chatTypes';
+import type { AssistantStatus, ChatMessage, OutgoingAttachment } from './chatTypes';
 
 const MAX_RECONNECT_DELAY_MS = 15_000;
 const IDLE: AssistantStatus = { state: 'idle', askedBy: null };
@@ -124,8 +125,8 @@ export function useProjectChat({
   }, [messages, projectId]);
 
   const send = useCallback(
-    async (content: string, askAi: boolean) => {
-      const message = await postChatMessage(projectId, content, askAi);
+    async (content: string, askAi: boolean, attachment?: OutgoingAttachment) => {
+      const message = await postChatMessage(projectId, content, askAi, attachment);
       seenIds.current.add(message.id);
       setMessages((current) => mergeMessages(current, [message]));
     },
@@ -141,5 +142,21 @@ export function useProjectChat({
     [projectId],
   );
 
-  return { messages, hasMore, connected, assistant, unread, error, loadOlder, send, resolve };
+  const askAgain = useCallback(
+    (messageId: string) => requestAskAgain(projectId, messageId),
+    [projectId],
+  );
+
+  return {
+    messages,
+    hasMore,
+    connected,
+    assistant,
+    unread,
+    error,
+    loadOlder,
+    send,
+    resolve,
+    askAgain,
+  };
 }

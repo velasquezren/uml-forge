@@ -18,6 +18,12 @@ enum ChatAuthorKind {
   ASSISTANT
 }
 
+/// Tipo de fichero adjunto a un mensaje del chat.
+enum ChatAttachmentKind {
+  IMAGE
+  AUDIO
+}
+
 /// Estado de una propuesta de cambios hecha por la IA en el chat.
 enum ChatProposalStatus {
   PENDING
@@ -185,8 +191,27 @@ model ChatMessage {
   proposalResolvedById String?
   proposalResolvedBy   User?               @relation("ChatProposalResolver", fields: [proposalResolvedById], references: [id], onDelete: SetNull)
   proposalResolvedAt   DateTime?
+  /// Transcripcion automatica de la nota de voz adjunta.
+  transcript           String?
+  attachment           ChatAttachment?
   createdAt            DateTime            @default(now())
 
   @@index([projectId, createdAt])
   @@map("chat_messages")
+}
+
+/// Imagen o nota de voz de un mensaje del chat (ADR 0044). El contenido va en
+/// su propia tabla para que listar mensajes no arrastre los binarios.
+model ChatAttachment {
+  id         String             @id @default(uuid())
+  messageId  String             @unique
+  message    ChatMessage        @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  kind       ChatAttachmentKind
+  mimeType   String
+  sizeBytes  Int
+  durationMs Int?
+  data       Bytes
+  createdAt  DateTime           @default(now())
+
+  @@map("chat_attachments")
 }
