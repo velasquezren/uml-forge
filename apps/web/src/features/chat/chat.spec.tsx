@@ -91,7 +91,9 @@ describe('tarjeta de propuesta', () => {
       />,
     );
     expect(
-      screen.getByText('Aplicada por Luis: 2 cambios; 1 ya no encajaban en el modelo'),
+      screen.getByText(
+        'Aplicada por Luis: 2 cambios; 1 omitidos (ya estaban en el modelo o no encajaban)',
+      ),
     ).toBeInTheDocument();
   });
 });

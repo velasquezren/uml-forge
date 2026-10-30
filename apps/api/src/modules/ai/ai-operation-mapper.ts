@@ -9,6 +9,7 @@ import {
 } from './ai-mapper-helpers';
 import { processRelationshipItem } from './ai-relationship-mapper';
 import { processClassItem } from './ai-class-mapper';
+import { mapAiChanges } from './ai-change-mapper';
 import { normalizeAiOperations } from './ai-operation-normalizer';
 import { parseTextToRawAiItems } from './ai-text-parser';
 
@@ -242,10 +243,16 @@ export function mapAiOperationsToUmlOperations(
     }
   }
 
-  // Orden topologico y depuracion contra el modelo existente: sin duplicados,
-  // con tipos validos y con lo nuevo colocado bajo el diagrama actual.
+  // Cambios sobre lo existente (solo los pide el chat), orden topologico y
+  // depuracion contra el modelo: sin duplicados, con tipos validos y con lo
+  // nuevo colocado bajo el diagrama actual.
+  const changes =
+    typeof rawInput === 'object' && !Array.isArray(rawInput)
+      ? mapAiChanges((rawInput as RawAiItem).changes, existingModel)
+      : [];
   return normalizeAiOperations(
     [
+      ...changes,
       ...classOperations,
       ...enumOperations,
       ...attributeOperations,

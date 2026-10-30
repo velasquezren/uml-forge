@@ -18,7 +18,8 @@ function resolution(proposal: ChatProposal): string {
   if (proposal.status === 'DISMISSED') return `Descartada por ${who}`;
   const result = proposal.result;
   if (result === null) return `Aplicada por ${who}`;
-  const skipped = result.failed > 0 ? `; ${result.failed} ya no encajaban en el modelo` : '';
+  const skipped =
+    result.failed > 0 ? `; ${result.failed} omitidos (ya estaban en el modelo o no encajaban)` : '';
   return `Aplicada por ${who}: ${result.applied} cambios${skipped}`;
 }
 

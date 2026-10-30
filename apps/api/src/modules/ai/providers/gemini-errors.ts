@@ -8,6 +8,21 @@ export function isModelCapacityError(error: unknown): boolean {
   );
 }
 
+/**
+ * Fallo de red antes de recibir respuesta ("fetch failed", conexion cortada o
+ * DNS). El SDK solo reintenta respuestas HTTP; esto hay que reintentarlo aparte.
+ */
+export function isNetworkError(error: unknown): boolean {
+  if (!(error instanceof Error) || error instanceof ApiError) return false;
+  const cause: unknown = error.cause;
+  const code =
+    typeof cause === 'object' && cause !== null && 'code' in cause ? String(cause.code) : '';
+  return (
+    /fetch failed|socket hang up|network/iu.test(error.message) ||
+    /^(ECONNRESET|ECONNREFUSED|ETIMEDOUT|EAI_AGAIN|ENOTFOUND|UND_ERR_)/u.test(code)
+  );
+}
+
 /** Traduce los errores de la API a un mensaje que la persona pueda resolver. */
 export function describeGeminiError(error: unknown, model: string): string {
   if (error instanceof ApiError) {
@@ -30,6 +45,9 @@ export function describeGeminiError(error: unknown, model: string): string {
       return 'Gemini no esta disponible en este momento. Intentalo de nuevo en unos segundos.';
     }
     return `Gemini rechazo la solicitud (${error.status}): ${error.message}`;
+  }
+  if (isNetworkError(error)) {
+    return 'No se pudo conectar con Gemini (fallo de red). Vuelve a preguntar en unos segundos.';
   }
   if (error instanceof Error && /timeout|aborted/iu.test(error.message)) {
     return 'Gemini tardo demasiado en responder. Prueba con una instruccion mas concreta.';

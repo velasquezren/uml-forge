@@ -51,3 +51,4 @@ nuevo que sustituya al anterior y se marca el antiguo como sustituido.
 | [0042](0042-chat-de-grupo-con-ia.md)                                                      | Chat de grupo con IA                                             | Aceptado |
 | [0043](0043-coleccion-postman-del-backend-generado.md)                                    | Coleccion de Postman del backend generado                        | Aceptado |
 | [0044](0044-imagenes-y-notas-de-voz-en-el-chat-e-ia-en-directo.md)                        | Imagenes y notas de voz en el chat, IA en directo                | Aceptado |
+| [0045](0045-cambios-y-borrados-propuestos-por-la-ia-del-chat.md)                          | Cambios y borrados propuestos por la IA del chat                 | Aceptado |

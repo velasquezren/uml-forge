@@ -119,14 +119,62 @@ export const UML_RESPONSE_SCHEMA: Schema = {
 };
 
 /**
+ * Cambios sobre elementos que ya existen (ADR 0045). Los elementos se nombran,
+ * nunca se identifican por UUID: la API los busca en el modelo.
+ */
+const change: Schema = {
+  type: Type.OBJECT,
+  properties: {
+    action: { type: Type.STRING, enum: ['rename', 'update', 'delete'] },
+    element: {
+      type: Type.STRING,
+      enum: ['class', 'enum', 'attribute', 'operation', 'relationship'],
+    },
+    className: {
+      type: Type.STRING,
+      description: 'Clase o enum afectado, o dueno del miembro, u origen de la relacion',
+    },
+    memberName: { type: Type.STRING, description: 'Atributo u operacion afectado' },
+    target: { type: Type.STRING, description: 'Destino de la relacion' },
+    relationshipKind: {
+      type: Type.STRING,
+      description: 'Tipo actual de la relacion, si hay varias',
+    },
+    newName: text,
+    newKind: { type: Type.STRING, description: 'Nuevo tipo de la relacion' },
+    type: { type: Type.STRING, description: 'Nuevo tipo del atributo' },
+    multiplicity: text,
+    sourceMultiplicity: text,
+    targetMultiplicity: text,
+    isIdentifier: flag,
+    isNullable: flag,
+    isUnique: flag,
+    isAbstract: flag,
+    isInterface: flag,
+  },
+  required: ['action', 'element', 'className'],
+  propertyOrdering: ['action', 'element', 'className', 'memberName', 'target', 'newName'],
+};
+
+/** Propuesta del chat: lo que se anade y lo que cambia de lo existente. */
+const CHAT_PROPOSAL_SCHEMA: Schema = {
+  ...UML_RESPONSE_SCHEMA,
+  properties: {
+    ...UML_RESPONSE_SCHEMA.properties,
+    changes: { type: Type.ARRAY, items: change },
+  },
+  propertyOrdering: ['explanation', 'changes', 'classes', 'enums', 'relationships'],
+};
+
+/**
  * Esquema de la respuesta del chat de grupo: el texto para todos y, solo si se
- * pidio un cambio, una propuesta con la misma forma que el asistente.
+ * pidio un cambio, una propuesta con lo que se anade y lo que se modifica.
  */
 export const CHAT_RESPONSE_SCHEMA: Schema = {
   type: Type.OBJECT,
   properties: {
     reply: { type: Type.STRING, description: 'Respuesta para el chat, dirigida a quien pregunto' },
-    proposal: UML_RESPONSE_SCHEMA,
+    proposal: CHAT_PROPOSAL_SCHEMA,
   },
   required: ['reply'],
   propertyOrdering: ['reply', 'proposal'],

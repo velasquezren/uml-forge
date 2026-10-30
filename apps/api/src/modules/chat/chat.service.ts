@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { ChatAttachmentKind, ChatAuthorKind, ChatProposalStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { normalizeAiOperations } from '../ai/ai-operation-normalizer';
 import { CollabService } from '../collab/collab.service';
 import { ChatAssistantService } from './chat-assistant.service';
 import { validateAttachment } from './chat-attachments';
@@ -162,8 +163,9 @@ export class ChatService {
   /**
    * Aplica una propuesta de la IA sobre el modelo compartido. La reclama de
    * forma atomica (solo si sigue pendiente), de modo que dos editores que pulsan
-   * a la vez no la aplican dos veces; si no entra ninguna operacion, se devuelve
-   * a pendiente para poder reintentarlo.
+   * a la vez no la aplican dos veces. Antes se vuelve a normalizar contra el
+   * modelo de ahora (ADR 0045): lo que otra propuesta o un editor ya hicieron
+   * se descarta en vez de duplicarse. Si no entra nada, vuelve a pendiente.
    */
   async applyProposal(
     projectId: string,
@@ -186,16 +188,19 @@ export class ChatService {
       where: { id: projectId },
       select: { name: true },
     });
+    const current = await this.collab.currentModel(projectId);
+    const operations = normalizeAiOperations(proposal.operations, current ?? undefined);
+    const skipped = Math.max(0, proposal.operations.length - operations.length);
     const report = await this.collab.applyOperations(
       projectId,
-      proposal.operations,
+      operations,
       project?.name ?? 'Proyecto UML',
     );
 
     if (report.applied === 0) {
       await this.release(messageId);
       throw new UnprocessableEntityException(
-        `No se pudo aplicar ningun cambio: ${report.firstError ?? 'el modelo ha cambiado'}`,
+        `No se pudo aplicar ningun cambio: ${report.firstError ?? 'todo lo propuesto ya esta en el modelo'}`,
       );
     }
 
@@ -204,7 +209,7 @@ export class ChatService {
       data: {
         proposal: {
           ...proposal,
-          result: { applied: report.applied, failed: report.failed },
+          result: { applied: report.applied, failed: report.failed + skipped },
         },
       },
     });

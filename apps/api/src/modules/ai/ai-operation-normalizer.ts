@@ -1,4 +1,4 @@
-import type { UMLModel, UmlOperation } from '@uml-forge/uml-core';
+import { applyOperation, type UMLModel, type UmlOperation } from '@uml-forge/uml-core';
 import { layoutNewClassifiers } from './ai-layout';
 import { NormalizationContext, type Op } from './ai-normalization-context';
 
@@ -13,12 +13,16 @@ import { NormalizationContext, type Op } from './ai-normalization-context';
  * - Una relacion con una enumeracion se convierte en un atributo de ese tipo.
  * - Toda clase concreta nueva tiene identificador, salvo que herede uno.
  * - Lo nuevo se coloca debajo del diagrama existente, sin solaparse.
+ * - Los cambios sobre lo que ya existe (renombrar, modificar, eliminar) van
+ *   primero y solo si se pueden aplicar; lo que se anade se compara con el
+ *   modelo tal como quedara tras ellos (ADR 0045).
  */
 export function normalizeAiOperations(
   operations: readonly UmlOperation[],
   model?: UMLModel,
 ): UmlOperation[] {
-  const context = new NormalizationContext(model);
+  const { changes, projected } = projectChanges(operations, model);
+  const context = new NormalizationContext(projected);
 
   const classes: Op<'addClass'>[] = [];
   const enums: Op<'addEnum'>[] = [];
@@ -67,8 +71,6 @@ export function normalizeAiOperations(
       const result = context.normalizeRelationship(op);
       if (result?.type === 'addAttribute') attributes.push(result);
       else if (result !== null) relationships.push(result);
-    } else if (op.type !== 'addClass' && op.type !== 'addEnum') {
-      members.push(op);
     }
   }
 
@@ -79,7 +81,45 @@ export function normalizeAiOperations(
       memberCounts.set(op.classId, (memberCounts.get(op.classId) ?? 0) + 1);
     }
   }
-  const placed = layoutNewClassifiers(classes, enums, relationships, model, memberCounts);
+  const placed = layoutNewClassifiers(classes, enums, relationships, projected, memberCounts);
 
-  return [...placed, ...enumUpdates, ...identifiers, ...attributes, ...members, ...relationships];
+  return [
+    ...changes,
+    ...placed,
+    ...enumUpdates,
+    ...identifiers,
+    ...attributes,
+    ...members,
+    ...relationships,
+  ];
+}
+
+const ADDITIONS = new Set<UmlOperation['type']>([
+  'addClass',
+  'addEnum',
+  'addAttribute',
+  'addOperation',
+  'addRelationship',
+]);
+
+/**
+ * Aplica sobre una copia del modelo los cambios que no son adiciones y se
+ * queda con los que entran: uno que ya estaba hecho o cuyo elemento ya no
+ * existe se descarta en lugar de fallar al aplicarse.
+ */
+function projectChanges(
+  operations: readonly UmlOperation[],
+  model?: UMLModel,
+): { changes: UmlOperation[]; projected: UMLModel | undefined } {
+  const changes: UmlOperation[] = [];
+  let projected = model;
+  for (const op of operations) {
+    if (ADDITIONS.has(op.type) || projected === undefined) continue;
+    const result = applyOperation(projected, op);
+    if (result.ok) {
+      projected = result.value;
+      changes.push(op);
+    }
+  }
+  return { changes, projected };
 }

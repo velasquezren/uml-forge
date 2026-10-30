@@ -13,7 +13,7 @@ function asObject(value: unknown): JsonObject | null {
 
 /** Cierto si el objeto trae al menos una lista de elementos del modelo. */
 function hasModelLists(value: JsonObject): boolean {
-  return ['classes', 'enums', 'relationships', 'operations'].some((key) =>
+  return ['classes', 'enums', 'relationships', 'operations', 'changes'].some((key) =>
     Array.isArray(value[key]),
   );
 }

@@ -1,10 +1,14 @@
 import { GoogleGenAI, ThinkingLevel, type ThinkingConfig } from '@google/genai';
 import { Logger } from '@nestjs/common';
 import type { ApiConfigService } from '../../../config/config.service';
-import { describeGeminiError, isModelCapacityError } from './gemini-errors';
+import { describeGeminiError, isModelCapacityError, isNetworkError } from './gemini-errors';
 
 /** Limite por peticion: una imagen grande con un modelo con razonamiento tarda. */
 const REQUEST_TIMEOUT_MS = 120_000;
+
+/** Intentos con el mismo modelo cuando la conexion falla antes de responder. */
+const NETWORK_ATTEMPTS = 3;
+const NETWORK_RETRY_DELAY_MS = 1_000;
 
 /** Cuanto razona el modelo antes de responder. */
 export type ThinkingEffort = 'default' | 'low' | 'minimal';
@@ -90,7 +94,7 @@ export class GeminiClient {
     let lastError: unknown = null;
     for (const model of models) {
       try {
-        return await run(client, model);
+        return await this.withNetworkRetries(() => run(client, model));
       } catch (error) {
         lastError = error;
         this.logger.warn(`Gemini (${model}): ${describeGeminiError(error, model)}`);
@@ -101,5 +105,17 @@ export class GeminiClient {
     const message = describeGeminiError(lastError, this.config.geminiModel);
     this.logger.error(`Error en llamada a Gemini: ${message}`);
     throw new Error(message);
+  }
+
+  /** Repite la llamada si la conexion se corta antes de llegar la respuesta. */
+  private async withNetworkRetries<T>(attempt: () => Promise<T>): Promise<T> {
+    for (let index = 1; ; index += 1) {
+      try {
+        return await attempt();
+      } catch (error) {
+        if (!isNetworkError(error) || index >= NETWORK_ATTEMPTS) throw error;
+        await new Promise((resolve) => setTimeout(resolve, NETWORK_RETRY_DELAY_MS * index));
+      }
+    }
   }
 }
